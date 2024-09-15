@@ -3,9 +3,8 @@
   import {
     type HitCanvasRenderingContext2D,
     type OriginalEvent,
-    type Context,
+    type AppContext,
     RenderManager,
-    GeometryManager,
     KEY,
     getMaxPixelRatio,
   } from '../lib';
@@ -31,7 +30,7 @@
   export let className = '';
   export let style = '';
 
-  export const getCanvasElement = (): HTMLCanvasElement => canvas;
+  export const getCanvasElement = (): HTMLCanvasElement => canvasRef;
   export const getCanvasContext = (): HitCanvasRenderingContext2D | null => renderManager.context;
 
   const renderManager = new RenderManager();
@@ -39,16 +38,17 @@
 
   const dispatch = createEventDispatcher();
 
-  let canvas: HTMLCanvasElement;
+  let canvasRef: HTMLCanvasElement;
   let backgroundCanvas: HTMLCanvasElement;
+  let layerRef: HTMLDivElement;
   let canvasWidth: number;
   let canvasHeight: number;
   let maxPixelRatio: number | undefined;
 
-  setContext<Context>(KEY, { renderManager });
+  setContext<AppContext>(KEY, { renderManager });
 
   onMount(() => {
-    renderManager.init(canvas, settings);
+    renderManager.init(canvasRef, layerRef, settings);
     renderManager.drawBackgroundGrid(backgroundCanvas);
     return () => renderManager.destroy();
   });
@@ -67,11 +67,11 @@
   };
 
   const handleLayerMouseMove = (e: MouseEvent) => {
-    renderManager.setActiveLayer(e);
+    renderManager.findActiveLayer(e);
   };
 
   const handleLayerTouchStart = (e: TouchEvent) => {
-    renderManager.setActiveLayer(e);
+    renderManager.findActiveLayer(e);
     renderManager.dispatchEvent(e);
   };
 
@@ -108,7 +108,6 @@
   /**
    * Update app state each time _width, _height or _pixelRatio values of the canvas change
    */
-  $: renderManager.canvas = canvas;
   $: renderManager.width = _width;
   $: renderManager.height = _height;
   $: renderManager.pixelRatio = _pixelRatio;
@@ -138,7 +137,7 @@
     style:height={height ? `${height}px` : '100%'}
     {style}
     use:resize
-    bind:this={canvas}
+    bind:this={canvasRef}
     bind:clientWidth={canvasWidth}
     bind:clientHeight={canvasHeight}
     on:mousemove={handleLayerMouseMove}
@@ -210,7 +209,9 @@
     style:height={height ? `${height}px` : '100%'}
     bind:this={backgroundCanvas}
   />
-  <slot />
+  <div style:display="none" bind:this={layerRef}>
+    <slot />
+  </div>
 </div>
 
 <style>

@@ -2,12 +2,12 @@
   import { getContext } from 'svelte';
 
   import Layer from './Layer.svelte';
-  import { KEY, type Context, type RenderProps, type Bounds, COLORS } from '../lib';
+  import { KEY, type AppContext, type RenderProps, type Bounds, COLORS } from '../lib';
 
   export let bounds: Bounds;
   export let active: boolean;
 
-  const { renderManager } = getContext<Context>(KEY);
+  const { renderManager } = getContext<AppContext>(KEY);
   const { geometryManager } = renderManager;
 
   $: render = ({ ctx }: RenderProps) => {
