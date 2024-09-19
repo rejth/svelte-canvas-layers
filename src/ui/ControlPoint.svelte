@@ -5,13 +5,13 @@
   export let point: Point;
   export let active: boolean;
 
-  $: render = ({ ctx }: RenderProps) => {
-    if (!ctx) return;
+  $: render = ({ context }: RenderProps) => {
+    if (!context) return;
 
-    ctx.beginPath();
-    ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
-    ctx.fillStyle = active ? 'red' : 'blue';
-    ctx.fill();
+    context.beginPath();
+    context.arc(point.x, point.y, 5, 0, Math.PI * 2);
+    context.fillStyle = active ? 'red' : 'blue';
+    context.fill();
   };
 </script>
 

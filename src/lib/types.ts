@@ -5,6 +5,9 @@ export type AppContext = {
   renderManager: RenderManager;
 };
 
+export type CanvasType = HTMLCanvasElement | OffscreenCanvas;
+export type CanvasContextType = CanvasRenderingContext2D | HitCanvasRenderingContext2D;
+
 export type LayerId = number;
 export type Point = Pick<DOMRect, 'x' | 'y'>;
 export type Dimension = Pick<DOMRect, 'width' | 'height'>;
@@ -20,7 +23,7 @@ export interface HitCanvasRenderingContext2D extends Omit<CanvasRenderingContext
 }
 
 export type RenderProps = {
-  ctx: HitCanvasRenderingContext2D;
+  context: CanvasContextType;
   geometry: GeometryManager;
 };
 

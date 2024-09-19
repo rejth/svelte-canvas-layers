@@ -10,20 +10,20 @@
   const { renderManager } = getContext<AppContext>(KEY);
   const { geometryManager } = renderManager;
 
-  $: render = ({ ctx }: RenderProps) => {
-    if (!ctx) return;
+  $: render = ({ context }: RenderProps) => {
+    if (!context) return;
 
     const { x, y, width, height } = geometryManager.getRectDimension(bounds);
 
     if (active) {
-      ctx.strokeStyle = COLORS.SELECTION;
-      ctx.lineWidth = 2;
-      ctx.strokeRect(x, y, width, height);
+      context.strokeStyle = COLORS.SELECTION;
+      context.lineWidth = 2;
+      context.strokeRect(x, y, width, height);
     }
 
-    ctx.globalAlpha = 0;
-    ctx.fillRect(x, y, width, height);
-    ctx.globalAlpha = 1;
+    context.globalAlpha = 0;
+    context.fillRect(x, y, width, height);
+    context.globalAlpha = 1;
   };
 </script>
 

@@ -2,6 +2,11 @@
   import { getContext, onDestroy, createEventDispatcher, afterUpdate } from 'svelte';
   import { type Render, type LayerEvents, type AppContext, KEY } from '../lib';
 
+  /**
+   * The Layer component encapsulates a piece of canvas rendering logic.
+   * It is a renderless component that accepts only render function and registers a new layer on the canvas.
+   */
+
   export let render: Render;
 
   const { renderManager } = getContext<AppContext>(KEY);

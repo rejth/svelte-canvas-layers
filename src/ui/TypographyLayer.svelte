@@ -93,11 +93,7 @@
   $: pathPoints = getPathPoints(controlPoints, text.length);
 </script>
 
-<svelte:body
-  use:cursor={active ? 'pointer' : 'auto'}
-  on:mousemove={onMouseMove}
-  on:mouseup={onMouseUp}
-/>
+<svelte:body use:cursor={active ? 'pointer' : 'auto'} on:mousemove={onMouseMove} on:mouseup={onMouseUp} />
 
 <Text {text} {pathPoints} />
 <Curve {controlPoints} />

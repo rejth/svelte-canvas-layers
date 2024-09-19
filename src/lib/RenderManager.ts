@@ -1,4 +1,3 @@
-import { COLORS, createHitCanvas, GeometryManager } from './index';
 import {
   type HitCanvasRenderingContext2D,
   type OriginalEvent,
@@ -7,17 +6,19 @@ import {
   type LayerEventDetails,
   type CanvasEvents,
   type LayerEventDispatcher,
+  type CanvasContextType,
 } from './types';
+import { COLORS, GeometryManager } from './';
 
 export class RenderManager {
   canvas: HTMLCanvasElement | null;
-  context: HitCanvasRenderingContext2D | null;
+  context: CanvasContextType | null;
   geometryManager: GeometryManager;
 
   currentLayerId: LayerId;
   activeLayerId: LayerId;
   layerSequence: LayerId[];
-  layer: HTMLDivElement | null;
+  layerContainer: HTMLDivElement | null;
   layerObserver: MutationObserver | null;
 
   drawers: Map<LayerId, Render>;
@@ -28,6 +29,7 @@ export class RenderManager {
   height?: number;
   pixelRatio?: number;
   frame?: number;
+  layerChangeCallback?: (layerId: LayerId) => void;
 
   constructor() {
     this.canvas = null;
@@ -37,7 +39,7 @@ export class RenderManager {
     this.currentLayerId = 1;
     this.activeLayerId = 0;
     this.layerSequence = [];
-    this.layer = null;
+    this.layerContainer = null;
     this.layerObserver = null;
 
     this.drawers = new Map();
@@ -48,14 +50,10 @@ export class RenderManager {
     this.redraw = this.redraw.bind(this);
   }
 
-  init(
-    canvas: HTMLCanvasElement,
-    layer: HTMLDivElement,
-    settings?: CanvasRenderingContext2DSettings,
-  ) {
-    this.canvas = canvas;
-    this.layer = layer;
-    this.context = createHitCanvas(canvas, settings);
+  init(context: CanvasContextType | null, layerContainer: HTMLDivElement) {
+    this.context = context;
+    this.layerContainer = layerContainer;
+
     this.observeLayerSequence();
     this.startRenderLoop();
   }
@@ -67,12 +65,12 @@ export class RenderManager {
 
   observeLayerSequence() {
     this.layerObserver = new MutationObserver(() => this.getLayerSequence());
-    this.layerObserver.observe(this.layer!, { childList: true });
+    this.layerObserver.observe(this.layerContainer!, { childList: true });
     this.getLayerSequence();
   }
 
   getLayerSequence() {
-    const layers = <HTMLElement[]>[...this.layer!.children];
+    const layers = <HTMLElement[]>[...this.layerContainer!.children];
     this.layerSequence = layers.map((layer) => +layer.dataset.layerId!);
     this.redraw();
   }
@@ -120,13 +118,16 @@ export class RenderManager {
     const context = this.context!;
     const width = this.width!;
     const height = this.height!;
+    const scale = this.pixelRatio!;
 
-    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.save();
+    context.setTransform(scale, 0, 0, scale, 0, 0);
     context.clearRect(0, 0, width, height);
+    context.restore();
 
     for (const layerId of this.layerSequence) {
-      context.setActiveLayerId(layerId);
-      this.drawers.get(layerId)?.({ ctx: context, geometry: this.geometryManager });
+      this.layerChangeCallback?.(layerId);
+      this.drawers.get(layerId)?.({ context, geometry: this.geometryManager });
     }
 
     this.needsRedraw = false;
@@ -146,7 +147,7 @@ export class RenderManager {
 
   findActiveLayer(e: OriginalEvent) {
     const point = this.geometryManager.calculatePosition(e);
-    const layerId = this.context!.getLayerIdAt(point.x, point.y);
+    const layerId = (this.context as HitCanvasRenderingContext2D).getLayerIdAt(point.x, point.y);
 
     if (this.activeLayerId === layerId) return;
 
@@ -221,6 +222,10 @@ export class RenderManager {
     context.fillRect(-transform.e / scale, -transform.f / scale, this.width!, this.height!);
 
     context.restore();
+  }
+
+  onLayerChange(callback: (layerId: LayerId) => void) {
+    this.layerChangeCallback = callback;
   }
 
   destroy() {

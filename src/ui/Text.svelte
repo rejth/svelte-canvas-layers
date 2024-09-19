@@ -5,11 +5,11 @@
   export let text: string;
   export let pathPoints: (Point & { angle: number })[];
 
-  $: render = ({ ctx }: RenderProps) => {
-    if (!ctx) return;
+  $: render = ({ context }: RenderProps) => {
+    if (!context) return;
 
-    ctx.font = '130px Roboto';
-    ctx.fillStyle = 'blue';
+    context.font = '130px Roboto';
+    context.fillStyle = 'blue';
 
     let overallBoundingBox = {
       xMin: Infinity,
@@ -20,11 +20,11 @@
 
     text.split('').forEach((char, i) => {
       const { x, y, angle } = pathPoints[i];
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(angle);
+      context.save();
+      context.translate(x, y);
+      context.rotate(angle);
 
-      const metrics = ctx.measureText(char);
+      const metrics = context.measureText(char);
       const width = metrics.width;
       const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
 
@@ -39,25 +39,19 @@
       // Update overall bounding box
       overallBoundingBox.xMin = Math.min(overallBoundingBox.xMin, boundingBox.x);
       overallBoundingBox.yMin = Math.min(overallBoundingBox.yMin, boundingBox.y);
-      overallBoundingBox.xMax = Math.max(
-        overallBoundingBox.xMax,
-        boundingBox.x + boundingBox.width,
-      );
-      overallBoundingBox.yMax = Math.max(
-        overallBoundingBox.yMax,
-        boundingBox.y + boundingBox.height,
-      );
+      overallBoundingBox.xMax = Math.max(overallBoundingBox.xMax, boundingBox.x + boundingBox.width);
+      overallBoundingBox.yMax = Math.max(overallBoundingBox.yMax, boundingBox.y + boundingBox.height);
 
-      ctx.fillText(char, 0, 0);
-      ctx.restore();
+      context.fillText(char, 0, 0);
+      context.restore();
     });
 
     // Calculate the overall bounding box dimensions
     const overallWidth = overallBoundingBox.xMax - overallBoundingBox.xMin;
     const overallHeight = overallBoundingBox.yMax - overallBoundingBox.yMin;
 
-    ctx.strokeStyle = 'red';
-    ctx.strokeRect(overallBoundingBox.xMin, overallBoundingBox.yMin, overallWidth, overallHeight);
+    context.strokeStyle = 'red';
+    context.strokeRect(overallBoundingBox.xMin, overallBoundingBox.yMin, overallWidth, overallHeight);
   };
 </script>
 

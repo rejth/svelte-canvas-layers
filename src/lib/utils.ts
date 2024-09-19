@@ -1,12 +1,7 @@
 import canvasSize from 'canvas-size';
 import type { RGB } from './types';
 
-export function getMaxPixelRatio(
-  width: number,
-  height: number,
-  target: number,
-  decrement: number = 0.1,
-): number {
+export function getMaxPixelRatio(width: number, height: number, target: number, decrement: number = 0.1): number {
   if (typeof window === 'undefined') return target;
 
   /**

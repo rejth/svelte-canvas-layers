@@ -40,19 +40,8 @@
 <ul class="toolbar" id="toolbar">
   {#each tools as { label, type, icon, hoverText, ...options }}
     <li>
-      <span
-        tabindex="0"
-        role="button"
-        class="tool"
-        on:click={() => onClick(type)}
-        on:keydown={() => onClick(type)}
-      >
-        <span
-          class="icon"
-          class:active={false}
-          class:disabled={options?.disabled}
-          title={hoverText}
-        >
+      <span tabindex="0" role="button" class="tool" on:click={() => onClick(type)} on:keydown={() => onClick(type)}>
+        <span class="icon" class:active={false} class:disabled={options?.disabled} title={hoverText}>
           <svelte:component this={icon} />
         </span>
         <span class="text">{label}</span>

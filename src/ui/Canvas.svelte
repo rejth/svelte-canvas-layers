@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { setContext, onMount, createEventDispatcher } from 'svelte';
+  import { setContext, onMount, createEventDispatcher, onDestroy } from 'svelte';
   import {
     type HitCanvasRenderingContext2D,
     type OriginalEvent,
@@ -7,6 +7,8 @@
     RenderManager,
     KEY,
     getMaxPixelRatio,
+    createHitCanvas,
+    type CanvasContextType,
   } from '../lib';
 
   /**
@@ -22,16 +24,27 @@
    * If pixelRatio is set to "auto", the canvas-size library is used to automatically calculate the maximum supported pixel ratio based on the browser and canvas size.
    * This can be particularly useful when rendering large canvases on iOS Safari (https://pqina.nl/blog/canvas-area-exceeds-the-maximum-limit/)
    */
-  export let pixelRatio: 'auto' | number | null = 'auto';
+  export let pixelRatio: 'auto' | number | null = null;
   /**
    * User settings for canvas rendering context
+   * For example, consider using "willReadFrequently: true" property if you are going to use frequent read-back operations via getImageData().
    */
   export let settings: CanvasRenderingContext2DSettings | undefined = undefined;
+  /**
+   * When useLayerEvents is true, we will proxy all CanvasRenderingContext2D methods to a second, offscreen canvas (in the main thread).
+   * A proxy offscreen canvas is used for event management.
+   * Specifically for identifying a layer using a unique fill and stroke color and then re-dispatching an event to the Layer component.
+   * This has a performance cost (rendering twice in the main thread), so it’s disabled by default.
+   *
+   * When useLayerEvents is false, all operations will be performed on the main canvas.
+   */
+  export let useLayerEvents = false;
   export let className = '';
   export let style = '';
 
+  export const getRenderManager = () => renderManager;
   export const getCanvasElement = (): HTMLCanvasElement => canvasRef;
-  export const getCanvasContext = (): HitCanvasRenderingContext2D | null => renderManager.context;
+  export const getCanvasContext = (): CanvasContextType | null => renderManager.context;
 
   const renderManager = new RenderManager();
   const { geometryManager } = renderManager;
@@ -44,16 +57,27 @@
   let canvasWidth: number;
   let canvasHeight: number;
   let maxPixelRatio: number | undefined;
+  let devicePixelRatio: number | undefined;
 
   setContext<AppContext>(KEY, { renderManager });
 
   onMount(() => {
-    renderManager.init(canvasRef, layerRef, settings);
+    let context: CanvasContextType | null = null;
+
+    if (useLayerEvents) {
+      context = createHitCanvas(canvasRef, settings);
+      renderManager.onLayerChange((<HitCanvasRenderingContext2D>context).setActiveLayerId);
+    } else {
+      context = canvasRef.getContext('2d', settings);
+    }
+
+    renderManager.init(context, layerRef);
     renderManager.drawBackgroundGrid(backgroundCanvas);
-    return () => renderManager.destroy();
   });
 
-  const resize = (node: Element) => {
+  onDestroy(() => renderManager.destroy());
+
+  const resize = (node: HTMLElement) => {
     const canvasObserver = new ResizeObserver(([{ contentRect }]) => {
       canvasWidth = contentRect.width;
       canvasHeight = contentRect.height;
@@ -86,8 +110,8 @@
    * If pixelRatio is set to "auto", we will calculate the maximum supported pixel ratio based on the browser and canvas size.
    * Calculate a new maxPixelRatio each time _width, _height or devicePixelRatio change.
    */
-  $: if (window.devicePixelRatio && pixelRatio === 'auto') {
-    maxPixelRatio = getMaxPixelRatio(_width, _height, window.devicePixelRatio);
+  $: if (devicePixelRatio && pixelRatio === 'auto') {
+    maxPixelRatio = getMaxPixelRatio(_width, _height, devicePixelRatio);
   } else {
     maxPixelRatio = undefined;
   }
@@ -103,7 +127,7 @@
         canvas.style.width = `${width}px`;
         canvas.style.height = `${height}px`;
    */
-  $: _pixelRatio = maxPixelRatio ?? <number>pixelRatio ?? window.devicePixelRatio ?? 2;
+  $: _pixelRatio = maxPixelRatio ?? <number>pixelRatio ?? devicePixelRatio ?? 2;
 
   /**
    * Update app state each time _width, _height or _pixelRatio values of the canvas change
@@ -126,35 +150,41 @@
     height: _height,
     pixelRatio: _pixelRatio,
   });
+
+  $: layerMouseMoveHandler = useLayerEvents ? handleLayerMouseMove : null;
+  $: layerTouchStartHandler = useLayerEvents ? handleLayerTouchStart : null;
+  $: layerEventHandler = useLayerEvents ? handleEvent : null;
 </script>
+
+<svelte:window bind:devicePixelRatio />
 
 <div class="canvas-wrapper">
   <canvas
-    class={`canvas ${className}`}
+    bind:this={canvasRef}
+    use:resize
+    bind:clientWidth={canvasWidth}
+    bind:clientHeight={canvasHeight}
+    class={className}
     width={Math.floor(_width)}
     height={Math.floor(_height)}
     style:width={width ? `${width}px` : '100%'}
     style:height={height ? `${height}px` : '100%'}
     {style}
-    use:resize
-    bind:this={canvasRef}
-    bind:clientWidth={canvasWidth}
-    bind:clientHeight={canvasHeight}
-    on:mousemove={handleLayerMouseMove}
-    on:pointermove={handleLayerMouseMove}
-    on:touchstart={handleLayerTouchStart}
-    on:click={handleEvent}
-    on:contextmenu={handleEvent}
-    on:dblclick={handleEvent}
-    on:mousedown={handleEvent}
-    on:mouseup={handleEvent}
-    on:wheel={handleEvent}
-    on:touchcancel={handleEvent}
-    on:touchend={handleEvent}
-    on:touchmove={handleEvent}
-    on:pointerdown={handleEvent}
-    on:pointerup={handleEvent}
-    on:pointercancel={handleEvent}
+    on:mousemove={layerMouseMoveHandler}
+    on:pointermove={layerMouseMoveHandler}
+    on:touchstart={layerTouchStartHandler}
+    on:click={layerEventHandler}
+    on:contextmenu={layerEventHandler}
+    on:dblclick={layerEventHandler}
+    on:mousedown={layerEventHandler}
+    on:mouseup={layerEventHandler}
+    on:wheel={layerEventHandler}
+    on:touchcancel={layerEventHandler}
+    on:touchend={layerEventHandler}
+    on:touchmove={layerEventHandler}
+    on:pointerdown={layerEventHandler}
+    on:pointerup={layerEventHandler}
+    on:pointercancel={layerEventHandler}
     on:focus
     on:blur
     on:fullscreenchange

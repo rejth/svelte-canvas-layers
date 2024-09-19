@@ -8,24 +8,10 @@
 
 <div class="undo-redo-toolbar">
   <div class="undo-redo">
-    <span
-      tabindex="0"
-      role="button"
-      class="icon"
-      class:disabled={false}
-      on:click={undo}
-      on:keydown={undo}
-    >
+    <span tabindex="0" role="button" class="icon" class:disabled={false} on:click={undo} on:keydown={undo}>
       <UndoIcon color={'#00263A'} />
     </span>
-    <span
-      tabindex="0"
-      role="button"
-      class="icon"
-      class:disabled={false}
-      on:click={redo}
-      on:keydown={redo}
-    >
+    <span tabindex="0" role="button" class="icon" class:disabled={false} on:click={redo} on:keydown={redo}>
       <RedoIcon color={'#00263A'} />
     </span>
   </div>

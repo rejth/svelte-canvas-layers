@@ -4,21 +4,21 @@
 
   export let controlPoints: Point[];
 
-  $: render = ({ ctx }: RenderProps) => {
-    if (!ctx) return;
+  $: render = ({ context }: RenderProps) => {
+    if (!context) return;
 
     const start = controlPoints[0];
     const cp1 = controlPoints[1];
     const cp2 = controlPoints[2];
     const end = controlPoints[3];
 
-    ctx.beginPath();
-    ctx.moveTo(start.x, start.y);
-    ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, end.x, end.y);
+    context.beginPath();
+    context.moveTo(start.x, start.y);
+    context.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, end.x, end.y);
 
-    ctx.strokeStyle = 'blue';
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    context.strokeStyle = 'blue';
+    context.lineWidth = 2;
+    context.stroke();
   };
 </script>
 

@@ -6,10 +6,10 @@
   export let y: number;
   export let active: boolean;
 
-  $: render = ({ ctx }: RenderProps) => {
-    if (!ctx) return;
-    ctx.fillStyle = active ? COLORS.FLIPPED_CARD_FRONT_BACKGROUND : COLORS.SELECTION;
-    ctx.fillRect(x - 6, y - 6, 12, 12);
+  $: render = ({ context }: RenderProps) => {
+    if (!context) return;
+    context.fillStyle = active ? COLORS.FLIPPED_CARD_FRONT_BACKGROUND : COLORS.SELECTION;
+    context.fillRect(x - 6, y - 6, 12, 12);
   };
 </script>
 

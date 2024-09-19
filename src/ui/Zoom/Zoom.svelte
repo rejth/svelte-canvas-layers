@@ -4,15 +4,11 @@
 <div class="zoom">
   <ul class="zoom-menu-list">
     <li class="zoom-menu-list-item">
-      <button class="icon-button icon-button-medium icon-button-fill" value="zoom" type="button">
-        -
-      </button>
+      <button class="icon-button icon-button-medium icon-button-fill" value="zoom" type="button"> - </button>
     </li>
     <li class="zoom-menu-list-item">100%</li>
     <li class="zoom-menu-list-item">
-      <button class="icon-button icon-button-medium icon-button-fill" value="zoom" type="button">
-        +
-      </button>
+      <button class="icon-button icon-button-medium icon-button-fill" value="zoom" type="button"> + </button>
     </li>
   </ul>
 </div>
