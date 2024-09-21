@@ -32,32 +32,30 @@
   export let settings: CanvasRenderingContext2DSettings | undefined = undefined;
   /**
    * When useLayerEvents is true, we will proxy all CanvasRenderingContext2D methods to a second, offscreen canvas (in the main thread).
-   * A proxy offscreen canvas is used for event management.
+   * The proxy offscreen canvas is used for event management.
    * Specifically for identifying a layer using a unique fill and stroke color and then re-dispatching an event to the Layer component.
    * This has a performance cost (rendering twice in the main thread), so it’s disabled by default.
    *
-   * When useLayerEvents is false, all operations will be performed on the main canvas.
+   * When useLayerEvents is false, all operations will be performed on the main canvas in the main thread.
    */
   export let useLayerEvents = false;
   export let className = '';
   export let style = '';
 
   export const getRenderManager = () => renderManager;
-  export const getCanvasElement = (): HTMLCanvasElement => canvasRef;
+  export const getCanvasElement = (): HTMLCanvasElement => canvas;
   export const getCanvasContext = (): CanvasContextType | null => renderManager.context;
 
-  const renderManager = new RenderManager();
-  const { geometryManager } = renderManager;
-
-  const dispatch = createEventDispatcher();
-
-  let canvasRef: HTMLCanvasElement;
-  let backgroundCanvas: HTMLCanvasElement;
-  let layerRef: HTMLDivElement;
+  let canvas: HTMLCanvasElement;
+  let layerContainer: HTMLDivElement;
   let canvasWidth: number;
   let canvasHeight: number;
   let maxPixelRatio: number | undefined;
   let devicePixelRatio: number | undefined;
+
+  const renderManager = new RenderManager();
+  const { geometryManager } = renderManager;
+  const dispatch = createEventDispatcher();
 
   setContext<AppContext>(KEY, { renderManager });
 
@@ -65,14 +63,13 @@
     let context: CanvasContextType | null = null;
 
     if (useLayerEvents) {
-      context = createHitCanvas(canvasRef, settings);
+      context = createHitCanvas(canvas, settings);
       renderManager.onLayerChange((<HitCanvasRenderingContext2D>context).setActiveLayerId);
     } else {
-      context = canvasRef.getContext('2d', settings);
+      context = canvas.getContext('2d', settings);
     }
 
-    renderManager.init(context, layerRef);
-    renderManager.drawBackgroundGrid(backgroundCanvas);
+    renderManager.init(context, layerContainer);
   });
 
   onDestroy(() => renderManager.destroy());
@@ -158,112 +155,78 @@
 
 <svelte:window bind:devicePixelRatio />
 
-<div class="canvas-wrapper">
-  <canvas
-    bind:this={canvasRef}
-    use:resize
-    bind:clientWidth={canvasWidth}
-    bind:clientHeight={canvasHeight}
-    class={className}
-    width={Math.floor(_width)}
-    height={Math.floor(_height)}
-    style:width={width ? `${width}px` : '100%'}
-    style:height={height ? `${height}px` : '100%'}
-    {style}
-    on:mousemove={layerMouseMoveHandler}
-    on:pointermove={layerMouseMoveHandler}
-    on:touchstart={layerTouchStartHandler}
-    on:click={layerEventHandler}
-    on:contextmenu={layerEventHandler}
-    on:dblclick={layerEventHandler}
-    on:mousedown={layerEventHandler}
-    on:mouseup={layerEventHandler}
-    on:wheel={layerEventHandler}
-    on:touchcancel={layerEventHandler}
-    on:touchend={layerEventHandler}
-    on:touchmove={layerEventHandler}
-    on:pointerdown={layerEventHandler}
-    on:pointerup={layerEventHandler}
-    on:pointercancel={layerEventHandler}
-    on:focus
-    on:blur
-    on:fullscreenchange
-    on:fullscreenerror
-    on:scroll
-    on:cut
-    on:copy
-    on:paste
-    on:keydown
-    on:keypress
-    on:keyup
-    on:auxclick
-    on:click
-    on:contextmenu
-    on:dblclick
-    on:mousedown
-    on:mouseenter
-    on:mouseleave
-    on:mousemove
-    on:mouseover
-    on:mouseout
-    on:mouseup
-    on:select
-    on:wheel
-    on:drag
-    on:dragend
-    on:dragenter
-    on:dragstart
-    on:dragleave
-    on:dragover
-    on:drop
-    on:touchcancel
-    on:touchend
-    on:touchmove
-    on:touchstart
-    on:pointerover
-    on:pointerenter
-    on:pointerdown
-    on:pointermove
-    on:pointerup
-    on:pointercancel
-    on:pointerout
-    on:pointerleave
-    on:gotpointercapture
-    on:lostpointercapture
-  />
-  <canvas
-    class="background-canvas"
-    width={Math.floor(_width)}
-    height={Math.floor(_height)}
-    style:width={width ? `${width}px` : '100%'}
-    style:height={height ? `${height}px` : '100%'}
-    bind:this={backgroundCanvas}
-  />
-  <div style:display="none" bind:this={layerRef}>
-    <slot />
-  </div>
+<canvas
+  bind:this={canvas}
+  use:resize
+  bind:clientWidth={canvasWidth}
+  bind:clientHeight={canvasHeight}
+  class={className}
+  width={Math.floor(_width)}
+  height={Math.floor(_height)}
+  style:width={width ? `${width}px` : '100%'}
+  style:height={height ? `${height}px` : '100%'}
+  {style}
+  on:mousemove={layerMouseMoveHandler}
+  on:pointermove={layerMouseMoveHandler}
+  on:touchstart={layerTouchStartHandler}
+  on:click={layerEventHandler}
+  on:contextmenu={layerEventHandler}
+  on:dblclick={layerEventHandler}
+  on:mousedown={layerEventHandler}
+  on:mouseup={layerEventHandler}
+  on:wheel={layerEventHandler}
+  on:touchcancel={layerEventHandler}
+  on:touchend={layerEventHandler}
+  on:touchmove={layerEventHandler}
+  on:pointerdown={layerEventHandler}
+  on:pointerup={layerEventHandler}
+  on:pointercancel={layerEventHandler}
+  on:focus
+  on:blur
+  on:fullscreenchange
+  on:fullscreenerror
+  on:scroll
+  on:cut
+  on:copy
+  on:paste
+  on:keydown
+  on:keypress
+  on:keyup
+  on:auxclick
+  on:click
+  on:contextmenu
+  on:dblclick
+  on:mousedown
+  on:mouseenter
+  on:mouseleave
+  on:mousemove
+  on:mouseover
+  on:mouseout
+  on:mouseup
+  on:select
+  on:wheel
+  on:drag
+  on:dragend
+  on:dragenter
+  on:dragstart
+  on:dragleave
+  on:dragover
+  on:drop
+  on:touchcancel
+  on:touchend
+  on:touchmove
+  on:touchstart
+  on:pointerover
+  on:pointerenter
+  on:pointerdown
+  on:pointermove
+  on:pointerup
+  on:pointercancel
+  on:pointerout
+  on:pointerleave
+  on:gotpointercapture
+  on:lostpointercapture
+/>
+<div style:display="none" bind:this={layerContainer}>
+  <slot />
 </div>
-
-<style>
-  .canvas-wrapper {
-    position: relative;
-  }
-
-  .canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
-  }
-
-  .background-canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    pointer-events: none;
-    touch-action: none;
-    user-select: none;
-    cursor: none;
-    z-index: -1;
-  }
-</style>

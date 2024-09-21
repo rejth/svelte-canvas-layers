@@ -4,11 +4,12 @@
   import Canvas from './ui/Canvas.svelte';
   import ResizableLayer from './ui/ResizableLayer.svelte';
   import Layer from './ui/Layer.svelte';
+  import Background from './ui/Background.svelte';
   import Zoom from './ui/Zoom/Zoom.svelte';
   import UndoRedo from './ui/UndoRedo/UndoRedo.svelte';
   import Toolbar from './ui/Toolbar/Toolbar.svelte';
 
-  import type { CanvasContextType, RenderManager } from './lib';
+  import { COLORS, CURSORS, type CanvasContextType, type RenderManager } from './lib';
 
   let canvasComponent: Canvas;
   let context: CanvasContextType | null;
@@ -18,7 +19,7 @@
   let currentTransformedCursor = { x: 0, y: 0 };
   let useLayerEvents = false;
   let isDragging = false;
-  let colors = ['#70d6ff', '#ff70a6', '#a56eff'];
+  let colors = [COLORS.STICKER_YELLOW, COLORS.STICKER_DARK_GREEN, COLORS.STICKER_PINK];
 
   onMount(() => {
     context = canvasComponent.getCanvasContext();
@@ -33,12 +34,13 @@
   };
 
   const onMouseDown = (e: MouseEvent) => {
+    if (useLayerEvents) return;
     isDragging = true;
     dragStartPosition = getTransformedPoint(e.pageX, e.pageY);
   };
 
   const onMouseMove = (e: MouseEvent) => {
-    if (!isDragging) return;
+    if (!isDragging || useLayerEvents) return;
     currentTransformedCursor = getTransformedPoint(e.pageX, e.pageY);
 
     context!.translate(
@@ -50,7 +52,20 @@
   };
 
   const onMouseUp = () => {
+    if (useLayerEvents) return;
     isDragging = false;
+  };
+
+  const onWheel = (e: WheelEvent) => {
+    if (useLayerEvents) return;
+    const zoom = e.deltaY < 0 ? 1.1 : 0.9;
+
+    context!.translate(currentTransformedCursor.x, currentTransformedCursor.y);
+    context!.scale(zoom, zoom);
+    context!.translate(-currentTransformedCursor.x, -currentTransformedCursor.y);
+
+    renderManager.redraw();
+    e.preventDefault();
   };
 </script>
 
@@ -60,11 +75,14 @@
     {useLayerEvents}
     width={window.innerWidth}
     height={window.innerHeight}
+    style={useLayerEvents ? '' : `cursor: ${CURSORS.HAND}`}
     bind:this={canvasComponent}
     on:mousedown={onMouseDown}
     on:mousemove={onMouseMove}
     on:mouseup={onMouseUp}
+    on:wheel={onWheel}
   >
+    <Background />
     {#each colors as color, i (color)}
       {@const c = (i + 1) * 85}
       <ResizableLayer

@@ -8,7 +8,7 @@
 
   $: render = ({ context }: RenderProps) => {
     if (!context) return;
-    context.fillStyle = active ? COLORS.FLIPPED_CARD_FRONT_BACKGROUND : COLORS.SELECTION;
+    context.fillStyle = active ? COLORS.STICKER_BLUE : COLORS.SELECTION;
     context.fillRect(x - 6, y - 6, 12, 12);
   };
 </script>

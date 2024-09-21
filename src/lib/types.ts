@@ -25,10 +25,20 @@ export interface HitCanvasRenderingContext2D extends Omit<CanvasRenderingContext
 export type RenderProps = {
   context: CanvasContextType;
   geometry: GeometryManager;
+  scale: number;
 };
 
 export interface Render {
-  (props: RenderProps): void;
+  (data: RenderProps): void;
+}
+
+export interface RegisteredLayerMetadata {
+  render: Render;
+  dispatcher?: LayerEventDispatcher;
+}
+
+export interface RegisterLayer {
+  (data: RegisteredLayerMetadata): void;
 }
 
 export type OriginalEvent = MouseEvent | TouchEvent;

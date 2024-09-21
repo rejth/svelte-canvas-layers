@@ -7,8 +7,9 @@ import {
   type CanvasEvents,
   type LayerEventDispatcher,
   type CanvasContextType,
+  type RegisteredLayerMetadata,
 } from './types';
-import { COLORS, GeometryManager } from './';
+import { GeometryManager } from './';
 
 export class RenderManager {
   canvas: HTMLCanvasElement | null;
@@ -75,9 +76,13 @@ export class RenderManager {
     this.redraw();
   }
 
-  register({ render, dispatcher }: { render: Render; dispatcher: LayerEventDispatcher }) {
+  register({ render, dispatcher }: RegisteredLayerMetadata) {
     this.addDrawer(this.currentLayerId, render);
-    this.addDispatcher(this.currentLayerId, dispatcher);
+
+    if (dispatcher) {
+      this.addDispatcher(this.currentLayerId, dispatcher);
+    }
+
     this.redraw();
 
     return {
@@ -127,7 +132,7 @@ export class RenderManager {
 
     for (const layerId of this.layerSequence) {
       this.layerChangeCallback?.(layerId);
-      this.drawers.get(layerId)?.({ context, geometry: this.geometryManager });
+      this.drawers.get(layerId)?.({ context, geometry: this.geometryManager, scale });
     }
 
     this.needsRedraw = false;
@@ -191,37 +196,6 @@ export class RenderManager {
   dispatchLayerEvent(layerId: LayerId, details: LayerEventDetails) {
     const dispatch = this.dispatchers.get(layerId);
     dispatch?.(<CanvasEvents>details.originalEvent.type, details);
-  }
-
-  drawBackgroundGrid(backgroundCanvas: HTMLCanvasElement) {
-    const width = 10;
-    const height = 10;
-    const radius = 1;
-    const scale = this.pixelRatio!;
-
-    const context = backgroundCanvas.getContext('2d')!;
-    const transform = context.getTransform();
-
-    const canvas = new OffscreenCanvas(width, height);
-    canvas.width = Math.floor(width * scale);
-    canvas.height = Math.floor(height * scale);
-
-    const offscreenContext = canvas.getContext('2d')!;
-    offscreenContext.beginPath();
-    offscreenContext.fillStyle = COLORS.GRID;
-    offscreenContext.arc(1, 1, radius, 0, 2 * Math.PI);
-    offscreenContext.fill();
-
-    const pattern = context.createPattern(canvas, 'repeat');
-    if (!pattern) return;
-
-    context.save();
-
-    context.setTransform(1, transform.b, transform.c, 1, transform.e, transform.f);
-    context.fillStyle = pattern;
-    context.fillRect(-transform.e / scale, -transform.f / scale, this.width!, this.height!);
-
-    context.restore();
   }
 
   onLayerChange(callback: (layerId: LayerId) => void) {
