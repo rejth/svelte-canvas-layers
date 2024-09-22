@@ -21,7 +21,8 @@
   let previousTouch: Touch;
 
   $: bounds = { x0, y0, x1, y1 };
-  $: active = !!draggedHandler || !!hoveredHandler;
+  $: active = Boolean(draggedHandler || hoveredHandler);
+  $: sortedHandlers = HANDLERS.sort((a, b) => (a === hoveredHandler ? 1 : b === hoveredHandler ? -1 : 0));
 
   $: getHandlerPosition = (handler: number): Point => {
     return {
@@ -92,7 +93,7 @@
 />
 
 {#if active}
-  {#each HANDLERS as handler (handler)}
+  {#each sortedHandlers as handler (handler)}
     <Handler
       {...getHandlerPosition(handler)}
       active={hoveredHandler === handler || draggedHandler === handler}

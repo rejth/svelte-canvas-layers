@@ -1,5 +1,5 @@
 import type { createEventDispatcher } from 'svelte';
-import type { GeometryManager, RenderManager } from './index';
+import type { RenderManager } from './index';
 
 export type AppContext = {
   renderManager: RenderManager;
@@ -14,6 +14,7 @@ export type Dimension = Pick<DOMRect, 'width' | 'height'>;
 export type RectPosition = Pick<DOMRect, 'top' | 'bottom' | 'left' | 'right'>;
 export type RectDimension = Point & Dimension;
 
+export type PixelRatio = number;
 export type Bounds = { x0: number; y0: number; x1: number; y1: number };
 export type RGB = [number, number, number];
 
@@ -22,10 +23,14 @@ export interface HitCanvasRenderingContext2D extends Omit<CanvasRenderingContext
   setActiveLayerId: (id: LayerId) => void;
 }
 
+export type CanvasOptions = {
+  initialPixelRatio: PixelRatio;
+  pixelRatio: PixelRatio;
+};
+
 export type RenderProps = {
   context: CanvasContextType;
-  geometry: GeometryManager;
-  scale: number;
+  options: CanvasOptions;
 };
 
 export interface Render {
@@ -42,6 +47,14 @@ export interface RegisterLayer {
 }
 
 export type OriginalEvent = MouseEvent | TouchEvent;
+
+export type ResizeEvent = {
+  resize: {
+    width: number;
+    height: number;
+    pixelRatio: PixelRatio;
+  };
+};
 
 export type CanvasEvents =
   | 'click'

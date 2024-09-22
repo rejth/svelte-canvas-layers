@@ -5,4 +5,4 @@ export { createHitCanvas } from './createHitCanvas';
 export * from './types';
 export * from './constants';
 export * from './utils';
-export * from './dnd';
+export * from './compositions';

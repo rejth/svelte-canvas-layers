@@ -9,7 +9,9 @@
     getMaxPixelRatio,
     createHitCanvas,
     type CanvasContextType,
+    type ResizeEvent,
   } from '../lib';
+  import { Renderer } from '../lib/Renderer';
 
   /**
    * When unset, the canvas will use its clientWidth property.
@@ -44,7 +46,7 @@
 
   export const getRenderManager = () => renderManager;
   export const getCanvasElement = (): HTMLCanvasElement => canvas;
-  export const getCanvasContext = (): CanvasContextType | null => renderManager.context;
+  export const getCanvasContext = (): CanvasContextType | null => renderer.context;
 
   let canvas: HTMLCanvasElement;
   let layerContainer: HTMLDivElement;
@@ -53,9 +55,9 @@
   let maxPixelRatio: number | undefined;
   let devicePixelRatio: number | undefined;
 
-  const renderManager = new RenderManager();
-  const { geometryManager } = renderManager;
-  const dispatch = createEventDispatcher();
+  const renderer = new Renderer();
+  const renderManager = new RenderManager(renderer);
+  const dispatch = createEventDispatcher<ResizeEvent>();
 
   setContext<AppContext>(KEY, { renderManager });
 
@@ -69,7 +71,8 @@
       context = canvas.getContext('2d', settings);
     }
 
-    renderManager.init(context, layerContainer);
+    renderer.init(<CanvasContextType>context, devicePixelRatio ?? 2);
+    renderManager.init(layerContainer);
   });
 
   onDestroy(() => renderManager.destroy());
@@ -129,10 +132,9 @@
   /**
    * Update app state each time _width, _height or _pixelRatio values of the canvas change
    */
-  $: renderManager.width = _width;
-  $: renderManager.height = _height;
-  $: renderManager.pixelRatio = _pixelRatio;
-  $: geometryManager.pixelRatio = _pixelRatio;
+  $: renderer.width = _width;
+  $: renderer.height = _height;
+  $: renderer.pixelRatio = _pixelRatio;
 
   /**
    * Adjust canvas's transformation matrix to scale drawings according to the width, height values or device's pixel ratio
@@ -161,8 +163,8 @@
   bind:clientWidth={canvasWidth}
   bind:clientHeight={canvasHeight}
   class={className}
-  width={Math.floor(_width)}
-  height={Math.floor(_height)}
+  width={Math.floor(_width * _pixelRatio)}
+  height={Math.floor(_height * _pixelRatio)}
   style:width={width ? `${width}px` : '100%'}
   style:height={height ? `${height}px` : '100%'}
   {style}
@@ -227,6 +229,7 @@
   on:gotpointercapture
   on:lostpointercapture
 />
+
 <div style:display="none" bind:this={layerContainer}>
   <slot />
 </div>

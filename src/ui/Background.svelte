@@ -2,20 +2,23 @@
   import BackgroundLayer from './BackgroundLayer.svelte';
   import { COLORS, type RenderProps } from '../lib';
 
-  $: render = ({ context, scale }: RenderProps) => {
+  const width = 10;
+  const height = 10;
+  const radius = 0.5;
+
+  $: render = ({ context, options }: RenderProps) => {
     if (!context) return;
 
-    const width = 10;
-    const height = 10;
-    const radius = 0.5;
+    const { initialPixelRatio, pixelRatio } = options;
     const transform = context.getTransform();
 
     const offscreenCanvas = new OffscreenCanvas(width, height);
-    offscreenCanvas.width = Math.floor(width * scale);
-    offscreenCanvas.height = Math.floor(height * scale);
+    offscreenCanvas.width = Math.floor(width * pixelRatio);
+    offscreenCanvas.height = Math.floor(height * pixelRatio);
 
     const offscreenContext = offscreenCanvas.getContext('2d')!;
-    offscreenContext.scale(scale, scale);
+    offscreenContext.scale(pixelRatio, pixelRatio);
+
     offscreenContext.beginPath();
     offscreenContext.fillStyle = COLORS.GRID;
     offscreenContext.arc(1, 1, radius, 0, 2 * Math.PI);
@@ -25,9 +28,14 @@
     if (!pattern) return;
 
     context.save();
-    context.setTransform(scale, transform.b, transform.c, scale, transform.e, transform.f);
+    context.setTransform(initialPixelRatio, transform.b, transform.c, initialPixelRatio, transform.e, transform.f);
     context.fillStyle = pattern;
-    context.fillRect(-transform.e / scale, -transform.f / scale, window.innerWidth, window.innerHeight);
+    context.fillRect(
+      -transform.e / initialPixelRatio,
+      -transform.f / initialPixelRatio,
+      window.innerWidth,
+      window.innerHeight,
+    );
     context.restore();
   };
 </script>

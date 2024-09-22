@@ -6,14 +6,13 @@ import {
   type LayerEventDetails,
   type CanvasEvents,
   type LayerEventDispatcher,
-  type CanvasContextType,
   type RegisteredLayerMetadata,
 } from './types';
 import { GeometryManager } from './';
+import type { Renderer } from './Renderer';
 
 export class RenderManager {
-  canvas: HTMLCanvasElement | null;
-  context: CanvasContextType | null;
+  renderer: Renderer;
   geometryManager: GeometryManager;
 
   currentLayerId: LayerId;
@@ -26,15 +25,11 @@ export class RenderManager {
   dispatchers: Map<LayerId, LayerEventDispatcher>;
   needsRedraw: boolean;
 
-  width?: number;
-  height?: number;
-  pixelRatio?: number;
-  frame?: number;
+  animationFrame?: number;
   layerChangeCallback?: (layerId: LayerId) => void;
 
-  constructor() {
-    this.canvas = null;
-    this.context = null;
+  constructor(renderer: Renderer) {
+    this.renderer = renderer;
     this.geometryManager = new GeometryManager();
 
     this.currentLayerId = 1;
@@ -51,17 +46,15 @@ export class RenderManager {
     this.redraw = this.redraw.bind(this);
   }
 
-  init(context: CanvasContextType | null, layerContainer: HTMLDivElement) {
-    this.context = context;
+  init(layerContainer: HTMLDivElement) {
     this.layerContainer = layerContainer;
-
     this.observeLayerSequence();
     this.startRenderLoop();
   }
 
   startRenderLoop() {
     this.render();
-    this.frame = requestAnimationFrame(() => this.startRenderLoop());
+    this.animationFrame = requestAnimationFrame(() => this.startRenderLoop());
   }
 
   observeLayerSequence() {
@@ -120,19 +113,21 @@ export class RenderManager {
   render() {
     if (!this.needsRedraw) return;
 
-    const context = this.context!;
-    const width = this.width!;
-    const height = this.height!;
-    const scale = this.pixelRatio!;
+    const context = this.renderer.getContext()!;
+    const initialPixelRatio = this.renderer.initialPixelRatio!;
+    const pixelRatio = this.renderer.pixelRatio!;
 
     context.save();
-    context.setTransform(scale, 0, 0, scale, 0, 0);
-    context.clearRect(0, 0, width, height);
+    context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    this.renderer.clearRectSync(this.renderer.getScaledArea());
     context.restore();
 
     for (const layerId of this.layerSequence) {
       this.layerChangeCallback?.(layerId);
-      this.drawers.get(layerId)?.({ context, geometry: this.geometryManager, scale });
+      this.drawers.get(layerId)?.({
+        context,
+        options: { initialPixelRatio, pixelRatio },
+      });
     }
 
     this.needsRedraw = false;
@@ -151,8 +146,9 @@ export class RenderManager {
    */
 
   findActiveLayer(e: OriginalEvent) {
-    const point = this.geometryManager.calculatePosition(e);
-    const layerId = (this.context as HitCanvasRenderingContext2D).getLayerIdAt(point.x, point.y);
+    const context = this.renderer.getContext();
+    const point = this.geometryManager.calculatePosition(e, this.renderer.pixelRatio);
+    const layerId = (<HitCanvasRenderingContext2D>context).getLayerIdAt(point.x, point.y);
 
     if (this.activeLayerId === layerId) return;
 
@@ -206,6 +202,6 @@ export class RenderManager {
     if (typeof window === 'undefined') return;
 
     this.layerObserver?.disconnect();
-    cancelAnimationFrame(this.frame!);
+    cancelAnimationFrame(this.animationFrame!);
   }
 }

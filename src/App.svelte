@@ -9,39 +9,43 @@
   import UndoRedo from './ui/UndoRedo/UndoRedo.svelte';
   import Toolbar from './ui/Toolbar/Toolbar.svelte';
 
-  import { COLORS, CURSORS, type CanvasContextType, type RenderManager } from './lib';
+  import { COLORS, CURSORS, type CanvasContextType, type Point, type RenderManager } from './lib';
+  import type { Renderer } from './lib/Renderer';
 
   let canvasComponent: Canvas;
   let context: CanvasContextType | null;
   let renderManager: RenderManager;
+  let renderer: Renderer;
 
-  let dragStartPosition = { x: 0, y: 0 };
-  let currentTransformedCursor = { x: 0, y: 0 };
+  let colors = [COLORS.STICKER_YELLOW, COLORS.STICKER_DARK_GREEN, COLORS.STICKER_PINK];
+
+  // Panning
+  let dragStartPosition: Point = { x: 0, y: 0 };
+  let currentTransformedCursor: Point = { x: 0, y: 0 };
   let useLayerEvents = false;
   let isDragging = false;
-  let colors = [COLORS.STICKER_YELLOW, COLORS.STICKER_DARK_GREEN, COLORS.STICKER_PINK];
+
+  // Zooming
+  let startPosition: Point | null = null;
+  let currentPosition: Point = { x: 0, y: 0 };
 
   onMount(() => {
     context = canvasComponent.getCanvasContext();
     renderManager = canvasComponent.getRenderManager();
+    renderer = renderManager.renderer;
   });
 
   const sort = (color: string) => (colors = colors.sort((a, b) => (a === color ? 1 : b === color ? -1 : 0)));
 
-  const getTransformedPoint = (x: number, y: number) => {
-    const originalPoint = new DOMPoint(x, y);
-    return context!.getTransform().invertSelf().transformPoint(originalPoint);
-  };
-
   const onMouseDown = (e: MouseEvent) => {
     if (useLayerEvents) return;
     isDragging = true;
-    dragStartPosition = getTransformedPoint(e.pageX, e.pageY);
+    dragStartPosition = renderer.getTransformedPoint(e.pageX, e.pageY);
   };
 
   const onMouseMove = (e: MouseEvent) => {
     if (!isDragging || useLayerEvents) return;
-    currentTransformedCursor = getTransformedPoint(e.pageX, e.pageY);
+    currentTransformedCursor = renderer.getTransformedPoint(e.pageX, e.pageY);
 
     context!.translate(
       currentTransformedCursor.x - dragStartPosition.x,
@@ -57,15 +61,46 @@
   };
 
   const onWheel = (e: WheelEvent) => {
-    if (useLayerEvents) return;
-    const zoom = e.deltaY < 0 ? 1.1 : 0.9;
+    if (!context || useLayerEvents) return;
 
-    context!.translate(currentTransformedCursor.x, currentTransformedCursor.y);
-    context!.scale(zoom, zoom);
-    context!.translate(-currentTransformedCursor.x, -currentTransformedCursor.y);
+    if (startPosition === null) {
+      dragStartPosition = renderer.getTransformedPoint(e.pageX, e.pageY);
+      currentPosition = { x: e.pageX, y: e.pageY };
+    }
 
-    renderManager.redraw();
-    e.preventDefault();
+    if (e.ctrlKey) {
+      currentPosition = {
+        x: currentPosition.x + e.deltaX * -1,
+        y: currentPosition.y + e.deltaY * -1,
+      };
+
+      currentTransformedCursor = renderer.getTransformedPoint(e.clientX, e.clientY);
+
+      const transform = renderer.getTransform();
+      const zoom = e.deltaY < 0 ? 1.1 : 0.9;
+      const nextZoomPercentage = renderer.canvasScaleToPercentage(transform.scaleX * zoom);
+      const scale = renderer.zoomPercentageToScale(nextZoomPercentage) / transform.scaleX;
+
+      if (nextZoomPercentage <= 200 && nextZoomPercentage >= 10) {
+        context.translate(currentTransformedCursor.x, currentTransformedCursor.y);
+        renderer.scale(scale, scale);
+        context.translate(-currentTransformedCursor.x, -currentTransformedCursor.y);
+        renderManager.redraw();
+      }
+    } else {
+      currentPosition = {
+        x: currentPosition.x + e.deltaX * -1,
+        y: currentPosition.y + e.deltaY * -1,
+      };
+
+      currentTransformedCursor = renderer.getTransformedPoint(currentPosition.x, currentPosition.y);
+      context.translate(
+        currentTransformedCursor.x - dragStartPosition.x,
+        currentTransformedCursor.y - dragStartPosition.y,
+      );
+
+      renderManager.redraw();
+    }
   };
 </script>
 
@@ -86,7 +121,7 @@
     {#each colors as color, i (color)}
       {@const c = (i + 1) * 85}
       <ResizableLayer
-        initialBounds={{ x0: c, y0: c, x1: c + 180, y1: c + 180 }}
+        initialBounds={{ x0: c, y0: c, x1: c + 338, y1: c + 338 }}
         on:mousedown={() => sort(color)}
         on:touchstart={() => sort(color)}
         let:bounds
