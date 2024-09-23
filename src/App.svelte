@@ -24,7 +24,7 @@
   let context: CanvasContextType | null;
   let renderManager: RenderManager;
   let renderer: Renderer;
-  let colors = new Array(10000).fill(null).map(() => ({ id: uuid(), value: COLORS_ARRAY[random(0, 10)] }));
+  let colors = new Array(10).fill(null).map(() => ({ id: uuid(), value: COLORS_ARRAY[random(0, 10)] }));
 
   // Panning
   let dragStartPosition: Point = { x: 0, y: 0 };
