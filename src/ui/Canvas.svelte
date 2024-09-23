@@ -62,6 +62,14 @@
   setContext<AppContext>(KEY, { renderManager });
 
   onMount(() => {
+    initContext();
+    renderManager.init(layerContainer);
+  });
+
+  onDestroy(() => renderManager.destroy());
+
+  const initContext = () => {
+    if (!canvas) return;
     let context: CanvasContextType | null = null;
 
     if (useLayerEvents) {
@@ -71,11 +79,9 @@
       context = canvas.getContext('2d', settings);
     }
 
-    renderer.init(<CanvasContextType>context, devicePixelRatio ?? 2);
-    renderManager.init(layerContainer);
-  });
-
-  onDestroy(() => renderManager.destroy());
+    renderer.init(<CanvasContextType>context, useLayerEvents, devicePixelRatio ?? 2);
+    renderManager.redraw();
+  };
 
   const resize = (node: HTMLElement) => {
     const canvasObserver = new ResizeObserver(([{ contentRect }]) => {
@@ -102,6 +108,8 @@
   const handleEvent = (e: OriginalEvent) => {
     renderManager.dispatchEvent(e);
   };
+
+  $: useLayerEvents, initContext();
 
   $: _width = width ?? canvasWidth ?? 0;
   $: _height = height ?? canvasHeight ?? 0;

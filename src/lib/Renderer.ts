@@ -24,13 +24,15 @@ export class Renderer {
   height?: number;
   initialPixelRatio?: PixelRatio;
   pixelRatio?: PixelRatio;
+  useLayerEvents?: boolean;
 
   constructor() {
     this.context = null;
   }
 
-  init(context: CanvasContextType, pixelRatio: PixelRatio) {
+  init(context: CanvasContextType, useLayerEvents: boolean, pixelRatio: PixelRatio) {
     this.context = context;
+    this.useLayerEvents = useLayerEvents;
     this.initialPixelRatio = pixelRatio;
   }
 

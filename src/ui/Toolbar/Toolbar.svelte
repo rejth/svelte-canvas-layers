@@ -3,45 +3,52 @@
   import SelectIcon from './SelectIcon.svelte';
   import NoteIcon from './NoteIcon.svelte';
   import TextIcon from './TextIcon.svelte';
+  import { Tools, type Tool } from './types';
+  import { toolbarStore } from './store';
 
-  $: tools = [
+  const { tool } = toolbarStore;
+
+  const tools = [
     {
       label: 'Note',
-      type: null,
+      type: Tools.NOTE,
       icon: NoteIcon,
-      hoverText: 'Drag to add new sticker',
-      disabled: false,
+      hoverText: 'Drag to add a new sticker',
+      disabled: true,
     },
     {
       label: 'Text',
-      type: null,
+      type: Tools.TEXT,
       icon: TextIcon,
-      hoverText: 'Drag to add new text area',
+      hoverText: 'Drag to add a new text area',
+      disabled: true,
     },
     {
       label: 'Pan',
-      type: null,
+      type: Tools.PAN,
       icon: PanIcon,
-      hoverText: 'Pan tool',
+      hoverText: 'Panning',
       disabled: false,
     },
     {
       label: 'Select',
-      type: null,
+      type: Tools.SELECT,
       icon: SelectIcon,
-      hoverText: 'Select tool',
+      hoverText: 'Selection',
       disabled: false,
     },
   ];
 
-  const onClick = (type: any) => {};
+  const onClick = (type: Tool) => {
+    toolbarStore.changeTool(type);
+  };
 </script>
 
 <ul class="toolbar" id="toolbar">
-  {#each tools as { label, type, icon, hoverText, ...options }}
+  {#each tools as { type, label, icon, hoverText, disabled }}
     <li>
       <span tabindex="0" role="button" class="tool" on:click={() => onClick(type)} on:keydown={() => onClick(type)}>
-        <span class="icon" class:active={false} class:disabled={options?.disabled} title={hoverText}>
+        <span class="icon" class:active={$tool === type && !disabled} class:disabled title={hoverText}>
           <svelte:component this={icon} />
         </span>
         <span class="text">{label}</span>

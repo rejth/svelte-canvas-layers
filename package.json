@@ -22,12 +22,14 @@
     "*.{css,scss,json,svg,js,cjs,html,md}": "prettier --write --ignore-unknown"
   },
   "dependencies": {
-    "canvas-size": "^2.0.0"
+    "canvas-size": "^2.0.0",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^3.0.1",
     "@tsconfig/svelte": "^5.0.2",
     "@types/canvas-size": "^1.2.2",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^6.13.2",
     "@typescript-eslint/parser": "^6.13.2",
     "eslint": "^8.55.0",

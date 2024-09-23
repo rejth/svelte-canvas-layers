@@ -7,6 +7,7 @@ import {
   type CanvasEvents,
   type LayerEventDispatcher,
   type RegisteredLayerMetadata,
+  type CanvasContextType,
 } from './types';
 import { GeometryManager } from './';
 import type { Renderer } from './Renderer';
@@ -44,6 +45,14 @@ export class RenderManager {
 
     this.render = this.render.bind(this);
     this.redraw = this.redraw.bind(this);
+  }
+
+  getContext(): CanvasContextType | null {
+    return this.renderer.getContext();
+  }
+
+  getRenderer(): Renderer {
+    return this.renderer;
   }
 
   init(layerContainer: HTMLDivElement) {
@@ -116,11 +125,18 @@ export class RenderManager {
     const context = this.renderer.getContext()!;
     const initialPixelRatio = this.renderer.initialPixelRatio!;
     const pixelRatio = this.renderer.pixelRatio!;
+    const useLayerEvents = this.renderer.useLayerEvents!;
 
-    context.save();
+    if (!useLayerEvents) {
+      context.save();
+    }
+
     context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
     this.renderer.clearRectSync(this.renderer.getScaledArea());
-    context.restore();
+
+    if (!useLayerEvents) {
+      context.restore();
+    }
 
     for (const layerId of this.layerSequence) {
       this.layerChangeCallback?.(layerId);
