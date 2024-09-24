@@ -123,15 +123,14 @@ export class RenderManager {
     if (!this.needsRedraw) return;
 
     const context = this.renderer.getContext()!;
-    const initialPixelRatio = this.renderer.initialPixelRatio!;
-    const pixelRatio = this.renderer.pixelRatio!;
+    const options = this.renderer.getCanvasOptions();
     const useLayerEvents = this.renderer.useLayerEvents!;
 
     if (!useLayerEvents) {
       context.save();
     }
 
-    context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    context.setTransform(options.pixelRatio, 0, 0, options.pixelRatio, 0, 0);
     this.renderer.clearRectSync(this.renderer.getScaledArea());
 
     if (!useLayerEvents) {
@@ -140,10 +139,7 @@ export class RenderManager {
 
     for (const layerId of this.layerSequence) {
       this.layerChangeCallback?.(layerId);
-      this.drawers.get(layerId)?.({
-        context,
-        options: { initialPixelRatio, pixelRatio },
-      });
+      this.drawers.get(layerId)?.({ context, options });
     }
 
     this.needsRedraw = false;

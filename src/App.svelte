@@ -3,9 +3,9 @@
   import { v4 as uuid } from 'uuid';
 
   import Canvas from './ui/Canvas.svelte';
-  import ResizableLayer from './ui/ResizableLayer.svelte';
+  import ResizableLayer from './ui/ResizableLayer/ResizableLayer.svelte';
   import Layer from './ui/Layer.svelte';
-  import Background from './ui/Background.svelte';
+  import Background from './ui/BackgroundLayer/Background.svelte';
   import Zoom from './ui/Zoom/Zoom.svelte';
   import UndoRedo from './ui/UndoRedo/UndoRedo.svelte';
   import Toolbar from './ui/Toolbar/Toolbar.svelte';

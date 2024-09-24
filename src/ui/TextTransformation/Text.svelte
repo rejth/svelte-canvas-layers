@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Layer from './Layer.svelte';
-  import { type Point, type RenderProps } from '../lib';
+  import Layer from '../Layer.svelte';
+  import { COLORS, type Point, type RenderProps } from '../../lib';
 
   export let text: string;
   export let pathPoints: (Point & { angle: number })[];
@@ -8,8 +8,8 @@
   $: render = ({ context }: RenderProps) => {
     if (!context) return;
 
-    context.font = '130px Roboto';
-    context.fillStyle = 'blue';
+    context.font = `130px 'Fira Mono', monospace`;
+    context.fillStyle = COLORS.SELECTION;
 
     let overallBoundingBox = {
       xMin: Infinity,
@@ -50,7 +50,7 @@
     const overallWidth = overallBoundingBox.xMax - overallBoundingBox.xMin;
     const overallHeight = overallBoundingBox.yMax - overallBoundingBox.yMin;
 
-    context.strokeStyle = 'red';
+    context.strokeStyle = COLORS.STICKER_ORANGE;
     context.strokeRect(overallBoundingBox.xMin, overallBoundingBox.yMin, overallWidth, overallHeight);
   };
 </script>

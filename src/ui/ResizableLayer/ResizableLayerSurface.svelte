@@ -1,8 +1,8 @@
 <script lang="ts">
   import { getContext } from 'svelte';
 
-  import Layer from './Layer.svelte';
-  import { KEY, type AppContext, type RenderProps, type Bounds, COLORS } from '../lib';
+  import Layer from '../Layer.svelte';
+  import { KEY, type AppContext, type RenderProps, type Bounds, COLORS } from '../../lib';
 
   export let bounds: Bounds;
   export let active: boolean;

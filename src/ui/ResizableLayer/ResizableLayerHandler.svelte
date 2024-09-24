@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Layer from './Layer.svelte';
-  import { COLORS, type RenderProps } from '../lib';
+  import Layer from '../Layer.svelte';
+  import { COLORS, type RenderProps } from '../../lib';
 
   export let x: number;
   export let y: number;

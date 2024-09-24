@@ -26,6 +26,8 @@ export interface HitCanvasRenderingContext2D extends Omit<CanvasRenderingContext
 export type CanvasOptions = {
   initialPixelRatio: PixelRatio;
   pixelRatio: PixelRatio;
+  width: number;
+  height: number;
 };
 
 export type RenderProps = {

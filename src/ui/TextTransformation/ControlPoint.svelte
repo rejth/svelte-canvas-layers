@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Layer from './Layer.svelte';
-  import { type Point, type RenderProps } from '../lib';
+  import Layer from '../Layer.svelte';
+  import { COLORS, type Point, type RenderProps } from '../../lib';
 
   export let point: Point;
   export let active: boolean;
@@ -10,7 +10,7 @@
 
     context.beginPath();
     context.arc(point.x, point.y, 5, 0, Math.PI * 2);
-    context.fillStyle = active ? 'red' : 'blue';
+    context.fillStyle = active ? COLORS.STICKER_ORANGE : COLORS.SELECTION;
     context.fill();
   };
 </script>

@@ -1,6 +1,6 @@
 <script lang="ts">
   import BackgroundLayer from './BackgroundLayer.svelte';
-  import { COLORS, type RenderProps } from '../lib';
+  import { COLORS, type RenderProps } from '../../lib';
 
   const width = 10;
   const height = 10;

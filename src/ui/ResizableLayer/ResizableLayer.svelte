@@ -3,7 +3,7 @@
 
   import Surface from './ResizableLayerSurface.svelte';
   import Handler from './ResizableLayerHandler.svelte';
-  import { type Point, type AppContext, KEY, type Bounds } from '../lib';
+  import { type Point, type AppContext, KEY, type Bounds } from '../../lib';
 
   export let path: Point[] | null = null;
   export let initialBounds: Bounds = { x0: 0, y0: 0, x1: 0, y1: 0 };

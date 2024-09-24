@@ -4,7 +4,7 @@
   import ControlPoint from './ControlPoint.svelte';
   import Curve from './Curve.svelte';
   import Text from './Text.svelte';
-  import { KEY, type AppContext, type Point } from '../lib';
+  import { KEY, type AppContext, type Point } from '../../lib';
 
   export let text: string;
 

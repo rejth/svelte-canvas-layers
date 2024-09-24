@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Layer from './Layer.svelte';
-  import { type Point, type RenderProps } from '../lib';
+  import Layer from '../Layer.svelte';
+  import { COLORS, type Point, type RenderProps } from '../../lib';
 
   export let controlPoints: Point[];
 
@@ -16,7 +16,7 @@
     context.moveTo(start.x, start.y);
     context.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, end.x, end.y);
 
-    context.strokeStyle = 'blue';
+    context.strokeStyle = COLORS.SELECTION;
     context.lineWidth = 2;
     context.stroke();
   };

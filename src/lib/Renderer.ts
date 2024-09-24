@@ -1,4 +1,4 @@
-import type { CanvasContextType, PixelRatio } from './types';
+import type { CanvasContextType, CanvasOptions, PixelRatio, Point, RectDimension } from './types';
 
 interface TransformationMatrix {
   translationX: number;
@@ -36,8 +36,17 @@ export class Renderer {
     this.initialPixelRatio = pixelRatio;
   }
 
-  getContext() {
+  getContext(): CanvasContextType | null {
     return this.context;
+  }
+
+  getCanvasOptions(): CanvasOptions {
+    return {
+      width: this.width!,
+      height: this.height!,
+      initialPixelRatio: this.initialPixelRatio!,
+      pixelRatio: this.pixelRatio!,
+    };
   }
 
   getTransform(): TransformationMatrix {
@@ -58,7 +67,7 @@ export class Renderer {
    * This method has been modified. The original method doesn't take in account current scale.
    * https://math.hws.edu/graphicsbook/c6/s5.html#webgl.5.1
    * */
-  getTransformedPoint(x: number, y: number) {
+  getTransformedPoint(x: number, y: number): Point {
     const transform = this.getTransform();
     const inverseZoom = 1 / (transform.scaleX / transform.initialScale);
     const transformedX = inverseZoom * x - inverseZoom * (transform.translationX / transform.initialScale);
@@ -67,7 +76,7 @@ export class Renderer {
     return { x: transformedX, y: transformedY };
   }
 
-  getScaledArea() {
+  getScaledArea(): RectDimension {
     const transform = this.getTransform();
     const inverseScale = 2 / transform.scaleX < 2 ? 2 : 2 / transform.scaleX;
 
