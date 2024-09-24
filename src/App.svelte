@@ -16,7 +16,7 @@
   import { Tools } from './ui/Toolbar/types';
 
   const { tool } = toolbarStore;
-  $: useLayerEvents = $tool !== Tools.PAN;
+  $: useLayerEvents = $tool === Tools.SELECT;
 
   const random = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
 

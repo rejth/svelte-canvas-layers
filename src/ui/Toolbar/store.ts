@@ -1,8 +1,8 @@
 import { type Writable, writable } from 'svelte/store';
-import type { ShapeType, Tool } from './types';
+import { Tools, type ShapeType, type Tool } from './types';
 
 class ToolbarStore {
-  tool: Writable<Tool> = writable('PAN');
+  tool: Writable<Tool> = writable(Tools.SELECT);
   shapeType: Writable<ShapeType | null> = writable(null);
 
   changeTool(tool: Tool): void {
