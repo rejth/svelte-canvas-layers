@@ -64,9 +64,8 @@
   onMount(() => {
     initContext();
     renderManager.init(layerContainer);
+    return () => renderManager.destroy();
   });
-
-  onDestroy(() => renderManager.destroy());
 
   const initContext = () => {
     if (!canvas) return;
