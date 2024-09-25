@@ -35,6 +35,10 @@ export type RenderProps = {
   options: CanvasOptions;
 };
 
+export type RenderManagerOptions = {
+  useLayerEvents: boolean;
+};
+
 export interface Render {
   (data: RenderProps): void;
 }

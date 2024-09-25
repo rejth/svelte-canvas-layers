@@ -35,7 +35,10 @@ export function mouseWatcherOnTarget<T, E extends keyof HTMLElementEventMap>(
 
   return watch(() =>
     filter(
-      sequence(once(target, 'mousedown'), every(any(on(document, 'mousemove'), on(target, 'mouseup')), allEvents)),
+      sequence(
+        once(target, 'mousedown'),
+        every(any(on(document, 'mousemove'), on(target, 'mouseup')), allEvents),
+      ),
       onlyEvent(event),
     ),
   );

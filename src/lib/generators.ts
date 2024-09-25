@@ -36,7 +36,10 @@ export async function* filter<T>(
   }
 }
 
-export async function* every<T>(asyncIterable: AsyncIterable<T>, predicate: (value: T) => boolean): AsyncGenerator<T> {
+export async function* every<T>(
+  asyncIterable: AsyncIterable<T>,
+  predicate: (value: T) => boolean,
+): AsyncGenerator<T> {
   validateIterable(asyncIterable);
 
   for await (const value of asyncIterable) {
@@ -64,6 +67,8 @@ export async function* take<T>(asyncIterable: AsyncIterable<T>, count: number): 
   }
 }
 
-export function onlyEvent<E extends keyof HTMLElementEventMap>(eventType: E): (event: Event) => boolean {
+export function onlyEvent<E extends keyof HTMLElementEventMap>(
+  eventType: E,
+): (event: Event) => boolean {
   return (event) => event.type === eventType;
 }

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getContext, onDestroy } from 'svelte';
-  import { type Render, type AppContext, KEY } from '../../lib';
+  import { type Render, type AppContext } from 'lib/types';
+  import { KEY } from 'lib/constants';
 
   /**
    * The Background Layer component encapsulates a piece of canvas background rendering logic.

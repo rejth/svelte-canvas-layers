@@ -1,11 +1,12 @@
 <script lang="ts">
+  import Canvas from 'ui/Canvas.svelte';
+
   import Rect from './Rect.svelte';
   import Circle from './Circle.svelte';
   import Blob from './Blob.svelte';
   import Text from './Text.svelte';
   import Tooltip from './Tooltip.svelte';
   import { coords, activeLayer } from './store';
-  import Canvas from '../Canvas.svelte';
 
   const touch = (e: TouchEvent) => {
     e.preventDefault();

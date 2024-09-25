@@ -1,7 +1,7 @@
 import { writable, type Writable } from 'svelte/store';
-import type { CanvasContextType, Point } from '../../lib';
+import type { CanvasContextType, Point } from 'lib/types';
 
-interface ActiveLayer {
+export interface ActiveLayer {
   id: symbol;
   name: string;
 }

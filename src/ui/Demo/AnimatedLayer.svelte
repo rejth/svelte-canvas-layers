@@ -2,9 +2,10 @@
   import { spring, tweened } from 'svelte/motion';
   import { quadInOut as easing } from 'svelte/easing';
 
+  import Layer from 'ui/Layer.svelte';
+  import type { CanvasContextType, RenderProps } from 'lib/types';
+
   import { coords, activeLayer, type Render } from './store';
-  import Layer from '../Layer.svelte';
-  import type { CanvasContextType, RenderProps } from '../../lib';
 
   export let name: string;
   export let render: Render;

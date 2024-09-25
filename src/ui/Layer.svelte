@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getContext, onDestroy, createEventDispatcher, afterUpdate } from 'svelte';
-  import { type Render, type LayerEvents, type AppContext, KEY } from '../lib';
+  import { type Render, type LayerEvents, type AppContext } from 'lib/types';
+  import { KEY } from 'lib/constants';
 
   /**
    * The Layer component encapsulates a piece of canvas rendering logic.

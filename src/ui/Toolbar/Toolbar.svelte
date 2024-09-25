@@ -3,6 +3,7 @@
   import SelectIcon from './SelectIcon.svelte';
   import NoteIcon from './NoteIcon.svelte';
   import TextIcon from './TextIcon.svelte';
+
   import { Tools, type Tool } from './types';
   import { toolbarStore } from './store';
 
@@ -47,8 +48,19 @@
 <ul class="toolbar" id="toolbar">
   {#each tools as { type, label, icon, hoverText, disabled }}
     <li>
-      <span tabindex="0" role="button" class="tool" on:click={() => onClick(type)} on:keydown={() => onClick(type)}>
-        <span class="icon" class:active={$tool === type && !disabled} class:disabled title={hoverText}>
+      <span
+        tabindex="0"
+        role="button"
+        class="tool"
+        on:click={() => onClick(type)}
+        on:keydown={() => onClick(type)}
+      >
+        <span
+          class="icon"
+          class:active={$tool === type && !disabled}
+          class:disabled
+          title={hoverText}
+        >
           <svelte:component this={icon} />
         </span>
         <span class="text">{label}</span>

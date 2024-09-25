@@ -1,6 +1,7 @@
 <script lang="ts">
-  import Layer from '../Layer.svelte';
-  import { COLORS, type Point, type RenderProps } from '../../lib';
+  import Layer from 'ui/Layer.svelte';
+  import { COLORS } from 'lib/constants';
+  import { type Point, type RenderProps } from 'lib/types';
 
   export let controlPoints: Point[];
 

@@ -1,5 +1,5 @@
 <script>
-  import Layer from '../Layer.svelte';
+  import Layer from 'ui/Layer.svelte';
   import { coords, activeLayer } from './store';
 
   $: point = $coords;

@@ -8,6 +8,7 @@ import {
   type LayerEventDispatcher,
   type RegisteredLayerMetadata,
   type CanvasContextType,
+  type RenderManagerOptions,
 } from './types';
 import { GeometryManager } from './';
 import type { Renderer } from './Renderer';
@@ -21,6 +22,7 @@ export class RenderManager {
   layerSequence: LayerId[];
   layerContainer: HTMLDivElement | null;
   layerObserver: MutationObserver | null;
+  useLayerEvents: boolean;
 
   drawers: Map<LayerId, Render>;
   dispatchers: Map<LayerId, LayerEventDispatcher>;
@@ -29,7 +31,7 @@ export class RenderManager {
   animationFrame?: number;
   layerChangeCallback?: (layerId: LayerId) => void;
 
-  constructor(renderer: Renderer) {
+  constructor(renderer: Renderer, options?: RenderManagerOptions) {
     this.renderer = renderer;
     this.geometryManager = new GeometryManager();
 
@@ -38,12 +40,12 @@ export class RenderManager {
     this.layerSequence = [];
     this.layerContainer = null;
     this.layerObserver = null;
+    this.useLayerEvents = options?.useLayerEvents || false;
 
     this.drawers = new Map();
     this.dispatchers = new Map();
     this.needsRedraw = true;
 
-    this.render = this.render.bind(this);
     this.redraw = this.redraw.bind(this);
   }
 
@@ -57,61 +59,61 @@ export class RenderManager {
 
   init(layerContainer: HTMLDivElement) {
     this.layerContainer = layerContainer;
-    this.observeLayerSequence();
-    this.startRenderLoop();
+    this.#observeLayerSequence();
+    this.#startRenderLoop();
   }
 
-  startRenderLoop() {
-    this.render();
-    this.animationFrame = requestAnimationFrame(() => this.startRenderLoop());
+  #startRenderLoop() {
+    this.#render();
+    this.animationFrame = requestAnimationFrame(() => this.#startRenderLoop());
   }
 
-  observeLayerSequence() {
-    this.layerObserver = new MutationObserver(() => this.getLayerSequence());
+  #observeLayerSequence() {
+    this.layerObserver = new MutationObserver(() => this.#getLayerSequence());
     this.layerObserver.observe(this.layerContainer!, { childList: true });
-    this.getLayerSequence();
+    this.#getLayerSequence();
   }
 
-  getLayerSequence() {
+  #getLayerSequence() {
     const layers = <HTMLElement[]>[...this.layerContainer!.children];
     this.layerSequence = layers.map((layer) => +layer.dataset.layerId!);
     this.redraw();
   }
 
   register({ render, dispatcher }: RegisteredLayerMetadata) {
-    this.addDrawer(this.currentLayerId, render);
+    this.#addDrawer(this.currentLayerId, render);
 
     if (dispatcher) {
-      this.addDispatcher(this.currentLayerId, dispatcher);
+      this.#addDispatcher(this.currentLayerId, dispatcher);
     }
 
     this.redraw();
 
     return {
-      unregister: () => this.unregister(this.currentLayerId),
+      unregister: () => this.#unregister(this.currentLayerId),
       layerId: this.currentLayerId++,
     };
   }
 
-  unregister(layerId: LayerId) {
-    this.removeDrawer(layerId);
-    this.removeDispatcher(layerId);
+  #unregister(layerId: LayerId) {
+    this.#removeDrawer(layerId);
+    this.#removeDispatcher(layerId);
     this.redraw();
   }
 
-  addDrawer(layerId: LayerId, render: Render) {
+  #addDrawer(layerId: LayerId, render: Render) {
     this.drawers.set(layerId, render);
   }
 
-  addDispatcher(layerId: LayerId, dispatcher: LayerEventDispatcher) {
+  #addDispatcher(layerId: LayerId, dispatcher: LayerEventDispatcher) {
     this.dispatchers.set(layerId, dispatcher);
   }
 
-  removeDrawer(layerId: LayerId) {
+  #removeDrawer(layerId: LayerId) {
     this.drawers.delete(layerId);
   }
 
-  removeDispatcher(layerId: LayerId) {
+  #removeDispatcher(layerId: LayerId) {
     this.dispatchers.delete(layerId);
   }
 
@@ -119,12 +121,12 @@ export class RenderManager {
    * The main render function which is responsible for drawing, clearing and canvas's transformation matrix adjustment.
    * Renders the canvas only when width, height or pixelRatio change.
    * */
-  render() {
+  #render() {
     if (!this.needsRedraw) return;
 
     const context = this.renderer.getContext()!;
     const options = this.renderer.getCanvasOptions();
-    const useLayerEvents = this.renderer.useLayerEvents!;
+    const useLayerEvents = this.useLayerEvents!;
 
     if (!useLayerEvents) {
       context.save();
@@ -165,11 +167,11 @@ export class RenderManager {
     if (this.activeLayerId === layerId) return;
 
     if (e instanceof MouseEvent) {
-      this.dispatchLayerEvent(this.activeLayerId, {
+      this.#dispatchLayerEvent(this.activeLayerId, {
         originalEvent: new PointerEvent('pointerleave', e),
         ...point,
       });
-      this.dispatchLayerEvent(this.activeLayerId, {
+      this.#dispatchLayerEvent(this.activeLayerId, {
         originalEvent: new MouseEvent('mouseleave', e),
         ...point,
       });
@@ -178,11 +180,11 @@ export class RenderManager {
     this.activeLayerId = layerId;
 
     if (e instanceof MouseEvent) {
-      this.dispatchLayerEvent(this.activeLayerId, {
+      this.#dispatchLayerEvent(this.activeLayerId, {
         originalEvent: new PointerEvent('pointerenter', e),
         ...point,
       });
-      this.dispatchLayerEvent(this.activeLayerId, {
+      this.#dispatchLayerEvent(this.activeLayerId, {
         originalEvent: new MouseEvent('mouseenter', e),
         ...point,
       });
@@ -195,13 +197,13 @@ export class RenderManager {
   dispatchEvent(e: OriginalEvent) {
     if (!this.activeLayerId) return;
     const point = this.geometryManager.calculatePosition(e);
-    this.dispatchLayerEvent(this.activeLayerId, { originalEvent: e, ...point });
+    this.#dispatchLayerEvent(this.activeLayerId, { originalEvent: e, ...point });
   }
 
   /**
    * Dispatches events to the Layer component.
    */
-  dispatchLayerEvent(layerId: LayerId, details: LayerEventDetails) {
+  #dispatchLayerEvent(layerId: LayerId, details: LayerEventDetails) {
     const dispatch = this.dispatchers.get(layerId);
     dispatch?.(<CanvasEvents>details.originalEvent.type, details);
   }

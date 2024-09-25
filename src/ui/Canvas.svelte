@@ -79,7 +79,8 @@
       context = canvas.getContext('2d', settings);
     }
 
-    renderer.init(<CanvasContextType>context, useLayerEvents, devicePixelRatio ?? 2);
+    renderer.init(<CanvasContextType>context, devicePixelRatio ?? 2);
+    renderManager.useLayerEvents = useLayerEvents;
     renderManager.redraw();
   };
 

@@ -24,15 +24,13 @@ export class Renderer {
   height?: number;
   initialPixelRatio?: PixelRatio;
   pixelRatio?: PixelRatio;
-  useLayerEvents?: boolean;
 
   constructor() {
     this.context = null;
   }
 
-  init(context: CanvasContextType, useLayerEvents: boolean, pixelRatio: PixelRatio) {
+  init(context: CanvasContextType, pixelRatio: PixelRatio) {
     this.context = context;
-    this.useLayerEvents = useLayerEvents;
     this.initialPixelRatio = pixelRatio;
   }
 
@@ -70,8 +68,11 @@ export class Renderer {
   getTransformedPoint(x: number, y: number): Point {
     const transform = this.getTransform();
     const inverseZoom = 1 / (transform.scaleX / transform.initialScale);
-    const transformedX = inverseZoom * x - inverseZoom * (transform.translationX / transform.initialScale);
-    const transformedY = inverseZoom * y - inverseZoom * (transform.translationY / transform.initialScale);
+
+    const transformedX =
+      inverseZoom * x - inverseZoom * (transform.translationX / transform.initialScale);
+    const transformedY =
+      inverseZoom * y - inverseZoom * (transform.translationY / transform.initialScale);
 
     return { x: transformedX, y: transformedY };
   }
@@ -102,13 +103,5 @@ export class Renderer {
 
   clearRectSync({ x, y, width, height }: ClearRectOptions) {
     this.context!.clearRect(x, y, width, height);
-  }
-
-  canvasScaleToPercentage(scale: number): number {
-    return Math.max(10, Math.min(Math.ceil((scale * 200) / 10), 200));
-  }
-
-  zoomPercentageToScale(percentage: number): number {
-    return (percentage * 10) / 200;
   }
 }

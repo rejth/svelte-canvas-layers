@@ -1,10 +1,12 @@
 <script lang="ts">
   import { getContext } from 'svelte';
 
+  import { type AppContext, type Point } from 'lib/types';
+  import { KEY } from 'lib/constants';
+
   import ControlPoint from './ControlPoint.svelte';
   import Curve from './Curve.svelte';
   import Text from './Text.svelte';
-  import { KEY, type AppContext, type Point } from '../../lib';
 
   export let text: string;
 
@@ -93,7 +95,11 @@
   $: pathPoints = getPathPoints(controlPoints, text.length);
 </script>
 
-<svelte:body use:cursor={active ? 'pointer' : 'auto'} on:mousemove={onMouseMove} on:mouseup={onMouseUp} />
+<svelte:body
+  use:cursor={active ? 'pointer' : 'auto'}
+  on:mousemove={onMouseMove}
+  on:mouseup={onMouseUp}
+/>
 
 <Text {text} {pathPoints} />
 <Curve {controlPoints} />

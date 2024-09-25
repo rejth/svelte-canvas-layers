@@ -1,6 +1,7 @@
 <script lang="ts">
-  import Layer from '../Layer.svelte';
-  import { COLORS, type Point, type RenderProps } from '../../lib';
+  import Layer from 'ui/Layer.svelte';
+  import { COLORS } from 'lib/constants';
+  import { type Point, type RenderProps } from 'lib/types';
 
   export let text: string;
   export let pathPoints: (Point & { angle: number })[];
@@ -39,8 +40,14 @@
       // Update overall bounding box
       overallBoundingBox.xMin = Math.min(overallBoundingBox.xMin, boundingBox.x);
       overallBoundingBox.yMin = Math.min(overallBoundingBox.yMin, boundingBox.y);
-      overallBoundingBox.xMax = Math.max(overallBoundingBox.xMax, boundingBox.x + boundingBox.width);
-      overallBoundingBox.yMax = Math.max(overallBoundingBox.yMax, boundingBox.y + boundingBox.height);
+      overallBoundingBox.xMax = Math.max(
+        overallBoundingBox.xMax,
+        boundingBox.x + boundingBox.width,
+      );
+      overallBoundingBox.yMax = Math.max(
+        overallBoundingBox.yMax,
+        boundingBox.y + boundingBox.height,
+      );
 
       context.fillText(char, 0, 0);
       context.restore();
@@ -51,7 +58,12 @@
     const overallHeight = overallBoundingBox.yMax - overallBoundingBox.yMin;
 
     context.strokeStyle = COLORS.STICKER_ORANGE;
-    context.strokeRect(overallBoundingBox.xMin, overallBoundingBox.yMin, overallWidth, overallHeight);
+    context.strokeRect(
+      overallBoundingBox.xMin,
+      overallBoundingBox.yMin,
+      overallWidth,
+      overallHeight,
+    );
   };
 </script>
 

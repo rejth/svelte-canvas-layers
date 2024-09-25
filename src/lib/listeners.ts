@@ -1,6 +1,9 @@
 export type Target = (Window & typeof globalThis) | Document | HTMLElement;
 
-export function on<E extends keyof HTMLElementEventMap>(target: Target, eventType: E): AsyncIterableIterator<Event> {
+export function on<E extends keyof HTMLElementEventMap>(
+  target: Target,
+  eventType: E,
+): AsyncIterableIterator<Event> {
   if (!target) throw new Error('There is no such event target in DOM');
 
   return {
@@ -18,7 +21,10 @@ export function on<E extends keyof HTMLElementEventMap>(target: Target, eventTyp
   };
 }
 
-export function once<E extends keyof HTMLElementEventMap>(target: Target, eventType: E): AsyncIterableIterator<Event> {
+export function once<E extends keyof HTMLElementEventMap>(
+  target: Target,
+  eventType: E,
+): AsyncIterableIterator<Event> {
   if (!target) throw new Error('There is no such event target in DOM');
   let isEventFired = false;
 

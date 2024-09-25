@@ -1,12 +1,20 @@
 <script lang="ts">
+  import { type RenderProps } from 'lib/types';
   import BackgroundLayer from './BackgroundLayer.svelte';
-  import { COLORS, type RenderProps } from '../../lib';
 
-  const width = 10;
-  const height = 10;
-  const radius = 0.5;
+  interface BackgroundPatternRendererData {
+    context: OffscreenCanvasRenderingContext2D;
+  }
 
-  $: render = ({ context, options }: RenderProps) => {
+  interface BackgroundPatternRenderer {
+    (data: BackgroundPatternRendererData): void;
+  }
+
+  export let width: number;
+  export let height: number;
+  export let render: BackgroundPatternRenderer;
+
+  $: _render = ({ context, options }: RenderProps) => {
     if (!context) return;
 
     const { initialPixelRatio, pixelRatio } = options;
@@ -19,16 +27,20 @@
     const offscreenContext = offscreenCanvas.getContext('2d')!;
     offscreenContext.scale(pixelRatio, pixelRatio);
 
-    offscreenContext.beginPath();
-    offscreenContext.fillStyle = COLORS.GRID;
-    offscreenContext.arc(1, 1, radius, 0, 2 * Math.PI);
-    offscreenContext.fill();
+    render({ context: offscreenContext });
 
     const pattern = context.createPattern(offscreenCanvas, 'repeat');
     if (!pattern) return;
 
     context.save();
-    context.setTransform(initialPixelRatio, transform.b, transform.c, initialPixelRatio, transform.e, transform.f);
+    context.setTransform(
+      initialPixelRatio,
+      transform.b,
+      transform.c,
+      initialPixelRatio,
+      transform.e,
+      transform.f,
+    );
     context.fillStyle = pattern;
     context.fillRect(
       -transform.e / initialPixelRatio,
@@ -40,4 +52,4 @@
   };
 </script>
 
-<BackgroundLayer {render} />
+<BackgroundLayer render={_render} />

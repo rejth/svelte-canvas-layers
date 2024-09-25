@@ -21,7 +21,12 @@
     context.fillText(text, width / 2, height / 2 + offset);
 
     const { width: w } = context.measureText(text);
-    const rect = { x: width / 2 - w / 2, y: height / 2 - size / 2 + offset, width: w, height: size };
+    const rect = {
+      x: width / 2 - w / 2,
+      y: height / 2 - size / 2 + offset,
+      width: w,
+      height: size,
+    };
 
     context.globalAlpha = 0;
     context.fillRect(rect.x, rect.y, rect.width, rect.height);
