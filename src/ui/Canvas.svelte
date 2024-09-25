@@ -66,15 +66,14 @@
 
   onMount(() => {
     initContext();
+    renderer.initialPixelRatio = devicePixelRatio ?? 2;
     renderManager.init(layerContainer);
     return () => renderManager.destroy();
   });
 
   const initContext = () => {
     if (!canvas) return;
-
     let context: CanvasContextType | null = null;
-    const initialPixelRatio = devicePixelRatio ?? 2;
 
     if (useLayerEvents) {
       context = createHitCanvas(canvas, settings);
@@ -83,7 +82,7 @@
       context = canvas.getContext('2d', settings);
     }
 
-    renderer.init(context, initialPixelRatio);
+    renderer.init(context);
     viewport.init(context);
     renderManager.useLayerEvents = useLayerEvents;
     renderManager.redraw();
