@@ -13,12 +13,12 @@
   import { toolbarStore } from 'ui/Toolbar/store';
 
   import { COLORS_ARRAY, CURSORS } from 'lib/constants';
-  import { ViewPort } from 'lib/ViewPort';
+  import { Viewport } from 'lib/Viewport';
 
   const { tool } = toolbarStore;
   $: useLayerEvents = $tool === Tools.SELECT;
 
-  const viewPort = new ViewPort();
+  let viewport: Viewport;
   const random = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
 
   let canvasComponent: Canvas;
@@ -27,9 +27,28 @@
     .map(() => ({ id: uuid(), value: COLORS_ARRAY[random(0, 10)] }));
 
   onMount(() => {
-    const renderManager = canvasComponent.getRenderManager();
-    viewPort.init(renderManager);
+    viewport = canvasComponent.getViewport();
   });
+
+  const onMouseDown = (e: MouseEvent) => {
+    if (useLayerEvents) return;
+    viewport.onMouseDown(e);
+  };
+
+  const onMouseUp = (e: MouseEvent) => {
+    if (useLayerEvents) return;
+    viewport.onMouseUp(e);
+  };
+
+  const onMouseMove = (e: MouseEvent) => {
+    if (useLayerEvents) return;
+    viewport.onMouseMove(e);
+  };
+
+  const onWheel = (e: WheelEvent) => {
+    if (useLayerEvents) return;
+    viewport.onWheel(e);
+  };
 </script>
 
 <main>
@@ -40,10 +59,10 @@
     height={window.innerHeight}
     style={useLayerEvents ? '' : `cursor: ${CURSORS.HAND}`}
     bind:this={canvasComponent}
-    on:mousedown={viewPort.onMouseDown}
-    on:mousemove={viewPort.onMouseMove}
-    on:mouseup={viewPort.onMouseUp}
-    on:wheel={viewPort.onWheel}
+    on:mousedown={onMouseDown}
+    on:mousemove={onMouseMove}
+    on:mouseup={onMouseUp}
+    on:wheel={onWheel}
   >
     <BackgroundPatternLayer
       width={10}

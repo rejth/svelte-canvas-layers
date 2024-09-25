@@ -29,7 +29,7 @@ export class Renderer {
     this.context = null;
   }
 
-  init(context: CanvasContextType, pixelRatio: PixelRatio) {
+  init(context: CanvasContextType | null, pixelRatio: PixelRatio) {
     this.context = context;
     this.initialPixelRatio = pixelRatio;
   }

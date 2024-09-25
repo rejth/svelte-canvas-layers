@@ -12,6 +12,7 @@
     type ResizeEvent,
   } from '../lib';
   import { Renderer } from '../lib/Renderer';
+  import { Viewport } from 'lib/Viewport';
 
   /**
    * When unset, the canvas will use its clientWidth property.
@@ -45,6 +46,7 @@
   export let style = '';
 
   export const getRenderManager = () => renderManager;
+  export const getViewport = () => viewport;
   export const getCanvasElement = (): HTMLCanvasElement => canvas;
   export const getCanvasContext = (): CanvasContextType | null => renderer.context;
 
@@ -57,6 +59,7 @@
 
   const renderer = new Renderer();
   const renderManager = new RenderManager(renderer);
+  const viewport = new Viewport(renderManager);
   const dispatch = createEventDispatcher<ResizeEvent>();
 
   setContext<AppContext>(KEY, { renderManager });
@@ -69,16 +72,19 @@
 
   const initContext = () => {
     if (!canvas) return;
+
     let context: CanvasContextType | null = null;
+    const initialPixelRatio = devicePixelRatio ?? 2;
 
     if (useLayerEvents) {
       context = createHitCanvas(canvas, settings);
-      renderManager.onLayerChange((<HitCanvasRenderingContext2D>context).setActiveLayerId);
+      renderManager.onLayerChange(context.setActiveLayerId);
     } else {
       context = canvas.getContext('2d', settings);
     }
 
-    renderer.init(<CanvasContextType>context, devicePixelRatio ?? 2);
+    renderer.init(context, initialPixelRatio);
+    viewport.init(context);
     renderManager.useLayerEvents = useLayerEvents;
     renderManager.redraw();
   };

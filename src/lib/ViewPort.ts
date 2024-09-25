@@ -1,8 +1,8 @@
 import type { Renderer } from './Renderer';
 import type { RenderManager } from './RenderManager';
-import type { CanvasContextType, Point, Render } from './types';
+import type { CanvasContextType, Point } from './types';
 
-export class ViewPort {
+export class Viewport {
   context: CanvasContextType | null;
   renderer: Renderer | null;
   renderManager: RenderManager | null;
@@ -12,10 +12,11 @@ export class ViewPort {
   dragStartPosition: Point;
   isDragging = false;
 
-  constructor() {
+  constructor(renderManager: RenderManager) {
     this.context = null;
-    this.renderer = null;
-    this.renderManager = null;
+    this.renderManager = renderManager;
+    this.renderer = renderManager.getRenderer();
+
     this.dragStartPosition = { x: 0, y: 0 };
     this.currentTransformedCursor = { x: 0, y: 0 };
     this.currentPosition = { x: 0, y: 0 };
@@ -26,25 +27,21 @@ export class ViewPort {
     this.onWheel = this.onWheel.bind(this);
   }
 
-  init(renderManager: RenderManager) {
-    this.renderManager = renderManager;
-    this.renderer = renderManager.getRenderer();
-    this.context = renderManager.getContext();
+  init(context: CanvasContextType | null) {
+    this.context = context;
   }
 
   onMouseDown(e: MouseEvent) {
-    if (this.renderManager!.useLayerEvents) return;
     this.isDragging = true;
     this.dragStartPosition = this.renderer!.getTransformedPoint(e.pageX, e.pageY);
   }
 
   onMouseUp(_e: MouseEvent) {
-    if (this.renderManager!.useLayerEvents) return;
     this.isDragging = false;
   }
 
   onMouseMove(e: MouseEvent) {
-    if (!this.context || !this.isDragging || this.renderManager!.useLayerEvents) return;
+    if (!this.context || !this.isDragging) return;
 
     const renderManager = this.renderManager!;
     const renderer = this.renderer!;
@@ -60,7 +57,7 @@ export class ViewPort {
   }
 
   onWheel(e: WheelEvent) {
-    if (!this.context || this.renderManager!.useLayerEvents) return;
+    if (!this.context) return;
 
     const renderer = this.renderer!;
 
