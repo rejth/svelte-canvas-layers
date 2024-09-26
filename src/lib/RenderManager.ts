@@ -8,7 +8,6 @@ import {
   type LayerEventDispatcher,
   type RegisteredLayerMetadata,
   type CanvasContextType,
-  type RenderManagerOptions,
 } from './types';
 import { GeometryManager } from './';
 import type { Renderer } from './Renderer';
@@ -22,7 +21,6 @@ export class RenderManager {
   layerSequence: LayerId[];
   layerContainer: HTMLDivElement | null;
   layerObserver: MutationObserver | null;
-  useLayerEvents: boolean;
 
   drawers: Map<LayerId, Render>;
   dispatchers: Map<LayerId, LayerEventDispatcher>;
@@ -31,7 +29,7 @@ export class RenderManager {
   animationFrame?: number;
   layerChangeCallback?: (layerId: LayerId) => void;
 
-  constructor(renderer: Renderer, options?: RenderManagerOptions) {
+  constructor(renderer: Renderer) {
     this.renderer = renderer;
     this.geometryManager = new GeometryManager();
 
@@ -40,7 +38,6 @@ export class RenderManager {
     this.layerSequence = [];
     this.layerContainer = null;
     this.layerObserver = null;
-    this.useLayerEvents = options?.useLayerEvents || false;
 
     this.drawers = new Map();
     this.dispatchers = new Map();
@@ -57,7 +54,7 @@ export class RenderManager {
     return this.renderer;
   }
 
-  init(layerContainer: HTMLDivElement) {
+  run(layerContainer: HTMLDivElement) {
     this.layerContainer = layerContainer;
     this.#observeLayerSequence();
     this.#startRenderLoop();
@@ -126,18 +123,8 @@ export class RenderManager {
 
     const context = this.renderer.getContext()!;
     const options = this.renderer.getCanvasOptions();
-    const useLayerEvents = this.useLayerEvents!;
 
-    if (!useLayerEvents) {
-      context.save();
-    }
-
-    context.setTransform(options.pixelRatio, 0, 0, options.pixelRatio, 0, 0);
     this.renderer.clearRectSync(this.renderer.getScaledArea());
-
-    if (!useLayerEvents) {
-      context.restore();
-    }
 
     for (const layerId of this.layerSequence) {
       this.layerChangeCallback?.(layerId);
@@ -161,7 +148,7 @@ export class RenderManager {
 
   findActiveLayer(e: OriginalEvent) {
     const context = this.renderer.getContext();
-    const point = this.geometryManager.calculatePosition(e, this.renderer.pixelRatio);
+    const point = this.geometryManager.calculatePosition(e);
     const layerId = (<HitCanvasRenderingContext2D>context).getLayerIdAt(point.x, point.y);
 
     if (this.activeLayerId === layerId) return;

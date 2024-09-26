@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { setContext, onMount, createEventDispatcher, onDestroy } from 'svelte';
+  import { setContext, onMount, createEventDispatcher } from 'svelte';
   import {
-    type HitCanvasRenderingContext2D,
     type OriginalEvent,
     type AppContext,
     RenderManager,
@@ -10,6 +9,7 @@
     createHitCanvas,
     type CanvasContextType,
     type ResizeEvent,
+    type PixelRatio,
   } from '../lib';
   import { Renderer } from '../lib/Renderer';
   import { Viewport } from 'lib/Viewport';
@@ -27,7 +27,7 @@
    * If pixelRatio is set to "auto", the canvas-size library is used to automatically calculate the maximum supported pixel ratio based on the browser and canvas size.
    * This can be particularly useful when rendering large canvases on iOS Safari (https://pqina.nl/blog/canvas-area-exceeds-the-maximum-limit/)
    */
-  export let pixelRatio: 'auto' | number | null = null;
+  export let pixelRatio: 'auto' | null = 'auto';
   /**
    * User settings for canvas rendering context
    * For example, consider using "willReadFrequently: true" property if you are going to use frequent read-back operations via getImageData().
@@ -65,28 +65,26 @@
   setContext<AppContext>(KEY, { renderManager });
 
   onMount(() => {
-    initContext();
-    renderer.initialPixelRatio = devicePixelRatio ?? 2;
-    renderManager.init(layerContainer);
-    return () => renderManager.destroy();
-  });
+    const context = createHitCanvas(canvas, settings);
+    let initialScale: PixelRatio;
 
-  const initContext = () => {
-    if (!canvas) return;
-    let context: CanvasContextType | null = null;
-
-    if (useLayerEvents) {
-      context = createHitCanvas(canvas, settings);
-      renderManager.onLayerChange(context.setActiveLayerId);
+    if (devicePixelRatio && pixelRatio === 'auto') {
+      initialScale = getMaxPixelRatio(window.innerWidth, window.innerHeight, devicePixelRatio);
     } else {
-      context = canvas.getContext('2d', settings);
+      initialScale = devicePixelRatio ?? 2;
     }
 
-    renderer.init(context);
+    canvas.width = Math.floor(window.innerWidth * initialScale);
+    canvas.height = Math.floor(window.innerHeight * initialScale);
+
     viewport.init(context);
-    renderManager.useLayerEvents = useLayerEvents;
-    renderManager.redraw();
-  };
+    renderer.init(context, initialScale);
+    context.scale(initialScale, initialScale);
+
+    renderManager.onLayerChange(context.setActiveLayerId);
+    renderManager.run(layerContainer);
+    return () => renderManager.destroy();
+  });
 
   const resize = (node: HTMLElement) => {
     const canvasObserver = new ResizeObserver(([{ contentRect }]) => {
@@ -114,8 +112,6 @@
     renderManager.dispatchEvent(e);
   };
 
-  $: useLayerEvents, initContext();
-
   $: _width = width ?? canvasWidth ?? 0;
   $: _height = height ?? canvasHeight ?? 0;
 
@@ -140,7 +136,7 @@
         canvas.style.width = `${width}px`;
         canvas.style.height = `${height}px`;
    */
-  $: _pixelRatio = maxPixelRatio ?? <number>pixelRatio ?? devicePixelRatio ?? 2;
+  $: _pixelRatio = maxPixelRatio ?? devicePixelRatio ?? 2;
 
   /**
    * Update app state each time _width, _height or _pixelRatio values of the canvas change
@@ -176,8 +172,6 @@
   bind:clientWidth={canvasWidth}
   bind:clientHeight={canvasHeight}
   class={className}
-  width={Math.floor(_width * _pixelRatio)}
-  height={Math.floor(_height * _pixelRatio)}
   style:width={width ? `${width}px` : '100%'}
   style:height={height ? `${height}px` : '100%'}
   {style}
