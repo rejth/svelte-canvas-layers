@@ -69,13 +69,13 @@
     let initialScale: PixelRatio;
 
     if (devicePixelRatio && pixelRatio === 'auto') {
-      initialScale = getMaxPixelRatio(window.innerWidth, window.innerHeight, devicePixelRatio);
+      initialScale = getMaxPixelRatio(_width, _height, devicePixelRatio);
     } else {
       initialScale = devicePixelRatio ?? 2;
     }
 
-    canvas.width = Math.floor(window.innerWidth * initialScale);
-    canvas.height = Math.floor(window.innerHeight * initialScale);
+    canvas.width = Math.floor(_width * initialScale);
+    canvas.height = Math.floor(_height * initialScale);
 
     viewport.init(context);
     renderer.init(context, initialScale);
@@ -148,7 +148,7 @@
   /**
    * Adjust canvas's transformation matrix to scale drawings according to the width, height values or device's pixel ratio
    */
-  $: _width, _height, _pixelRatio, renderManager.redraw();
+  $: canvas?.width, canvas?.height, _width, _height, _pixelRatio, renderManager.redraw();
 
   /**
    * Dispatch "resize" event to the parent component each time _width, _height or _pixelRatio values of the canvas change
