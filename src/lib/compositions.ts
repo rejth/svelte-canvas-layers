@@ -1,5 +1,5 @@
 import { on, once } from './listeners';
-import { filter, any, every, sequence, watch, onlyEvent } from './generators';
+import { filter, any, every, sequence, watch, onlyEvent } from './async-generators';
 
 type Target = (Window & typeof globalThis) | Document | HTMLElement;
 
