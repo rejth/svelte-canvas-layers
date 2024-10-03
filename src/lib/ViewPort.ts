@@ -53,7 +53,7 @@ export class Viewport {
       this.currentTransformedCursor.y - this.dragStartPosition.y,
     );
 
-    renderManager.redraw();
+    renderManager.searchVisibleLayers();
   }
 
   onWheel(e: WheelEvent) {
@@ -91,7 +91,7 @@ export class Viewport {
       this.currentTransformedCursor.y - this.dragStartPosition.y,
     );
 
-    renderManager.redraw();
+    renderManager.searchVisibleLayers();
   }
 
   #zoom(e: WheelEvent) {
@@ -109,6 +109,9 @@ export class Viewport {
 
     const zoom = e.deltaY < 0 ? 1.1 : 0.9;
     const transform = renderer.getTransform();
+
+    if (!transform) return;
+
     const nextZoomPercentage = this.#canvasScaleToPercentage(transform.scaleX * zoom);
     const scale = this.#zoomPercentageToScale(nextZoomPercentage) / transform.scaleX;
 
@@ -116,7 +119,7 @@ export class Viewport {
       this.context.translate(this.currentTransformedCursor.x, this.currentTransformedCursor.y);
       renderer.scale(scale, scale);
       this.context.translate(-this.currentTransformedCursor.x, -this.currentTransformedCursor.y);
-      renderManager.redraw();
+      renderManager.searchVisibleLayers();
     }
   }
 

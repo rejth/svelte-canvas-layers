@@ -1,16 +1,36 @@
 <script lang="ts">
-  import Layer from '../Layer.svelte';
-  import { COLORS, type RenderProps } from '../../lib';
+  import { getContext } from 'svelte';
+
+  import Layer from 'ui/Layer.svelte';
+  import { type AppContext, type RenderProps } from 'lib/types';
+  import { COLORS, KEY } from 'lib/constants';
 
   export let x: number;
   export let y: number;
   export let active: boolean;
 
+  const { renderManager } = getContext<AppContext>(KEY);
+  const { geometryManager } = renderManager;
+
+  $: bounds = { x0: x - 6, y0: y - 6, x1: x + 6, y1: y + 6 };
+
   $: render = ({ context }: RenderProps) => {
     if (!context) return;
+
+    const { x, y, width, height } = geometryManager.getRectDimension(bounds);
+
     context.fillStyle = active ? COLORS.STICKER_BLUE : COLORS.SELECTION;
-    context.fillRect(x - 6, y - 6, 12, 12);
+    context.fillRect(x, y, width, height);
   };
 </script>
 
-<Layer {render} on:mouseenter on:mouseleave on:mousedown on:mouseup on:touchstart on:touchend />
+<Layer
+  {bounds}
+  {render}
+  on:mouseenter
+  on:mouseleave
+  on:mousedown
+  on:mouseup
+  on:touchstart
+  on:touchend
+/>

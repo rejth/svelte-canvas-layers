@@ -1,8 +1,9 @@
 <script lang="ts">
   import { getContext } from 'svelte';
 
-  import Layer from '../Layer.svelte';
-  import { KEY, type AppContext, type RenderProps, type Bounds, COLORS } from '../../lib';
+  import Layer from 'ui/Layer.svelte';
+  import { type AppContext, type RenderProps, type Bounds } from 'lib/types';
+  import { COLORS, KEY } from 'lib/constants';
 
   export let bounds: Bounds;
   export let active: boolean;
@@ -27,4 +28,13 @@
   };
 </script>
 
-<Layer {render} on:mouseenter on:mouseleave on:mousedown on:mouseup on:touchstart on:touchend />
+<Layer
+  {bounds}
+  {render}
+  on:mouseenter
+  on:mouseleave
+  on:mousedown
+  on:mouseup
+  on:touchstart
+  on:touchend
+/>

@@ -47,8 +47,10 @@ export class Renderer {
     };
   }
 
-  getTransform(): TransformationMatrix {
-    const transform = this.context!.getTransform();
+  getTransform(): TransformationMatrix | null {
+    if (!this.context) return null;
+    const transform = this.context.getTransform();
+
     return {
       scaleX: transform.a,
       skewY: transform.b,
@@ -67,6 +69,8 @@ export class Renderer {
    * */
   getTransformedPoint(x: number, y: number): Point {
     const transform = this.getTransform();
+    if (!transform) return { x, y };
+
     const inverseZoom = 1 / (transform.scaleX / transform.initialScale);
 
     const transformedX =
@@ -77,8 +81,10 @@ export class Renderer {
     return { x: transformedX, y: transformedY };
   }
 
-  getScaledArea(): RectDimension {
+  getTransformedArea(): RectDimension | null {
     const transform = this.getTransform();
+    if (!transform) return null;
+
     const inverseScale = 2 / transform.scaleX < 2 ? 2 : 2 / transform.scaleX;
 
     return {
@@ -90,8 +96,11 @@ export class Renderer {
   }
 
   scale(scaleX: number, scaleY: number) {
-    this.context!.scale(scaleX, scaleY);
-    this.pixelRatio = this.getTransform().scaleX;
+    const transform = this.getTransform();
+    if (!this.context || !transform) return;
+
+    this.context.scale(scaleX, scaleY);
+    this.pixelRatio = transform.scaleX;
   }
 
   clearRect({ x, y, width, height }: ClearRectOptions, callBack: () => void) {

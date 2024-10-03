@@ -1,3 +1,4 @@
+import type { BBox } from 'rbush';
 import type { OriginalEvent, Bounds, Point, RectDimension, PixelRatio } from './types';
 
 export class GeometryManager {
@@ -40,6 +41,25 @@ export class GeometryManager {
       y: Math.min(y0, y1),
       width: Math.abs(x0 - x1),
       height: Math.abs(y0 - y1),
+    };
+  }
+
+  getBBox(bounds: Bounds = { x0: 0, y0: 0, x1: 0, y1: 0 }): BBox {
+    const { x0, y0, x1, y1 } = bounds;
+    return {
+      minX: Math.min(x0, x1),
+      minY: Math.min(y0, y1),
+      maxX: Math.max(x0, x1),
+      maxY: Math.max(y0, y1),
+    };
+  }
+
+  convertRectToBBox(rect: DOMRect | RectDimension): BBox {
+    return {
+      minX: rect.x,
+      minY: rect.y,
+      maxX: rect.x + rect.width,
+      maxY: rect.y + rect.height,
     };
   }
 

@@ -1,9 +1,11 @@
 <script lang="ts">
   import { getContext } from 'svelte';
 
+  import { KEY } from 'lib/constants';
+  import { type Point, type AppContext, type Bounds } from 'lib/types';
+
   import Surface from './ResizableLayerSurface.svelte';
   import Handler from './ResizableLayerHandler.svelte';
-  import { type Point, type AppContext, KEY, type Bounds } from '../../lib';
 
   export let path: Point[] | null = null;
   export let initialBounds: Bounds = { x0: 0, y0: 0, x1: 0, y1: 0 };
@@ -22,7 +24,9 @@
 
   $: bounds = { x0, y0, x1, y1 };
   $: active = Boolean(draggedHandler || hoveredHandler);
-  $: sortedHandlers = HANDLERS.sort((a, b) => (a === hoveredHandler ? 1 : b === hoveredHandler ? -1 : 0));
+  $: sortedHandlers = HANDLERS.sort((a, b) =>
+    a === hoveredHandler ? 1 : b === hoveredHandler ? -1 : 0,
+  );
 
   $: getHandlerPosition = (handler: number): Point => {
     return {

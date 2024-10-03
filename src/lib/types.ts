@@ -1,5 +1,6 @@
 import type { createEventDispatcher } from 'svelte';
 import type { RenderManager } from './index';
+import type { BBox } from 'rbush';
 
 export type AppContext = {
   renderManager: RenderManager;
@@ -13,6 +14,10 @@ export type Point = Pick<DOMRect, 'x' | 'y'>;
 export type Dimension = Pick<DOMRect, 'width' | 'height'>;
 export type RectPosition = Pick<DOMRect, 'top' | 'bottom' | 'left' | 'right'>;
 export type RectDimension = Point & Dimension;
+
+export interface LayerBBox extends BBox {
+  layerId: LayerId;
+}
 
 export type PixelRatio = number;
 export type Bounds = { x0: number; y0: number; x1: number; y1: number };
@@ -46,6 +51,7 @@ export interface Render {
 export interface RegisteredLayerMetadata {
   render: Render;
   dispatcher?: LayerEventDispatcher;
+  bounds?: Bounds;
 }
 
 export interface RegisterLayer {

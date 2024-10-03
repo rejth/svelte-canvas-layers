@@ -12,22 +12,37 @@
   import { Tools } from 'ui/Toolbar/types';
   import { toolbarStore } from 'ui/Toolbar/store';
 
-  import { COLORS_ARRAY, CURSORS } from 'lib/constants';
-  import { Viewport } from 'lib/Viewport';
+  import { COLORS, CURSORS } from 'lib/constants';
+  import { Viewport } from 'lib/index';
+
+  let canvasComponent: Canvas;
+  let viewport: Viewport;
+
+  onMount(() => {
+    viewport = canvasComponent.getViewport();
+  });
 
   const { tool } = toolbarStore;
   $: useLayerEvents = $tool === Tools.SELECT;
 
-  let viewport: Viewport;
-  const random = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+  let visibleLayers = new Array(3).fill(null).map((_, i) => {
+    const minPos = (i + 1) * 85;
+    const maxPos = minPos + 338;
+    return {
+      id: uuid(),
+      color: COLORS.STICKER_YELLOW,
+      initialBounds: { x0: minPos, y0: minPos, x1: maxPos, y1: maxPos },
+    };
+  });
 
-  let canvasComponent: Canvas;
-  let colors = new Array(1)
-    .fill(null)
-    .map(() => ({ id: uuid(), value: COLORS_ARRAY[random(0, 10)] }));
-
-  onMount(() => {
-    viewport = canvasComponent.getViewport();
+  let inVisibleLayers = new Array(3).fill(null).map((_, i) => {
+    const minPos = (i + 1) * 985;
+    const maxPos = minPos + 338;
+    return {
+      id: uuid(),
+      color: COLORS.STICKER_DARK_GREEN,
+      initialBounds: { x0: minPos, y0: minPos, x1: maxPos, y1: maxPos },
+    };
   });
 
   const onMouseDown = (e: MouseEvent) => {
@@ -74,14 +89,28 @@
         context.fill();
       }}
     />
-    {#each colors as { id, value }, i (id)}
-      {@const c = (i + 1) * 85}
-      <ResizableLayer initialBounds={{ x0: c, y0: c, x1: c + 338, y1: c + 338 }} let:bounds>
+    {#each visibleLayers as { id, color, initialBounds }, i (id)}
+      <ResizableLayer {initialBounds} let:bounds>
         <Layer
+          {bounds}
           render={({ context }) => {
             const { x0, y0, x1, y1 } = bounds;
             context.globalAlpha = 0.9;
-            context.fillStyle = value;
+            context.fillStyle = color;
+            context.fillRect(x0, y0, x1 - x0, y1 - y0);
+            context.globalAlpha = 1;
+          }}
+        />
+      </ResizableLayer>
+    {/each}
+    {#each inVisibleLayers as { id, color, initialBounds }, i (id)}
+      <ResizableLayer {initialBounds} let:bounds>
+        <Layer
+          {bounds}
+          render={({ context }) => {
+            const { x0, y0, x1, y1 } = bounds;
+            context.globalAlpha = 0.9;
+            context.fillStyle = color;
             context.fillRect(x0, y0, x1 - x0, y1 - y0);
             context.globalAlpha = 1;
           }}

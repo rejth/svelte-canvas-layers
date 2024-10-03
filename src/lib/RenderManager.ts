@@ -1,3 +1,4 @@
+import RBush, { type BBox } from 'rbush';
 import {
   type HitCanvasRenderingContext2D,
   type OriginalEvent,
@@ -8,6 +9,7 @@ import {
   type LayerEventDispatcher,
   type RegisteredLayerMetadata,
   type CanvasContextType,
+  type LayerBBox,
 } from './types';
 import { GeometryManager } from './';
 import type { Renderer } from './Renderer';
@@ -22,7 +24,10 @@ export class RenderManager {
   layerContainer: HTMLDivElement | null;
   layerObserver: MutationObserver | null;
 
-  drawers: Map<LayerId, Render>;
+  tree: RBush<LayerBBox>;
+  visibleLayers: Array<LayerBBox>;
+  visibleLayerIds: Array<LayerId>;
+  drawers: Map<LayerId, { layerBBox: LayerBBox; render: Render }>;
   dispatchers: Map<LayerId, LayerEventDispatcher>;
   needsRedraw: boolean;
 
@@ -39,6 +44,9 @@ export class RenderManager {
     this.layerContainer = null;
     this.layerObserver = null;
 
+    this.tree = new RBush();
+    this.visibleLayers = [];
+    this.visibleLayerIds = [];
     this.drawers = new Map();
     this.dispatchers = new Map();
     this.needsRedraw = true;
@@ -57,6 +65,18 @@ export class RenderManager {
   run(layerContainer: HTMLDivElement) {
     this.layerContainer = layerContainer;
     this.#observeLayerSequence();
+
+    this.tree.clear();
+    const layerBBoxes = this.layerSequence.map((layerId) => this.drawers.get(layerId)!.layerBBox);
+    this.tree.load(layerBBoxes);
+
+    const transformedArea = this.renderer.getTransformedArea();
+
+    if (transformedArea) {
+      const transformedBBox = this.geometryManager.convertRectToBBox(transformedArea!);
+      this.visibleLayers = this.tree.search(transformedBBox);
+    }
+
     this.#startRenderLoop();
   }
 
@@ -74,20 +94,25 @@ export class RenderManager {
   #getLayerSequence() {
     const layers = <HTMLElement[]>[...this.layerContainer!.children];
     this.layerSequence = layers.map((layer) => +layer.dataset.layerId!);
-    this.redraw();
+    this.searchVisibleLayers();
   }
 
-  register({ render, dispatcher }: RegisteredLayerMetadata) {
-    this.#addDrawer(this.currentLayerId, render);
+  register({ render, dispatcher, bounds }: RegisteredLayerMetadata) {
+    const layerId = this.currentLayerId;
+    const bbox = this.geometryManager.getBBox(bounds);
+    const layerBBox = { layerId, ...bbox };
+
+    this.tree.insert(layerBBox);
+    this.#addDrawer(layerId, { layerBBox, render });
 
     if (dispatcher) {
-      this.#addDispatcher(this.currentLayerId, dispatcher);
+      this.#addDispatcher(layerId, dispatcher);
     }
 
     this.redraw();
 
     return {
-      unregister: () => this.#unregister(this.currentLayerId),
+      unregister: () => this.#unregister(layerId),
       layerId: this.currentLayerId++,
     };
   }
@@ -98,8 +123,8 @@ export class RenderManager {
     this.redraw();
   }
 
-  #addDrawer(layerId: LayerId, render: Render) {
-    this.drawers.set(layerId, render);
+  #addDrawer(layerId: LayerId, layerData: { layerBBox: LayerBBox; render: Render }) {
+    this.drawers.set(layerId, layerData);
   }
 
   #addDispatcher(layerId: LayerId, dispatcher: LayerEventDispatcher) {
@@ -107,6 +132,12 @@ export class RenderManager {
   }
 
   #removeDrawer(layerId: LayerId) {
+    const { layerBBox } = this.drawers.get(layerId) || {};
+
+    if (layerBBox) {
+      this.tree.remove(layerBBox, (a, b) => a.layerId === b.layerId);
+    }
+
     this.drawers.delete(layerId);
   }
 
@@ -123,15 +154,31 @@ export class RenderManager {
 
     const context = this.renderer.getContext()!;
     const options = this.renderer.getCanvasOptions();
+    const transformedArea = this.renderer.getTransformedArea();
 
-    this.renderer.clearRectSync(this.renderer.getScaledArea());
+    if (transformedArea) {
+      this.renderer.clearRectSync(transformedArea);
+    }
 
-    for (const layerId of this.layerSequence) {
+    for (const layerId of this.visibleLayerIds) {
+      const { render } = this.drawers.get(layerId) || {};
       this.layerChangeCallback?.(layerId);
-      this.drawers.get(layerId)?.({ context, options });
+      render?.({ context, options });
     }
 
     this.needsRedraw = false;
+  }
+
+  searchVisibleLayers() {
+    const transformedArea = this.renderer.getTransformedArea();
+
+    if (transformedArea) {
+      const transfromedBBox = this.geometryManager.convertRectToBBox(transformedArea);
+      this.visibleLayers = this.tree.search(transfromedBBox);
+      this.visibleLayerIds = this.layerSequence.slice(0, this.visibleLayers.length);
+    }
+
+    this.needsRedraw = true;
   }
 
   /**

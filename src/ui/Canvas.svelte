@@ -3,16 +3,13 @@
   import {
     type OriginalEvent,
     type AppContext,
-    RenderManager,
-    KEY,
-    getMaxPixelRatio,
-    createHitCanvas,
     type CanvasContextType,
     type ResizeEvent,
     type PixelRatio,
-  } from '../lib';
-  import { Renderer } from '../lib/Renderer';
-  import { Viewport } from 'lib/Viewport';
+  } from 'lib/types';
+  import { Viewport, Renderer, RenderManager, createHitCanvas } from 'lib/index';
+  import { getMaxPixelRatio } from 'lib/utils';
+  import { KEY } from 'lib/constants';
 
   /**
    * When unset, the canvas will use its clientWidth property.
