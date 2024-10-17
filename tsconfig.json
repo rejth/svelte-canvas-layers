@@ -1,6 +1,7 @@
 {
   "extends": "@tsconfig/svelte/tsconfig.json",
   "compilerOptions": {
+    "baseUrl": "./",
     "strict": true,
     "sourceMap": true,
     "target": "ESNext",
@@ -19,8 +20,8 @@
     "checkJs": true,
     "isolatedModules": true,
     "paths": {
-      "ui/*": ["./src/ui/*"],
-      "lib/*": ["./src/lib/*"]
+      "client/*": ["src/client/*"],
+      "core/*": ["src/core/*"]
     }
   },
   // Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias

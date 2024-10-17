@@ -1,5 +1,4 @@
-import './app.css';
-import App from './App.svelte';
+import App from 'client/App.svelte';
 
 const rootElement = document.getElementById('app') as HTMLDivElement;
 
