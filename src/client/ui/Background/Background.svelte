@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { BackgroundLayer, type RenderProps } from 'core/index';
+  import type { RenderProps } from 'core/interfaces';
+  import { BackgroundLayer } from 'core/ui';
 
   interface BackgroundPatternRendererData {
     context: OffscreenCanvasRenderingContext2D;

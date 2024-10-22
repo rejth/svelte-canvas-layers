@@ -1,21 +1,19 @@
 <script lang="ts">
-  import { getContext } from 'svelte';
-
-  import { KEY } from 'core/constants';
-  import { type Point, type AppContext, type Bounds } from 'core/interfaces';
+  import type { Point, Bounds } from 'core/interfaces';
+  import { geometryManager } from 'core/services';
 
   import Surface from './ResizableLayerSurface.svelte';
   import Handler from './ResizableLayerHandler.svelte';
 
   export let path: Point[] | null = null;
   export let initialBounds: Bounds = { x0: 0, y0: 0, x1: 0, y1: 0 };
+  export let overlappedBounds: Bounds | null = null;
+  export let isActive: boolean = false;
+  export const onActiveChange: (active: boolean) => void = () => {};
 
   const [N, S, W, E] = [1, 2, 4, 8];
   const HANDLERS = [N, S, W, E, N | W, N | E, S | W, S | E];
   const SURFACE = N | S | W | E;
-
-  const { renderManager } = getContext<AppContext>(KEY);
-  const { geometryManager } = renderManager;
 
   let { x0, y0, x1, y1 } = path ? geometryManager.getPathBounds(path) : initialBounds;
   let draggedHandler: number | null = null;
@@ -23,7 +21,16 @@
   let previousTouch: Touch;
 
   $: bounds = { x0, y0, x1, y1 };
-  $: active = Boolean(draggedHandler || hoveredHandler);
+  $: active = Boolean(draggedHandler || hoveredHandler) || isCollided(overlappedBounds);
+  $: selected = active || isActive;
+
+  $: onActiveChange(active);
+
+  const isCollided = (overlappedBounds: Bounds | null) => {
+    if (!overlappedBounds) return false;
+    return geometryManager.isOverlapping(overlappedBounds, bounds);
+  };
+
   $: sortedHandlers = HANDLERS.sort((a, b) =>
     a === hoveredHandler ? 1 : b === hoveredHandler ? -1 : 0,
   );
@@ -72,7 +79,7 @@
 </script>
 
 <svelte:body
-  use:cursor={active ? 'pointer' : 'auto'}
+  use:cursor={selected ? 'pointer' : 'auto'}
   on:mousemove={onMouseMove}
   on:mouseup={onMouseUp}
   on:touchstart={onTouchStart}
@@ -83,8 +90,8 @@
 <slot {bounds} />
 
 <Surface
-  {active}
   {bounds}
+  active={selected}
   on:mouseleave={onMouseLeave}
   on:mouseenter={onSurfaceMouseEnter}
   on:mousedown={onSurfaceMouseDown}
@@ -96,7 +103,7 @@
   on:touchstart
 />
 
-{#if active}
+{#if selected}
   {#each sortedHandlers as handler (handler)}
     <Handler
       {...getHandlerPosition(handler)}

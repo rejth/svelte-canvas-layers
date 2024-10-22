@@ -1,15 +1,11 @@
 <script lang="ts">
-  import { getContext } from 'svelte';
-
-  import { COLORS, KEY } from 'core/constants';
-  import { type AppContext, type RenderProps, type Bounds } from 'core/interfaces';
-  import Layer from 'core/ui/Layer.svelte';
+  import type { RenderProps, Bounds } from 'core/interfaces';
+  import { COLORS } from 'core/constants';
+  import { geometryManager } from 'core/services';
+  import { Layer } from 'core/ui';
 
   export let bounds: Bounds;
   export let active: boolean;
-
-  const { renderManager } = getContext<AppContext>(KEY);
-  const { geometryManager } = renderManager;
 
   $: render = ({ context }: RenderProps) => {
     if (!context) return;

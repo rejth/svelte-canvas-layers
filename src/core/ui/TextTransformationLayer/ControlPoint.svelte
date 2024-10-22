@@ -1,7 +1,7 @@
 <script lang="ts">
   import { COLORS } from 'core/constants';
-  import { type Point, type RenderProps } from 'core/interfaces';
-  import Layer from 'core/ui/Layer.svelte';
+  import type { Point, RenderProps } from 'core/interfaces';
+  import { Layer } from 'core/ui';
 
   export let point: Point;
   export let active: boolean;

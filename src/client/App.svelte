@@ -1,18 +1,20 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { v4 as uuid } from 'uuid';
 
-  import {
-    Canvas,
-    Layer,
-    ResizableLayer,
-    TextTransformationLayer,
-    type Viewport,
-  } from 'core/index';
+  import { dndWatcher } from 'core/lib';
+  import { Canvas, Layer, ResizableLayer } from 'core/ui';
+  import { geometryManager, type Viewport } from 'core/services';
 
-  import { Tools } from 'client/interfaces';
-  import { COLORS, CURSORS } from 'client/constants';
-  import { Zoom, UndoRedo, Background, Demo, Toolbar, toolbarStore } from 'client/ui';
+  import { Tools, type ShapeConfig } from 'client/interfaces';
+  import { CURSORS } from 'client/constants';
+
+  import Zoom from 'client/ui/Zoom/Zoom.svelte';
+  import Background from 'client/ui/Background/Background.svelte';
+  import Selection from 'client/ui/Selection/Selection.svelte';
+  import UndoRedo from 'client/ui/UndoRedo/UndoRedo.svelte';
+  import Toolbar from 'client/ui/Toolbar/Toolbar.svelte';
+  import { canvasStore } from './ui/Canvas/store';
+  import { toolbarStore } from './ui/Toolbar/store';
 
   import './App.css';
 
@@ -23,28 +25,27 @@
     viewport = canvasComponent.getViewport();
   });
 
+  onMount(async () => {
+    const canvasRef = canvasComponent.getCanvasElement();
+    const rect = canvasRef.getBoundingClientRect();
+    const selection = dndWatcher(canvasRef);
+
+    for await (const e of selection) {
+      canvasStore.dragSelection(<MouseEvent>e, rect);
+    }
+  });
+
   const { tool } = toolbarStore;
-  $: useLayerEvents = $tool === Tools.SELECT;
+  const { shapes, selection } = canvasStore;
 
-  let visibleLayers = new Array(3).fill(null).map((_, i) => {
-    const minPos = (i + 1) * 85;
-    const maxPos = minPos + 338;
-    return {
-      id: uuid(),
-      color: COLORS.STICKER_YELLOW,
-      initialBounds: { x0: minPos, y0: minPos, x1: maxPos, y1: maxPos },
-    };
-  });
+  $: useLayerEvents = $tool !== Tools.PAN;
+  $: cursorStyle = useLayerEvents ? '' : `cursor: ${CURSORS.HAND}`;
+  $: overlappedBounds = geometryManager.getPathBounds($selection);
 
-  let inVisibleLayers = new Array(3).fill(null).map((_, i) => {
-    const minPos = (i + 1) * 985;
-    const maxPos = minPos + 338;
-    return {
-      id: uuid(),
-      color: COLORS.STICKER_DARK_GREEN,
-      initialBounds: { x0: minPos, y0: minPos, x1: maxPos, y1: maxPos },
-    };
-  });
+  const onClick = (e: MouseEvent) => {
+    canvasStore.addShape(e);
+    canvasStore.resetSelection();
+  };
 
   const onMouseDown = (e: MouseEvent) => {
     if (useLayerEvents) return;
@@ -65,17 +66,25 @@
     if (useLayerEvents) return;
     viewport.onWheel(e);
   };
+
+  const handleActiveLayer = (uuid: ShapeConfig['uuid'], isSelected: boolean) => {
+    if (isSelected) {
+      canvasStore.selectShape(uuid);
+    } else {
+      canvasStore.deselectShape(uuid);
+    }
+  };
 </script>
 
 <main>
   <Toolbar />
-  <!-- <Demo /> -->
   <Canvas
     {useLayerEvents}
     width={window.innerWidth}
     height={window.innerHeight}
-    style={useLayerEvents ? '' : `cursor: ${CURSORS.HAND}`}
+    style={cursorStyle}
     bind:this={canvasComponent}
+    on:click={onClick}
     on:mousedown={onMouseDown}
     on:mousemove={onMouseMove}
     on:mouseup={onMouseUp}
@@ -91,23 +100,17 @@
         context.fill();
       }}
     />
-    <!-- <TextTransformationLayer text="Hello World!" /> -->
-    {#each visibleLayers as { id, color, initialBounds }, i (id)}
-      <ResizableLayer {initialBounds} let:bounds>
-        <Layer
-          {bounds}
-          render={({ context }) => {
-            const { x0, y0, x1, y1 } = bounds;
-            context.globalAlpha = 0.9;
-            context.fillStyle = color;
-            context.fillRect(x0, y0, x1 - x0, y1 - y0);
-            context.globalAlpha = 1;
-          }}
-        />
-      </ResizableLayer>
-    {/each}
-    {#each inVisibleLayers as { id, color, initialBounds }, i (id)}
-      <ResizableLayer {initialBounds} let:bounds>
+    {#if $tool === Tools.SELECT}
+      <Selection path={$selection} />
+    {/if}
+    {#each [...$shapes.values()] as { uuid, bounds, color, selected } (uuid)}
+      <ResizableLayer
+        initialBounds={bounds}
+        {overlappedBounds}
+        onActiveChange={(isSelected) => handleActiveLayer(uuid, isSelected)}
+        on:mousedown={() => canvasStore.selectShape(uuid)}
+        let:bounds
+      >
         <Layer
           {bounds}
           render={({ context }) => {

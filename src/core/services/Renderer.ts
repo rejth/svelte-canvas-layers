@@ -87,6 +87,10 @@ export class Renderer {
     return { x: transformedX, y: transformedY };
   }
 
+  /**
+   * This method calculates the transformed area of the canvas relative to the window.
+   * The method takes into account the translation and scale of the canvas.
+   */
   getTransformedArea(): RectDimension | null {
     const transform = this.getTransform();
     if (!transform) return null;
@@ -109,6 +113,15 @@ export class Renderer {
     this.pixelRatio = transform.scaleX;
   }
 
+  /**
+   * Clear the specified rectangle of the canvas asynchronously using requestAnimationFrame.
+   *
+   * @param x - The x-coordinate of the top-left corner of the rectangle to clear.
+   * @param y - The y-coordinate of the top-left corner of the rectangle to clear.
+   * @param width - The width of the rectangle to clear.
+   * @param height - The height of the rectangle to clear.
+   * @param callBack - A function to be called after clearing the rectangle.
+   */
   clearRect({ x, y, width, height }: ClearRectOptions, callBack: () => void) {
     requestAnimationFrame(() => {
       this.context!.clearRect(x, y, width, height);
@@ -116,6 +129,11 @@ export class Renderer {
     });
   }
 
+  /**
+   * Clear the specified rectangle of the canvas synchronously.
+   * This method is typically slower than the asynchronous version `clearRect` because it blocks the main thread.
+   * @param {{ x: number, y: number, width: number, height: number }}
+   */
   clearRectSync({ x, y, width, height }: ClearRectOptions) {
     this.context!.clearRect(x, y, width, height);
   }

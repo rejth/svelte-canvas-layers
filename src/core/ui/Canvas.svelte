@@ -2,12 +2,12 @@
   import { setContext, onMount, createEventDispatcher } from 'svelte';
 
   import { KEY } from 'core/constants';
-  import {
-    type OriginalEvent,
-    type AppContext,
-    type CanvasContextType,
-    type ResizeEvent,
-    type PixelRatio,
+  import type {
+    OriginalEvent,
+    AppContext,
+    CanvasContextType,
+    ResizeEvent,
+    PixelRatio,
   } from 'core/interfaces';
   import {
     Viewport,
@@ -102,9 +102,7 @@
     };
   };
 
-  const handleLayerMouseMove = (e: MouseEvent) => {
-    renderManager.findActiveLayer(e);
-  };
+  const handleLayerMouseMove = (_e: MouseEvent) => {};
 
   const handleLayerTouchStart = (e: TouchEvent) => {
     renderManager.findActiveLayer(e);
@@ -112,6 +110,7 @@
   };
 
   const handleEvent = (e: OriginalEvent) => {
+    renderManager.findActiveLayer(e);
     renderManager.dispatchEvent(e);
   };
 

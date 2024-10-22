@@ -1,5 +1,5 @@
 <script>
-  import { Layer } from 'core/index';
+  import { Layer } from 'core/ui';
   import { position, activeLayer } from './store';
 
   $: point = $position;

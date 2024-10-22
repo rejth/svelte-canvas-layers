@@ -2,8 +2,8 @@ import { type Writable, writable } from 'svelte/store';
 import { Tools, type ShapeType, type Tool } from 'client/interfaces';
 
 class ToolbarStore {
-  tool: Writable<Tool> = writable(Tools.SELECT);
-  shapeType: Writable<ShapeType | null> = writable(null);
+  tool: Writable<Tool | null> = writable(Tools.NOTE);
+  shapeType: Writable<ShapeType | null> = writable(Tools.NOTE);
 
   changeTool(tool: Tool): void {
     this.tool.set(tool);
@@ -23,7 +23,7 @@ class ToolbarStore {
   }
 
   isServiceToolSelected(tool: Tool): boolean {
-    return ['PAN', 'SELECT'].includes(tool);
+    return ['PAN', 'SELECT', 'DELETE'].includes(tool);
   }
 }
 

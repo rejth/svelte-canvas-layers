@@ -1,23 +1,20 @@
-import RBush from 'rbush';
-import {
-  type HitCanvasRenderingContext2D,
-  type OriginalEvent,
-  type Render,
-  type LayerId,
-  type LayerEventDetails,
-  type CanvasEvents,
-  type LayerEventDispatcher,
-  type RegisteredLayerMetadata,
-  type CanvasContextType,
-  type LayerBBox,
+import RBush, { type BBox } from 'rbush';
+import type {
+  HitCanvasRenderingContext2D,
+  OriginalEvent,
+  Render,
+  LayerId,
+  LayerEventDetails,
+  CanvasEvents,
+  LayerEventDispatcher,
+  RegisteredLayerMetadata,
+  CanvasContextType,
+  LayerBBox,
 } from 'core/interfaces';
-
-import type { Renderer } from './Renderer';
-import { GeometryManager } from './GeometryManager';
+import { geometryManager, type Renderer } from 'core/services';
 
 export class RenderManager {
   renderer: Renderer;
-  geometryManager: GeometryManager;
 
   currentLayerId: LayerId;
   activeLayerId: LayerId;
@@ -37,7 +34,6 @@ export class RenderManager {
 
   constructor(renderer: Renderer) {
     this.renderer = renderer;
-    this.geometryManager = new GeometryManager();
 
     this.currentLayerId = 1;
     this.activeLayerId = 0;
@@ -74,7 +70,7 @@ export class RenderManager {
     const transformedArea = this.renderer.getTransformedArea();
 
     if (transformedArea) {
-      const transformedBBox = this.geometryManager.convertRectToBBox(transformedArea!);
+      const transformedBBox = geometryManager.convertRectToBBox(transformedArea!);
       this.visibleLayers = this.tree.search(transformedBBox);
     }
 
@@ -100,7 +96,7 @@ export class RenderManager {
 
   register({ render, dispatcher, bounds }: RegisteredLayerMetadata) {
     const layerId = this.currentLayerId;
-    const bbox = this.geometryManager.getBBox(bounds);
+    const bbox = geometryManager.getBBox(bounds);
     const layerBBox = { layerId, ...bbox };
 
     this.tree.insert(layerBBox);
@@ -174,7 +170,7 @@ export class RenderManager {
     const transformedArea = this.renderer.getTransformedArea();
 
     if (transformedArea) {
-      const transfromedBBox = this.geometryManager.convertRectToBBox(transformedArea);
+      const transfromedBBox = geometryManager.convertRectToBBox(transformedArea);
       this.visibleLayers = this.tree.search(transfromedBBox);
       this.visibleLayerIds = this.layerSequence.slice(0, this.visibleLayers.length);
     }
@@ -196,7 +192,7 @@ export class RenderManager {
 
   findActiveLayer(e: OriginalEvent) {
     const context = this.renderer.getContext();
-    const point = this.geometryManager.calculatePosition(e);
+    const point = geometryManager.calculatePosition(e);
     const layerId = (<HitCanvasRenderingContext2D>context).getLayerIdAt(point.x, point.y);
 
     if (this.activeLayerId === layerId) return;
@@ -231,7 +227,7 @@ export class RenderManager {
    */
   dispatchEvent(e: OriginalEvent) {
     if (!this.activeLayerId) return;
-    const point = this.geometryManager.calculatePosition(e);
+    const point = geometryManager.calculatePosition(e);
     this.#dispatchLayerEvent(this.activeLayerId, { originalEvent: e, ...point });
   }
 

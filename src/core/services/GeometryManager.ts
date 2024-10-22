@@ -8,7 +8,7 @@ import type {
   RectPosition,
 } from 'core/interfaces';
 
-export class GeometryManager {
+class GeometryManager {
   defaultPoint: Point;
 
   constructor() {
@@ -38,6 +38,17 @@ export class GeometryManager {
     return {
       x: (clientX - left) * pixelRatio,
       y: (clientY - top) * pixelRatio,
+    };
+  }
+
+  getRectDimensionFromPath(path: Point[]): RectDimension {
+    const from = path[0] ?? 0;
+    const to = path[path.length - 1] ?? 0;
+    return {
+      x: Math.min(from.x, to.x),
+      y: Math.min(from.y, to.y),
+      width: Math.abs(from.x - to.x),
+      height: Math.abs(from.y - to.y),
     };
   }
 
@@ -112,4 +123,27 @@ export class GeometryManager {
       rectA.bottom > rectB.top
     );
   }
+
+  isOverlapping(rectA: Bounds, rectB: Bounds) {
+    const normalizeRect = (rect: Bounds) => {
+      return {
+        x0: Math.min(rect.x0, rect.x1),
+        y0: Math.min(rect.y0, rect.y1),
+        x1: Math.max(rect.x0, rect.x1),
+        y1: Math.max(rect.y0, rect.y1),
+      };
+    };
+
+    const rect1 = normalizeRect(rectA);
+    const rect2 = normalizeRect(rectB);
+
+    return !(
+      rect1.x1 < rect2.x0 ||
+      rect1.x0 > rect2.x1 ||
+      rect1.y1 < rect2.y0 ||
+      rect1.y0 > rect2.y1
+    );
+  }
 }
+
+export const geometryManager = new GeometryManager();

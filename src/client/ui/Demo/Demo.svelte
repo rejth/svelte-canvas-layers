@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Canvas } from 'core/index';
+  import { Canvas } from 'core/ui';
 
   import Rect from './Rect.svelte';
   import Circle from './Circle.svelte';

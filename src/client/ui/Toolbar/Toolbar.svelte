@@ -1,28 +1,32 @@
 <script lang="ts">
   import { Tools, type Tool } from 'client/interfaces';
+  import { canvasStore } from 'client/ui/Canvas/store';
 
   import PanIcon from './PanIcon.svelte';
   import SelectIcon from './SelectIcon.svelte';
   import NoteIcon from './NoteIcon.svelte';
   import TextIcon from './TextIcon.svelte';
+  import TrashIcon from './TrashIcon.svelte';
+  import ConnectIcon from './ConnectIcon.svelte';
   import { toolbarStore } from './store';
 
   const { tool } = toolbarStore;
+  const { selectedShapes } = canvasStore;
 
-  const tools = [
+  $: tools = [
     {
       label: 'Note',
       type: Tools.NOTE,
       icon: NoteIcon,
       hoverText: 'Drag to add a new sticker',
-      disabled: true,
+      disabled: false,
     },
     {
       label: 'Text',
       type: Tools.TEXT,
       icon: TextIcon,
       hoverText: 'Drag to add a new text area',
-      disabled: true,
+      disabled: false,
     },
     {
       label: 'Pan',
@@ -38,9 +42,28 @@
       hoverText: 'Selection',
       disabled: false,
     },
+    {
+      label: 'Connect',
+      type: Tools.CONNECT,
+      icon: ConnectIcon,
+      hoverText: 'Connect tool',
+      disabled: false,
+    },
+    {
+      label: 'Delete',
+      type: Tools.DELETE,
+      icon: TrashIcon,
+      hoverText: 'Delete selected item(s)',
+      disabled: $selectedShapes.size === 0,
+    },
   ];
 
+  const handleDelete = () => {
+    canvasStore.deleteShape();
+  };
+
   const onClick = (type: Tool) => {
+    if (type === Tools.DELETE) return handleDelete();
     toolbarStore.changeTool(type);
   };
 </script>

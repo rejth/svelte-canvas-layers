@@ -3,7 +3,7 @@
   import { quadInOut as easing } from 'svelte/easing';
 
   import type { CanvasContextType, RenderProps } from 'core/interfaces';
-  import Layer from 'core/ui/Layer.svelte';
+  import { Layer } from 'core/ui';
 
   import { position, activeLayer, type Render } from './store';
 

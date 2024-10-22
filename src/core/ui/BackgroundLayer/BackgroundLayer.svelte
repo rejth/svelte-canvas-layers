@@ -2,7 +2,7 @@
   import { getContext, onDestroy } from 'svelte';
 
   import { KEY } from 'core/constants';
-  import { type Render, type AppContext } from 'core/interfaces';
+  import type { Render, AppContext } from 'core/interfaces';
 
   /**
    * The Background Layer component encapsulates a piece of canvas background rendering logic.

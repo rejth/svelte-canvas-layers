@@ -1,17 +1,12 @@
 <script lang="ts">
-  import { getContext } from 'svelte';
-
-  import { KEY } from 'core/constants';
-  import { type AppContext, type Point } from 'core/interfaces';
+  import type { Point } from 'core/interfaces';
+  import { geometryManager } from 'core/services';
 
   import ControlPoint from './ControlPoint.svelte';
   import Curve from './Curve.svelte';
   import Text from './Text.svelte';
 
   export let text: string;
-
-  const { renderManager } = getContext<AppContext>(KEY);
-  const { geometryManager } = renderManager;
 
   let selectedPoint: number | null = null;
   let controlPoints: Point[] = [

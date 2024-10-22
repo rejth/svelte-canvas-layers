@@ -2,7 +2,7 @@
   import { getContext, onDestroy, createEventDispatcher, afterUpdate } from 'svelte';
 
   import { KEY } from 'core/constants';
-  import { type Render, type LayerEvents, type AppContext, type Bounds } from 'core/interfaces';
+  import type { Render, LayerEvents, AppContext, Bounds } from 'core/interfaces';
 
   /**
    * The Layer component encapsulates a piece of canvas rendering logic.
