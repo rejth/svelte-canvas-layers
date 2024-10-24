@@ -1,6 +1,5 @@
-import type { BBox } from 'rbush';
 import type { CanvasContextType, Point } from 'core/interfaces';
-import { geometryManager, type RenderManager, type Renderer } from 'core/services';
+import type { RenderManager, Renderer } from 'core/services';
 
 export class Viewport {
   context: CanvasContextType | null;

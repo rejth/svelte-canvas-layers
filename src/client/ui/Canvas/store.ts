@@ -13,7 +13,8 @@ type Shapes = Map<string, ShapeConfig>;
 class CanvasStore {
   shapes: Writable<Shapes> = writable(new Map());
   selectedShapes: Writable<Shapes> = writable(new Map());
-  selection: Writable<Point[]> = writable([]);
+  selectionPath: Writable<Point[]> = writable([]);
+  isSelected: Writable<boolean> = writable(false);
 
   #shapeType: ShapeType | null = null;
   #tool: Tool | null = Tools.NOTE;
@@ -27,9 +28,9 @@ class CanvasStore {
     return {
       uuid: uuid(),
       type: type,
-      bounds: { x0: x, y0: y, x1: x + 338, y1: y + 338 },
+      initialBounds: { x0: x, y0: y, x1: x + 268, y1: y + 268 },
       color: COLORS.STICKER_YELLOW,
-      selected: false,
+      isSelected: false,
     };
   }
 
@@ -59,7 +60,7 @@ class CanvasStore {
     if (!shape) return;
 
     this.selectedShapes.update((selected) => selected.set(uuid, shape));
-    // this.shapes.update((shapes) => shapes.set(uuid, { ...shape, selected: true }));
+    this.shapes.update((shapes) => shapes.set(uuid, { ...shape, isSelected: true }));
   }
 
   deselectShape(uuid: ShapeConfig['uuid']) {
@@ -70,30 +71,43 @@ class CanvasStore {
 
     const shape = get(this.shapes).get(uuid) || null;
     if (!shape) return;
-    // this.shapes.update((shapes) => shapes.set(uuid, { ...shape, selected: false }));
+
+    this.shapes.update((shapes) => shapes.set(uuid, { ...shape, isSelected: false }));
+  }
+
+  setIsSelected(value: boolean) {
+    this.isSelected.set(value);
   }
 
   dragSelection(e: MouseEvent, rect: DOMRect) {
     if (this.#tool !== Tools.SELECT) return;
+    if (get(this.isSelected)) return;
+
     const isPointInsideCanvas = geometryManager.isPointInsideRect(e, rect);
 
     if (isPointInsideCanvas) {
       const point = geometryManager.calculatePosition(e);
-      this.selection.update((path) => [...path, point]);
+      this.selectionPath.update((path) => [...path, point]);
     }
   }
 
   resetToolbar() {
-    toolbarStore.tool.set(null);
+    toolbarStore.changeTool(Tools.SELECT);
     toolbarStore.shapeType.set(null);
   }
 
   resetSelectedShapes() {
+    const shapes = get(this.shapes);
+
+    for (const shape of shapes.values()) {
+      this.shapes.update((shapes) => shapes.set(shape.uuid, { ...shape, isSelected: false }));
+    }
+
     this.selectedShapes.set(new Map());
   }
 
   resetSelection() {
-    this.selection.set([]);
+    this.selectionPath.set([]);
   }
 }
 

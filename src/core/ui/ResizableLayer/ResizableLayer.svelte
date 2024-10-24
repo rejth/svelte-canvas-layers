@@ -1,34 +1,38 @@
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte';
+
   import type { Point, Bounds } from 'core/interfaces';
   import { geometryManager } from 'core/services';
 
   import Surface from './ResizableLayerSurface.svelte';
   import Handler from './ResizableLayerHandler.svelte';
 
-  export let path: Point[] | null = null;
   export let initialBounds: Bounds = { x0: 0, y0: 0, x1: 0, y1: 0 };
-  export let overlappedBounds: Bounds | null = null;
-  export let isActive: boolean = false;
-  export const onActiveChange: (active: boolean) => void = () => {};
+  export let selectionPath: Point[] = [];
+  export let isSelected: boolean = false;
+
+  const dispatcher = createEventDispatcher();
 
   const [N, S, W, E] = [1, 2, 4, 8];
   const HANDLERS = [N, S, W, E, N | W, N | E, S | W, S | E];
   const SURFACE = N | S | W | E;
 
-  let { x0, y0, x1, y1 } = path ? geometryManager.getPathBounds(path) : initialBounds;
+  let { x0, y0, x1, y1 } = initialBounds;
   let draggedHandler: number | null = null;
   let hoveredHandler: number | null = null;
   let previousTouch: Touch;
 
   $: bounds = { x0, y0, x1, y1 };
-  $: active = Boolean(draggedHandler || hoveredHandler) || isCollided(overlappedBounds);
-  $: selected = active || isActive;
+  $: active = Boolean(draggedHandler || hoveredHandler) || isOverlapped(selectionPath);
+  $: selected = active || isSelected;
 
-  $: onActiveChange(active);
+  $: active && dispatcher('active');
+  $: !active && dispatcher('leave');
 
-  const isCollided = (overlappedBounds: Bounds | null) => {
-    if (!overlappedBounds) return false;
-    return geometryManager.isOverlapping(overlappedBounds, bounds);
+  const isOverlapped = (selectionPath: Point[]) => {
+    const selectionBounds = geometryManager.getPathBounds(selectionPath);
+    if (!selectionBounds) return false;
+    return geometryManager.isOverlapping(selectionBounds, bounds);
   };
 
   $: sortedHandlers = HANDLERS.sort((a, b) =>

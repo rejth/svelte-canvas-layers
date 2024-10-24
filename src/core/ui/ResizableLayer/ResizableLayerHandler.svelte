@@ -13,7 +13,7 @@
   $: render = ({ context }: RenderProps) => {
     if (!context) return;
 
-    const { x, y, width, height } = geometryManager.getRectDimension(bounds);
+    const { x, y, width, height } = geometryManager.getRectDimensionFromBounds(bounds);
 
     context.fillStyle = active ? COLORS.STICKER_BLUE : COLORS.SELECTION;
     context.fillRect(x, y, width, height);

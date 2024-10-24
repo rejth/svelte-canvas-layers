@@ -10,10 +10,12 @@
   $: _render = ({ context }: RenderProps) => {
     if (!context) return;
 
-    const { x, y, width, height } = geometryManager.getRectDimensionFromPath(path);
+    const rect = geometryManager.getRectDimensionFromPath(path);
+    if (!rect) return;
+
+    const { x, y, width, height } = rect;
 
     context.globalAlpha = 0.9;
-
     context.strokeStyle = COLORS.SELECTION;
     context.lineWidth = 2;
     context.strokeRect(x, y, width, height);

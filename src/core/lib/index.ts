@@ -1,1 +1,1 @@
-export { dndWatcher } from './compositions';
+export { dndWatcher, targetEventWatcher } from './compositions';

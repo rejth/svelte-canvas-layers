@@ -1,11 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
+  import type { Point } from 'core/interfaces';
+  import { type Viewport } from 'core/services';
   import { dndWatcher } from 'core/lib';
   import { Canvas, Layer, ResizableLayer } from 'core/ui';
-  import { geometryManager, type Viewport } from 'core/services';
 
-  import { Tools, type ShapeConfig } from 'client/interfaces';
+  import { Tools } from 'client/interfaces';
   import { CURSORS } from 'client/constants';
 
   import Zoom from 'client/ui/Zoom/Zoom.svelte';
@@ -18,72 +19,75 @@
 
   import './App.css';
 
-  let canvasComponent: Canvas;
+  let canvas: Canvas;
   let viewport: Viewport;
+  let selection: Point[] = [];
 
-  onMount(() => {
-    viewport = canvasComponent.getViewport();
-  });
+  const { tool } = toolbarStore;
+  const { shapes, selectionPath } = canvasStore;
 
   onMount(async () => {
-    const canvasRef = canvasComponent.getCanvasElement();
-    const rect = canvasRef.getBoundingClientRect();
-    const selection = dndWatcher(canvasRef);
+    viewport = canvas.getViewport();
 
-    for await (const e of selection) {
+    const ref = canvas.getCanvasElement();
+    const rect = ref.getBoundingClientRect();
+    const selectionWatcher = dndWatcher(ref);
+
+    for await (const e of selectionWatcher) {
       canvasStore.dragSelection(<MouseEvent>e, rect);
     }
   });
 
-  const { tool } = toolbarStore;
-  const { shapes, selection } = canvasStore;
-
-  $: useLayerEvents = $tool !== Tools.PAN;
-  $: cursorStyle = useLayerEvents ? '' : `cursor: ${CURSORS.HAND}`;
-  $: overlappedBounds = geometryManager.getPathBounds($selection);
+  $: panning = $tool === Tools.PAN;
+  $: cursorStyle = panning ? `cursor: ${CURSORS.HAND}` : ``;
+  $: selection = $selectionPath.length > 0 ? $selectionPath : selection;
 
   const onClick = (e: MouseEvent) => {
     canvasStore.addShape(e);
+    selection = $selectionPath;
     canvasStore.resetSelection();
   };
 
   const onMouseDown = (e: MouseEvent) => {
-    if (useLayerEvents) return;
+    if (!panning) return;
     viewport.onMouseDown(e);
   };
 
   const onMouseUp = (e: MouseEvent) => {
-    if (useLayerEvents) return;
+    if (!panning) return;
     viewport.onMouseUp(e);
   };
 
   const onMouseMove = (e: MouseEvent) => {
-    if (useLayerEvents) return;
     viewport.onMouseMove(e);
   };
 
   const onWheel = (e: WheelEvent) => {
-    if (useLayerEvents) return;
     viewport.onWheel(e);
   };
 
-  const handleActiveLayer = (uuid: ShapeConfig['uuid'], isSelected: boolean) => {
-    if (isSelected) {
-      canvasStore.selectShape(uuid);
-    } else {
-      canvasStore.deselectShape(uuid);
-    }
+  const handleLayerMouseDown = () => {
+    canvasStore.setIsSelected(true);
+  };
+
+  const handleLayerActive = (uuid: string) => {
+    canvasStore.selectShape(uuid);
+  };
+
+  const handleLayerLeave = (uuid: string) => {
+    canvasStore.deselectShape(uuid);
+    canvasStore.setIsSelected(false);
   };
 </script>
 
 <main>
   <Toolbar />
   <Canvas
-    {useLayerEvents}
+    useLayerEvents={!panning}
     width={window.innerWidth}
     height={window.innerHeight}
     style={cursorStyle}
-    bind:this={canvasComponent}
+    bind:this={canvas}
     on:click={onClick}
     on:mousedown={onMouseDown}
     on:mousemove={onMouseMove}
@@ -101,14 +105,16 @@
       }}
     />
     {#if $tool === Tools.SELECT}
-      <Selection path={$selection} />
+      <Selection path={$selectionPath} />
     {/if}
-    {#each [...$shapes.values()] as { uuid, bounds, color, selected } (uuid)}
+    {#each [...$shapes.values()] as { uuid, initialBounds, color, isSelected } (uuid)}
       <ResizableLayer
-        initialBounds={bounds}
-        {overlappedBounds}
-        onActiveChange={(isSelected) => handleActiveLayer(uuid, isSelected)}
-        on:mousedown={() => canvasStore.selectShape(uuid)}
+        {initialBounds}
+        {isSelected}
+        selectionPath={selection}
+        on:mousedown={handleLayerMouseDown}
+        on:active={() => handleLayerActive(uuid)}
+        on:leave={() => handleLayerLeave(uuid)}
         let:bounds
       >
         <Layer

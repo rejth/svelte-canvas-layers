@@ -35,15 +35,33 @@ class GeometryManager {
   #getTouchPosition(e: TouchEvent, pixelRatio: PixelRatio = 1): Point {
     const { left, top } = (<Element>e.target).getBoundingClientRect();
     const { clientX, clientY } = e.changedTouches[0];
+
     return {
       x: (clientX - left) * pixelRatio,
       y: (clientY - top) * pixelRatio,
     };
   }
 
-  getRectDimensionFromPath(path: Point[]): RectDimension {
-    const from = path[0] ?? 0;
-    const to = path[path.length - 1] ?? 0;
+  getPathBounds(path: Point[]): Bounds | null {
+    if (!path.length) return null;
+
+    const from = path[0];
+    const to = path[path.length - 1];
+
+    return {
+      x0: from.x,
+      y0: from.y,
+      x1: to.x,
+      y1: to.y,
+    };
+  }
+
+  getRectDimensionFromPath(path: Point[]): RectDimension | null {
+    if (!path.length) return null;
+
+    const from = path[0];
+    const to = path[path.length - 1];
+
     return {
       x: Math.min(from.x, to.x),
       y: Math.min(from.y, to.y),
@@ -52,22 +70,13 @@ class GeometryManager {
     };
   }
 
-  getRectDimension(bounds: Bounds): RectDimension {
+  getRectDimensionFromBounds(bounds: Bounds): RectDimension {
     const { x0, y0, x1, y1 } = bounds;
     return {
       x: Math.min(x0, x1),
       y: Math.min(y0, y1),
       width: Math.abs(x0 - x1),
       height: Math.abs(y0 - y1),
-    };
-  }
-
-  getRectPosition(rect: RectDimension): RectPosition {
-    return {
-      left: rect.x,
-      top: rect.y,
-      bottom: rect.y + rect.height,
-      right: rect.x + rect.width,
     };
   }
 
@@ -90,58 +99,23 @@ class GeometryManager {
     };
   }
 
-  getPathBounds(path: Point[]): Bounds {
-    const from = path[0] || this.defaultPoint;
-    const to = path[path.length - 1] || this.defaultPoint;
-    return {
-      x0: from.x,
-      y0: from.y,
-      x1: to.x,
-      y1: to.y,
-    };
-  }
-
   getMiddlePoint(from: number, to: number): number {
     return (from + to) / 2;
   }
 
-  isPointInsideRect(p: Point, rect: DOMRect): boolean {
+  isPointInsideRect(p: Point, rect: DOMRect | RectPosition): boolean {
     return p.x > rect.left && p.x < rect.right && p.y > rect.top && p.y < rect.bottom;
   }
 
-  isPointInsideRectDimensions(p: Point, rect: DOMRect): boolean {
-    return (
-      p.x >= rect.x && p.x <= rect.x + rect.width && p.y >= rect.y && p.y <= rect.y + rect.height
-    );
-  }
-
-  overlapRect(rectA: RectPosition, rectB: RectPosition): boolean {
-    return (
-      rectA.left < rectB.right &&
-      rectA.right > rectB.left &&
-      rectA.top < rectB.bottom &&
-      rectA.bottom > rectB.top
-    );
-  }
-
-  isOverlapping(rectA: Bounds, rectB: Bounds) {
-    const normalizeRect = (rect: Bounds) => {
-      return {
-        x0: Math.min(rect.x0, rect.x1),
-        y0: Math.min(rect.y0, rect.y1),
-        x1: Math.max(rect.x0, rect.x1),
-        y1: Math.max(rect.y0, rect.y1),
-      };
-    };
-
-    const rect1 = normalizeRect(rectA);
-    const rect2 = normalizeRect(rectB);
+  isOverlapping(rectA: Bounds, rectB: Bounds): boolean {
+    const rect1 = this.getBBox(rectA);
+    const rect2 = this.getBBox(rectB);
 
     return !(
-      rect1.x1 < rect2.x0 ||
-      rect1.x0 > rect2.x1 ||
-      rect1.y1 < rect2.y0 ||
-      rect1.y0 > rect2.y1
+      rect1.maxX < rect2.minX ||
+      rect1.minX > rect2.maxX ||
+      rect1.maxY < rect2.minY ||
+      rect1.minY > rect2.maxY
     );
   }
 }

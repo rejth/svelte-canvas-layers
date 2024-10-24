@@ -17,7 +17,7 @@ export type ToolbarTool = 'PAN' | 'SELECT' | 'DELETE' | 'CONNECT';
 export type ShapeConfig = {
   uuid: string;
   type: ShapeType;
-  bounds: Bounds;
+  initialBounds: Bounds;
   color: COLORS;
-  selected: boolean;
+  isSelected: boolean;
 };

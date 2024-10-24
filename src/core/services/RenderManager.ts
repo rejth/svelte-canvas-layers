@@ -1,4 +1,4 @@
-import RBush, { type BBox } from 'rbush';
+import RBush from 'rbush';
 import type {
   HitCanvasRenderingContext2D,
   OriginalEvent,
