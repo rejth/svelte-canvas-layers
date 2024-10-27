@@ -26,7 +26,7 @@
   $: active = Boolean(draggedHandler || hoveredHandler) || isOverlapped(selectionPath);
   $: selected = active || isSelected;
 
-  $: active && dispatcher('active');
+  $: active && dispatcher('active', { box: geometryManager.getRectDimensionFromBounds(bounds) });
   $: !active && dispatcher('leave');
 
   const isOverlapped = (selectionPath: Point[]) => {
@@ -53,6 +53,7 @@
     y0 += draggedHandler & N && movementY;
     x1 += draggedHandler & E && movementX;
     y1 += draggedHandler & S && movementY;
+    dispatcher('move', { box: geometryManager.getRectDimensionFromBounds(bounds) });
   };
 
   const onTouchMove = (e: TouchEvent) => {

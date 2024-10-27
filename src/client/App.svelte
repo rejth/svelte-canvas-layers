@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
 
-  import type { Point } from 'core/interfaces';
+  import type { Point, RectDimension } from 'core/interfaces';
   import { type Viewport } from 'core/services';
   import { dndWatcher } from 'core/lib';
   import { Canvas, Layer, ResizableLayer } from 'core/ui';
@@ -14,8 +14,10 @@
   import Selection from 'client/ui/Selection/Selection.svelte';
   import UndoRedo from 'client/ui/UndoRedo/UndoRedo.svelte';
   import Toolbar from 'client/ui/Toolbar/Toolbar.svelte';
+  import Connection from './ui/Connection/Connection.svelte';
   import { canvasStore } from './ui/Canvas/store';
   import { toolbarStore } from './ui/Toolbar/store';
+  import { connectionStore } from './ui/Connection/store';
 
   import './App.css';
 
@@ -25,6 +27,16 @@
 
   const { tool } = toolbarStore;
   const { shapes, selectionPath } = canvasStore;
+  const { currentConnection, connections } = connectionStore;
+
+  // TODO:
+  // [ ] disable mousemove and touchmove events when the tool is "CONNECT"
+  // [ ] handle connection on selected shape properly (just reset selection when toolbar is clicked)
+  // [ ] implement connection deletion via Trash button in toolbar
+  // [ ] select shape on hovering during connection
+  // [ ] connect arrow with a box when hovering
+  // [ ] draw an arrow at the end of a connection
+  // [ ] refactor ResizableLayer - rename to ResizableBoxLayer and avoid geometryManager.getRectDimensionFromBounds(bounds)
 
   onMount(async () => {
     viewport = canvas.getViewport();
@@ -60,6 +72,7 @@
 
   const onMouseMove = (e: MouseEvent) => {
     viewport.onMouseMove(e);
+    connectionStore.handleMouseMove(e);
   };
 
   const onWheel = (e: WheelEvent) => {
@@ -70,13 +83,18 @@
     canvasStore.setIsSelected(true);
   };
 
-  const handleLayerActive = (uuid: string) => {
-    canvasStore.selectShape(uuid);
+  const handleLayerActive = (e: CustomEvent<{ box: RectDimension }>, id: string) => {
+    canvasStore.selectShape(id);
+    connectionStore.handleBoxSelect(e, id);
   };
 
   const handleLayerLeave = (uuid: string) => {
     canvasStore.deselectShape(uuid);
     canvasStore.setIsSelected(false);
+  };
+
+  const handleLayerMove = (e: CustomEvent<{ box: RectDimension }>, id: string) => {
+    connectionStore.handleBoxMove(e, id);
   };
 </script>
 
@@ -107,13 +125,20 @@
     {#if $tool === Tools.SELECT}
       <Selection path={$selectionPath} />
     {/if}
-    {#each [...$shapes.values()] as { uuid, initialBounds, color, isSelected } (uuid)}
+    {#if $tool === Tools.CONNECT && $currentConnection}
+      <Connection boxA={$currentConnection?.source?.box} boxB={$currentConnection?.target?.box} />
+    {/if}
+    {#each Object.values($connections) as { source, target }}
+      <Connection boxA={source.box} boxB={target.box} />
+    {/each}
+    {#each $shapes.values() as { uuid, initialBounds, color, isSelected } (uuid)}
       <ResizableLayer
         {initialBounds}
         {isSelected}
         selectionPath={selection}
         on:mousedown={handleLayerMouseDown}
-        on:active={() => handleLayerActive(uuid)}
+        on:move={(e) => handleLayerMove(e, uuid)}
+        on:active={(e) => handleLayerActive(e, uuid)}
         on:leave={() => handleLayerLeave(uuid)}
         let:bounds
       >

@@ -1292,6 +1292,7 @@ __metadata:
     eslint-plugin-svelte: "npm:^2.35.1"
     lint-staged: "npm:^15.2.0"
     npm-check-updates: "npm:^16.14.11"
+    perfect-arrows: "npm:^0.3.7"
     prettier: "npm:^3.1.0"
     prettier-plugin-svelte: "npm:^3.1.2"
     rbush: "npm:^4.0.1"
@@ -3914,6 +3915,13 @@ __metadata:
   version: 4.0.0
   resolution: "path-type@npm:4.0.0"
   checksum: 10c0/666f6973f332f27581371efaf303fd6c272cc43c2057b37aa99e3643158c7e4b2626549555d88626e99ea9e046f82f32e41bbde5f1508547e9a11b149b52387c
+  languageName: node
+  linkType: hard
+
+"perfect-arrows@npm:^0.3.7":
+  version: 0.3.7
+  resolution: "perfect-arrows@npm:0.3.7"
+  checksum: 10c0/cc482ef659b0f0418ece6a1453b9a47e03eae95f0fa7079b827b7490b0c44bad9c7fa1ad66e8129dc4d9e794b9e99cccffe5c6f4be7dd5eef854793123078969
   languageName: node
   linkType: hard
 

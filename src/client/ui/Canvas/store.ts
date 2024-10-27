@@ -4,9 +4,10 @@ import { v4 as uuid } from 'uuid';
 import type { Point } from 'core/interfaces';
 import { geometryManager } from 'core/services';
 
-import { COLORS } from 'client/constants';
 import { Tools, type ShapeConfig, type ShapeType, type Tool } from 'client/interfaces';
+import { COLORS } from 'client/constants';
 import { toolbarStore } from 'client/ui/Toolbar/store';
+import { connectionStore } from 'client/ui/Connection/store';
 
 type Shapes = Map<string, ShapeConfig>;
 
@@ -28,7 +29,7 @@ class CanvasStore {
     return {
       uuid: uuid(),
       type: type,
-      initialBounds: { x0: x, y0: y, x1: x + 268, y1: y + 268 },
+      initialBounds: { x0: x, y0: y, x1: x + 168, y1: y + 168 },
       color: COLORS.STICKER_YELLOW,
       isSelected: false,
     };
@@ -36,7 +37,15 @@ class CanvasStore {
 
   #removeSelectedShape(shapes: Shapes): Shapes {
     const selected = get(this.selectedShapes);
-    return new Map([...shapes.entries()].filter(([uuid]) => !selected.has(uuid)));
+
+    for (const [uuid] of selected) {
+      if (selected.has(uuid)) {
+        shapes.delete(uuid);
+        connectionStore.removeConnectionsByBoxId(uuid);
+      }
+    }
+
+    return shapes;
   }
 
   addShape(e: MouseEvent) {
