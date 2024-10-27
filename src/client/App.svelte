@@ -30,13 +30,15 @@
   const { currentConnection, connections } = connectionStore;
 
   // TODO:
-  // [ ] disable mousemove and touchmove events when the tool is "CONNECT"
-  // [ ] handle connection on selected shape properly (just reset selection when toolbar is clicked)
-  // [ ] implement connection deletion via Trash button in toolbar
-  // [ ] select shape on hovering during connection
-  // [ ] connect arrow with a box when hovering
-  // [ ] draw an arrow at the end of a connection
-  // [ ] refactor ResizableLayer - rename to ResizableBoxLayer and avoid geometryManager.getRectDimensionFromBounds(bounds)
+  // [ ] EASY: disable mousemove and touchmove events when the tool is "CONNECT"
+  // [ ] EASY: avoid geometryManager.getRectDimensionFromBounds(bounds) in the ResizableLayer component
+
+  // [ ] MEDIUM: implement connection deletion via Trash button in toolbar
+  // [ ] MEDIUM: handle connection on selected shape properly (reset selection when toolbar is clicked)
+
+  // [ ] HARD: draw an arrow at the end of a connection
+  // [ ] HARD: select (see ourboard.io) shape on hovering during connection
+  // [ ] HARD: connect (see ourboard.io) arrow with a box when hovering
 
   onMount(async () => {
     viewport = canvas.getViewport();
