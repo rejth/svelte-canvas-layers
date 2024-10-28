@@ -10,7 +10,10 @@
   $: render = ({ context }: RenderProps) => {
     if (!context) return;
 
-    const { x, y, width, height } = geometryManager.getRectDimensionFromBounds(bounds);
+    const rect = geometryManager.getRectDimensionFromBounds(bounds);
+    if (!rect) return;
+
+    const { x, y, width, height } = rect;
 
     if (active) {
       context.strokeStyle = COLORS.SELECTION;
