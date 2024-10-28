@@ -12,8 +12,9 @@
   const stretch = 0.5;
   const stretchMax = 360;
   const stretchMin = 0;
-  const padStart = 2;
-  const padEnd = 2;
+  const padStart = 0;
+  const padEnd = 11;
+  const endArrowRadius = 6;
 
   const flip = false;
   const straights = true;
@@ -32,7 +33,7 @@
     });
   };
 
-  $: [sx, sy, cx, cy, ex, ey] = getBoxToBoxConnection(boxA, boxB);
+  $: [sx, sy, cx, cy, ex, ey, ae, as, sc] = getBoxToBoxConnection(boxA, boxB);
 
   $: _render = ({ context }: RenderProps) => {
     if (!context) return;
@@ -51,11 +52,18 @@
     context.strokeStyle = '#000';
     context.stroke();
 
-    // Draw end circle
+    // Arrowhead configuration
+    context.save();
+    context.translate(ex + Math.cos(ae) * 12, ey + Math.sin(ae) * 12);
+    context.rotate(ae);
     context.beginPath();
-    context.arc(ex, ey, 4, 0, Math.PI * 2);
+    context.moveTo(0, 0);
+    context.lineTo(-endArrowRadius * 2, -endArrowRadius);
+    context.lineTo(-endArrowRadius * 2, endArrowRadius);
+    context.closePath();
     context.fillStyle = '#000';
     context.fill();
+    context.restore();
   };
 </script>
 

@@ -6,12 +6,14 @@
 
   import Surface from './ResizableLayerSurface.svelte';
   import Handler from './ResizableLayerHandler.svelte';
+  import { LayerEvent, type LayerEventDetails } from './interfaces';
 
   export let initialBounds: Bounds = { x0: 0, y0: 0, x1: 0, y1: 0 };
   export let selectionPath: Point[] = [];
   export let isSelected: boolean = false;
+  export let isMovingBlocked: boolean = false;
 
-  const dispatcher = createEventDispatcher();
+  const dispatcher = createEventDispatcher<Record<LayerEvent, LayerEventDetails>>();
 
   const [N, S, W, E] = [1, 2, 4, 8];
   const HANDLERS = [N, S, W, E, N | W, N | E, S | W, S | E];
@@ -26,8 +28,8 @@
   $: active = Boolean(draggedHandler || hoveredHandler) || isOverlapped(selectionPath);
   $: selected = active || isSelected;
 
-  $: active && dispatcher('active', { box: geometryManager.getRectDimensionFromBounds(bounds) });
-  $: !active && dispatcher('leave');
+  $: active && dispatcher(LayerEvent.ACTIVE, { bounds });
+  $: !active && dispatcher(LayerEvent.LEAVE);
 
   const isOverlapped = (selectionPath: Point[]) => {
     const selectionBounds = geometryManager.getPathBounds(selectionPath);
@@ -47,17 +49,17 @@
   };
 
   const onMouseMove = (e: MouseEvent) => {
-    if (!draggedHandler) return;
+    if (!draggedHandler || isMovingBlocked) return;
     const { movementX, movementY } = e;
     x0 += draggedHandler & W && movementX;
     y0 += draggedHandler & N && movementY;
     x1 += draggedHandler & E && movementX;
     y1 += draggedHandler & S && movementY;
-    dispatcher('move', { box: geometryManager.getRectDimensionFromBounds(bounds) });
+    dispatcher(LayerEvent.MOVE, { bounds });
   };
 
   const onTouchMove = (e: TouchEvent) => {
-    if (!draggedHandler) return;
+    if (!draggedHandler || isMovingBlocked) return;
     const { clientX, clientY } = e.touches[0];
     const movementX = clientX - previousTouch.clientX;
     const movementY = clientY - previousTouch.clientY;
@@ -66,13 +68,17 @@
     x1 += draggedHandler & E && movementX;
     y1 += draggedHandler & S && movementY;
     previousTouch = e.touches[0];
+    dispatcher(LayerEvent.MOVE, { bounds });
   };
 
-  const onSurfaceMouseEnter = () => (hoveredHandler = SURFACE);
   const onHandlerMouseEnter = (handler: number) => (hoveredHandler = handler);
+  const onSurfaceMouseEnter = () => (hoveredHandler = SURFACE);
 
-  const onSurfaceMouseDown = () => (draggedHandler = SURFACE);
   const onHandlerMouseDown = (handler: number) => (draggedHandler = handler);
+  const onSurfaceMouseDown = () => {
+    draggedHandler = SURFACE;
+    dispatcher(LayerEvent.TOUCH, { bounds });
+  };
 
   const onMouseLeave = () => (hoveredHandler = null);
   const onMouseUp = () => (draggedHandler = null);

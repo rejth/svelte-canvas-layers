@@ -21,7 +21,6 @@ class GeometryManager {
     } else if (e instanceof MouseEvent) {
       return this.#getMousePosition(e, pixelRatio);
     }
-
     return this.defaultPoint;
   }
 
@@ -35,7 +34,6 @@ class GeometryManager {
   #getTouchPosition(e: TouchEvent, pixelRatio: PixelRatio = 1): Point {
     const { left, top } = (<Element>e.target).getBoundingClientRect();
     const { clientX, clientY } = e.changedTouches[0];
-
     return {
       x: (clientX - left) * pixelRatio,
       y: (clientY - top) * pixelRatio,
@@ -44,10 +42,8 @@ class GeometryManager {
 
   getPathBounds(path: Point[]): Bounds | null {
     if (!path.length) return null;
-
     const from = path[0];
     const to = path[path.length - 1];
-
     return {
       x0: from.x,
       y0: from.y,
@@ -58,10 +54,8 @@ class GeometryManager {
 
   getRectDimensionFromPath(path: Point[]): RectDimension | null {
     if (!path.length) return null;
-
     const from = path[0];
     const to = path[path.length - 1];
-
     return {
       x: Math.min(from.x, to.x),
       y: Math.min(from.y, to.y),
@@ -70,7 +64,8 @@ class GeometryManager {
     };
   }
 
-  getRectDimensionFromBounds(bounds: Bounds): RectDimension {
+  getRectDimensionFromBounds(bounds: Bounds | undefined): RectDimension | null {
+    if (!bounds) return null;
     const { x0, y0, x1, y1 } = bounds;
     return {
       x: Math.min(x0, x1),
@@ -110,7 +105,6 @@ class GeometryManager {
   isOverlapping(rectA: Bounds, rectB: Bounds): boolean {
     const rect1 = this.getBBox(rectA);
     const rect2 = this.getBBox(rectB);
-
     return !(
       rect1.maxX < rect2.minX ||
       rect1.minX > rect2.maxX ||

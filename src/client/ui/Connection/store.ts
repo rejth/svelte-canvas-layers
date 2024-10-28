@@ -2,6 +2,7 @@ import { get, type Writable, writable } from 'svelte/store';
 import { v4 as uuid } from 'uuid';
 
 import type { OriginalEvent, RectDimension } from 'core/interfaces';
+import type { LayerEventDetails } from 'core/ui';
 import { geometryManager } from 'core/services';
 
 import { Tools, type Tool } from 'client/interfaces';
@@ -44,9 +45,10 @@ class ConnectionStore {
     });
   }
 
-  handleBoxSelect = (e: CustomEvent<{ box: RectDimension }>, boxId: string) => {
+  handleBoxSelect = (e: CustomEvent<LayerEventDetails>, boxId: string) => {
     if (this.#tool !== Tools.CONNECT) return;
     const currentConnection = get(this.currentConnection);
+    const rect = geometryManager.getRectDimensionFromBounds(e.detail?.bounds);
 
     if (currentConnection?.source) {
       const connectionId = uuid();
@@ -54,7 +56,7 @@ class ConnectionStore {
       this.connections.update((store) => {
         store[connectionId] = {
           source: currentConnection.source!,
-          target: { id: boxId, box: e.detail.box },
+          target: { id: boxId, box: rect! },
         };
 
         return store;
@@ -69,23 +71,24 @@ class ConnectionStore {
       this.currentConnection.set(null);
       toolbarStore.changeTool(Tools.SELECT);
     } else {
-      this.currentConnection.set({ source: { id: boxId, box: e.detail.box } });
+      this.currentConnection.set({ source: { id: boxId, box: rect! } });
     }
   };
 
-  handleBoxMove = (e: CustomEvent<{ box: RectDimension }>, boxId: string) => {
+  handleBoxMove = (e: CustomEvent<LayerEventDetails>, boxId: string) => {
     const connectionIds = this.connectionIdsByBoxId[boxId];
     if (!connectionIds) return;
 
     const connections = get(this.connections);
+    const rect = geometryManager.getRectDimensionFromBounds(e.detail?.bounds);
 
     connectionIds.forEach((connectionId) => {
       const connection = connections[connectionId];
 
       if (connection.source.id === boxId) {
-        connection.source.box = e.detail.box;
+        connection.source.box = rect!;
       } else if (connection.target.id === boxId) {
-        connection.target.box = e.detail.box;
+        connection.target.box = rect!;
       }
 
       this.connections.update((store) => {

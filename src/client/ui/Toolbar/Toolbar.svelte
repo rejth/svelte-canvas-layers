@@ -64,6 +64,7 @@
 
   const onClick = (type: Tool) => {
     if (type === Tools.DELETE) return handleDelete();
+    canvasStore.resetSelectedShapes();
     toolbarStore.changeTool(type);
   };
 </script>
