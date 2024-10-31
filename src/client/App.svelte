@@ -24,6 +24,8 @@
   let canvas: Canvas;
   let viewport: Viewport;
   let selection: Point[] = [];
+  let isLayerEntered = false;
+  let clickOutsideExcluded: HTMLElement[] = [];
 
   const { tool } = toolbarStore;
   const { shapes, selectionPath } = canvasStore;
@@ -37,9 +39,9 @@
   // [x] MEDIUM: handle connection on selected shape properly (reset selection when toolbar is clicked)
 
   // [ ] HARD: implement connection deletion via Trash button in toolbar
-  // [ ] HARD: select (see ourboard.io) shape on hovering during connection
-  // [ ] HARD: connect (see ourboard.io) arrow with a box when hovering
-  // [ ] HARD: reset selection when toolbar is clicked
+  // [x] HARD: select (see ourboard.io) shape on hovering during connection
+  // [x] HARD: connect (see ourboard.io) arrow with a box when hovering
+  // [x] HARD: reset selection when toolbar is clicked
 
   onMount(async () => {
     viewport = canvas.getViewport();
@@ -47,38 +49,45 @@
     const ref = canvas.getCanvasElement();
     const rect = ref.getBoundingClientRect();
     const selectionWatcher = dndWatcher(ref);
+    const trashIcon = document.getElementById('trash');
+
+    if (trashIcon) {
+      clickOutsideExcluded = [trashIcon];
+    }
 
     for await (const e of selectionWatcher) {
       canvasStore.dragSelection(<MouseEvent>e, rect);
     }
   });
 
+  $: connection = $tool === Tools.CONNECT;
   $: panning = $tool === Tools.PAN;
   $: cursorStyle = panning ? `cursor: ${CURSORS.HAND}` : ``;
   $: selection = $selectionPath.length > 0 ? $selectionPath : selection;
 
-  const onClick = (e: MouseEvent) => {
+  const handleCanvasClick = (e: MouseEvent) => {
     canvasStore.addShape(e);
     selection = $selectionPath;
     canvasStore.resetSelection();
   };
 
-  const onMouseDown = (e: MouseEvent) => {
+  const handleCanvasMouseDown = (e: MouseEvent) => {
     if (!panning) return;
     viewport.onMouseDown(e);
   };
 
-  const onMouseUp = (e: MouseEvent) => {
+  const handleCanvasMouseUp = (e: MouseEvent) => {
     if (!panning) return;
     viewport.onMouseUp(e);
   };
 
-  const onMouseMove = (e: MouseEvent) => {
+  const handleCanvasMouseMove = (e: MouseEvent) => {
     viewport.onMouseMove(e);
-    connectionStore.handleMouseMove(e);
+    if (isLayerEntered) return;
+    connectionStore.handleCanvasMouseMove(e);
   };
 
-  const onWheel = (e: WheelEvent) => {
+  const handleCanvasWheel = (e: WheelEvent) => {
     viewport.onWheel(e);
   };
 
@@ -93,6 +102,7 @@
   const handleLayerLeave = (uuid: string) => {
     canvasStore.deselectShape(uuid);
     canvasStore.setIsSelected(false);
+    isLayerEntered = false;
   };
 
   const handleLayerTouch = (e: CustomEvent<LayerEventDetails>, uuid: string) => {
@@ -102,21 +112,29 @@
   const handleLayerMove = (e: CustomEvent<LayerEventDetails>, uuid: string) => {
     connectionStore.handleBoxMove(e, uuid);
   };
+
+  const handleLayerEnter = (e: CustomEvent<LayerEventDetails>, uuid: string) => {
+    isLayerEntered = true;
+    connectionStore.handleBoxEnter(e, uuid);
+  };
 </script>
 
 <main>
   <Toolbar />
   <Canvas
     useLayerEvents={!panning}
+    handleEventsOnLayerMove={connection}
+    {clickOutsideExcluded}
     width={window.innerWidth}
     height={window.innerHeight}
     style={cursorStyle}
     bind:this={canvas}
-    on:click={onClick}
-    on:mousedown={onMouseDown}
-    on:mousemove={onMouseMove}
-    on:mouseup={onMouseUp}
-    on:wheel={onWheel}
+    on:outclick={() => (selection = [])}
+    on:click={handleCanvasClick}
+    on:mousedown={handleCanvasMouseDown}
+    on:mousemove={handleCanvasMouseMove}
+    on:mouseup={handleCanvasMouseUp}
+    on:wheel={handleCanvasWheel}
   >
     <Background
       width={10}
@@ -131,7 +149,7 @@
     {#if $tool === Tools.SELECT}
       <Selection path={$selectionPath} />
     {/if}
-    {#if $tool === Tools.CONNECT && $currentConnection}
+    {#if connection && $currentConnection}
       <Connection boxA={$currentConnection?.source?.box} boxB={$currentConnection?.target?.box} />
     {/if}
     {#each Object.values($connections) as { source, target }}
@@ -142,12 +160,14 @@
         {initialBounds}
         {isSelected}
         selectionPath={selection}
-        isMovingBlocked={$tool === Tools.CONNECT}
+        selectOnMakingConnection={connection}
+        isMovingBlocked={connection}
         on:mousedown={handleLayerMouseDown}
         on:layer.active={() => handleLayerActive(uuid)}
         on:layer.leave={() => handleLayerLeave(uuid)}
         on:layer.touch={(e) => handleLayerTouch(e, uuid)}
         on:layer.move={(e) => handleLayerMove(e, uuid)}
+        on:layer.enter={(e) => handleLayerEnter(e, uuid)}
         let:bounds
       >
         <Layer

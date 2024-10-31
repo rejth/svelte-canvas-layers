@@ -6,6 +6,7 @@
 
   export let bounds: Bounds;
   export let active: boolean;
+  export let selectOnMakingConnection: boolean;
 
   $: render = ({ context }: RenderProps) => {
     if (!context) return;
@@ -16,7 +17,7 @@
     const { x, y, width, height } = rect;
 
     if (active) {
-      context.strokeStyle = COLORS.SELECTION;
+      context.strokeStyle = selectOnMakingConnection ? '#000' : COLORS.SELECTION;
       context.lineWidth = 2;
       context.strokeRect(x, y, width, height);
     }

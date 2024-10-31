@@ -1,7 +1,7 @@
 import { get, type Writable, writable } from 'svelte/store';
 import { v4 as uuid } from 'uuid';
 
-import type { OriginalEvent, RectDimension } from 'core/interfaces';
+import type { RectDimension } from 'core/interfaces';
 import type { LayerEventDetails } from 'core/ui';
 import { geometryManager } from 'core/services';
 
@@ -33,7 +33,7 @@ class ConnectionStore {
     toolbarStore.tool.subscribe((value) => (this.#tool = value));
   }
 
-  handleMouseMove(e: OriginalEvent) {
+  handleCanvasMouseMove(e: MouseEvent) {
     const currentConnection = get(this.currentConnection);
     if (this.#tool !== Tools.CONNECT || !currentConnection?.source) return;
 
@@ -42,6 +42,18 @@ class ConnectionStore {
     this.currentConnection.set({
       source: currentConnection.source,
       target: { box: { x: point.x, y: point.y, width: 0, height: 0 } },
+    });
+  }
+
+  handleBoxEnter(e: CustomEvent<LayerEventDetails>, boxId: string) {
+    const currentConnection = get(this.currentConnection);
+    if (this.#tool !== Tools.CONNECT || !currentConnection?.source) return;
+
+    const rect = geometryManager.getRectDimensionFromBounds(e.detail?.bounds);
+
+    this.currentConnection.set({
+      source: currentConnection.source,
+      target: { id: boxId, box: rect! },
     });
   }
 
@@ -69,7 +81,6 @@ class ConnectionStore {
 
       this.#updateConnectionIdsByBoxId(boxId, connectionId);
       this.currentConnection.set(null);
-      toolbarStore.changeTool(Tools.SELECT);
     } else {
       this.currentConnection.set({ source: { id: boxId, box: rect! } });
     }

@@ -52,7 +52,7 @@
     context.strokeStyle = '#000';
     context.stroke();
 
-    // Arrowhead configuration
+    // Draw arrowhead
     context.save();
     context.translate(ex + Math.cos(ae) * 12, ey + Math.sin(ae) * 12);
     context.rotate(ae);

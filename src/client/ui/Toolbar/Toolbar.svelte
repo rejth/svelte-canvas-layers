@@ -15,6 +15,7 @@
 
   $: tools = [
     {
+      id: 'note',
       label: 'Note',
       type: Tools.NOTE,
       icon: NoteIcon,
@@ -22,6 +23,7 @@
       disabled: false,
     },
     {
+      id: 'text',
       label: 'Text',
       type: Tools.TEXT,
       icon: TextIcon,
@@ -29,6 +31,7 @@
       disabled: false,
     },
     {
+      id: 'pan',
       label: 'Pan',
       type: Tools.PAN,
       icon: PanIcon,
@@ -36,6 +39,7 @@
       disabled: false,
     },
     {
+      id: 'select',
       label: 'Select',
       type: Tools.SELECT,
       icon: SelectIcon,
@@ -43,6 +47,7 @@
       disabled: false,
     },
     {
+      id: 'connect',
       label: 'Connect',
       type: Tools.CONNECT,
       icon: ConnectIcon,
@@ -50,6 +55,7 @@
       disabled: false,
     },
     {
+      id: 'trash',
       label: 'Delete',
       type: Tools.DELETE,
       icon: TrashIcon,
@@ -70,9 +76,10 @@
 </script>
 
 <ul class="toolbar" id="toolbar">
-  {#each tools as { type, label, icon, hoverText, disabled }}
+  {#each tools as { id, type, label, icon, hoverText, disabled }}
     <li>
       <span
+        {id}
         tabindex="0"
         role="button"
         class="tool"

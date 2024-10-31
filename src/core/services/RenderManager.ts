@@ -239,6 +239,17 @@ export class RenderManager {
     dispatch?.(<CanvasEvents>details.originalEvent.type, details);
   }
 
+  leaveActiveLayer(e: CustomEvent | OriginalEvent) {
+    this.#dispatchLayerEvent(this.activeLayerId, {
+      originalEvent: new PointerEvent('pointerleave', e),
+      ...{ x: 0, y: 0 },
+    });
+    this.#dispatchLayerEvent(this.activeLayerId, {
+      originalEvent: new MouseEvent('mouseleave', e),
+      ...{ x: 0, y: 0 },
+    });
+  }
+
   onLayerChange(callback: (layerId: LayerId) => void) {
     this.layerChangeCallback = callback;
   }

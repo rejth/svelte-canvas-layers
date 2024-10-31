@@ -11,6 +11,7 @@
   export let initialBounds: Bounds = { x0: 0, y0: 0, x1: 0, y1: 0 };
   export let selectionPath: Point[] = [];
   export let isSelected: boolean = false;
+  export let selectOnMakingConnection: boolean = false;
   export let isMovingBlocked: boolean = false;
 
   const dispatcher = createEventDispatcher<Record<LayerEvent, LayerEventDetails>>();
@@ -72,7 +73,10 @@
   };
 
   const onHandlerMouseEnter = (handler: number) => (hoveredHandler = handler);
-  const onSurfaceMouseEnter = () => (hoveredHandler = SURFACE);
+  const onSurfaceMouseEnter = () => {
+    hoveredHandler = SURFACE;
+    dispatcher(LayerEvent.ENTER, { bounds });
+  };
 
   const onHandlerMouseDown = (handler: number) => (draggedHandler = handler);
   const onSurfaceMouseDown = () => {
@@ -103,6 +107,7 @@
 <Surface
   {bounds}
   active={selected}
+  {selectOnMakingConnection}
   on:mouseleave={onMouseLeave}
   on:mouseenter={onSurfaceMouseEnter}
   on:mousedown={onSurfaceMouseDown}
@@ -114,7 +119,7 @@
   on:touchstart
 />
 
-{#if selected}
+{#if selected && !selectOnMakingConnection}
   {#each sortedHandlers as handler (handler)}
     <Handler
       {...getHandlerPosition(handler)}

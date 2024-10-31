@@ -2,6 +2,7 @@
   import { setContext, onMount, createEventDispatcher } from 'svelte';
 
   import { KEY } from 'core/constants';
+  import { clickOutside } from 'core/lib';
   import type {
     OriginalEvent,
     AppContext,
@@ -45,6 +46,8 @@
    * When useLayerEvents is false, all operations will be performed on the main canvas in the main thread.
    */
   export let useLayerEvents = false;
+  export let handleEventsOnLayerMove = false;
+  export let clickOutsideExcluded: HTMLElement[] = [];
   export let className = '';
   export let style = '';
 
@@ -102,7 +105,11 @@
     };
   };
 
-  const handleLayerMouseMove = (_e: MouseEvent) => {};
+  const handleLayerMouseMove = (e: MouseEvent) => {
+    if (handleEventsOnLayerMove) {
+      renderManager.findActiveLayer(e);
+    }
+  };
 
   const handleLayerTouchStart = (e: TouchEvent) => {
     renderManager.findActiveLayer(e);
@@ -110,8 +117,14 @@
   };
 
   const handleEvent = (e: OriginalEvent) => {
-    renderManager.findActiveLayer(e);
+    if (!handleEventsOnLayerMove) {
+      renderManager.findActiveLayer(e);
+    }
     renderManager.dispatchEvent(e);
+  };
+
+  const handleClickOutside = (e: CustomEvent) => {
+    renderManager.leaveActiveLayer(e);
   };
 
   $: _width = width ?? canvasWidth ?? 0;
@@ -171,12 +184,14 @@
 <canvas
   bind:this={canvas}
   use:resize
+  use:clickOutside={{ exclude: clickOutsideExcluded }}
   bind:clientWidth={canvasWidth}
   bind:clientHeight={canvasHeight}
   class={className}
   style:width={width ? `${width}px` : '100%'}
   style:height={height ? `${height}px` : '100%'}
   {style}
+  on:outclick={handleClickOutside}
   on:mousemove={layerMouseMoveHandler}
   on:pointermove={layerMouseMoveHandler}
   on:touchstart={layerTouchStartHandler}
@@ -237,6 +252,7 @@
   on:pointerleave
   on:gotpointercapture
   on:lostpointercapture
+  on:outclick
 />
 
 <div style:display="none" bind:this={layerContainer}>

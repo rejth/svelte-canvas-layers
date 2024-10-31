@@ -5,6 +5,7 @@ export const enum LayerEvent {
   LEAVE = 'layer.leave',
   MOVE = 'layer.move',
   TOUCH = 'layer.touch',
+  ENTER = 'layer.enter',
 }
 
 export type LayerEventDetails = { bounds: Bounds } | undefined;
