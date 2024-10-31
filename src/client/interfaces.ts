@@ -12,7 +12,6 @@ export const enum Tools {
 
 export type Tool = keyof typeof Tools;
 export type ShapeType = 'NOTE' | 'TEXT';
-export type ToolbarTool = 'PAN' | 'SELECT' | 'DELETE' | 'CONNECT';
 
 export type ShapeConfig = {
   uuid: string;

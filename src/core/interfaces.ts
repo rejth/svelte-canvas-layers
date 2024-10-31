@@ -6,7 +6,6 @@ export type AppContext = {
   renderManager: RenderManager;
 };
 
-export type CanvasType = HTMLCanvasElement | OffscreenCanvas;
 export type CanvasContextType = CanvasRenderingContext2D | HitCanvasRenderingContext2D;
 
 export type LayerId = number;
@@ -40,10 +39,6 @@ export type RenderProps = {
   options: CanvasOptions;
 };
 
-export type RenderManagerOptions = {
-  useLayerEvents: boolean;
-};
-
 export interface Render {
   (data: RenderProps): void;
 }
@@ -52,10 +47,6 @@ export interface RegisteredLayerMetadata {
   render: Render;
   dispatcher?: LayerEventDispatcher;
   bounds?: Bounds;
-}
-
-export interface RegisterLayer {
-  (data: RegisteredLayerMetadata): void;
 }
 
 export type OriginalEvent = MouseEvent | TouchEvent;

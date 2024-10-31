@@ -20,12 +20,12 @@ const EXCLUDED_SETTERS: Array<keyof HitCanvasRenderingContext2D> = [
 ];
 
 // https://blog.logrocket.com/guide-javascript-bitwise-operators/#sign-propagating-right-shift
-export function convertRGBtoLayerId([r, g, b]: RGB): number {
+function convertRGBtoLayerId([r, g, b]: RGB): number {
   const id = ((r << 16) | (g << 8) | b) / 2;
   return id % 1 ? 0 : id;
 }
 
-export function convertLayerIdToRGB(id: number): RGB {
+function convertLayerIdToRGB(id: number): RGB {
   const id2 = id * 2;
   const r = (id2 >> 16) & 0xff;
   const g = (id2 >> 8) & 0xff;

@@ -12,14 +12,8 @@
     "lint": "prettier --check . && eslint .",
     "format": "prettier --write .",
     "check-updates": "yarn npm-check-updates",
-    "update-packages": "yarn npm-check-updates -u"
-  },
-  "lint-staged": {
-    "*.{ts,svelte}": [
-      "yarn format",
-      "yarn lint"
-    ],
-    "*.{css,scss,json,svg,js,cjs,html,md}": "prettier --write --ignore-unknown"
+    "update-packages": "yarn npm-check-updates -u",
+    "knip": "knip"
   },
   "dependencies": {
     "canvas-size": "^2.0.0",
@@ -31,6 +25,7 @@
     "@sveltejs/vite-plugin-svelte": "^3.0.1",
     "@tsconfig/svelte": "^5.0.2",
     "@types/canvas-size": "^1.2.2",
+    "@types/node": "^22.8.5",
     "@types/rbush": "^4.0.0",
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^6.13.2",
@@ -39,14 +34,13 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.0.1",
     "eslint-plugin-svelte": "^2.35.1",
-    "lint-staged": "^15.2.0",
+    "knip": "^5.34.4",
     "npm-check-updates": "^16.14.11",
     "prettier": "^3.1.0",
     "prettier-plugin-svelte": "^3.1.2",
     "svelte": "^4.2.8",
     "svelte-check": "^3.6.2",
-    "tslib": "^2.6.2",
-    "typescript": "^5.3.3",
+    "typescript": "^5.6.3",
     "vite": "^5.0.7",
     "vite-tsconfig-paths": "^5.0.1"
   },
