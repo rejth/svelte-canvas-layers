@@ -38,7 +38,7 @@
   // [x] MEDIUM: draw an arrow at the end of a connection
   // [x] MEDIUM: handle connection on selected shape properly (reset selection when toolbar is clicked)
 
-  // [ ] HARD: implement connection deletion via Trash button in toolbar
+  // [x] HARD: implement connection deletion via Trash button in toolbar
   // [x] HARD: select (see ourboard.io) shape on hovering during connection
   // [x] HARD: connect (see ourboard.io) arrow with a box when hovering
   // [x] HARD: reset selection when toolbar is clicked
@@ -150,10 +150,10 @@
       <Selection path={$selectionPath} />
     {/if}
     {#if connection && $currentConnection}
-      <Connection boxA={$currentConnection?.source?.box} boxB={$currentConnection?.target?.box} />
+      <Connection source={$currentConnection?.source} target={$currentConnection?.target} />
     {/if}
-    {#each Object.values($connections) as { source, target }}
-      <Connection boxA={source.box} boxB={target.box} />
+    {#each Object.entries($connections) as [connectionId, { source, target }]}
+      <Connection {connectionId} {source} {target} selectOnMakingConnection={connection} />
     {/each}
     {#each $shapes.values() as { uuid, initialBounds, color, isSelected } (uuid)}
       <ResizableLayer

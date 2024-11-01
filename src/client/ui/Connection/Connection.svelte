@@ -1,70 +1,126 @@
 <script lang="ts">
-  import { getBoxToBoxArrow } from 'perfect-arrows';
-  import type { RectDimension, RenderProps } from 'core/interfaces';
-  import { Layer } from 'core/ui';
+  import { getBoxToBoxArrow, type ArrowOptions } from 'perfect-arrows';
 
-  type Box = RectDimension | null;
+  import type { RectDimension } from 'core/interfaces';
+  import { Layer, QuadraticCurve, ControlPoints, type CurveLayerEventDetails } from 'core/ui';
+  import { COLORS } from 'client/constants';
 
-  export let boxA: Box = null;
-  export let boxB: Box = null;
+  import { connectionStore, type ConnectedBox } from './store';
+  import { toolbarStore } from '../Toolbar/store';
 
-  const bow = 0.25;
-  const stretch = 0.5;
-  const stretchMax = 360;
-  const stretchMin = 0;
-  const padStart = 0;
-  const padEnd = 11;
-  const endArrowRadius = 6;
+  type Box = RectDimension | undefined;
 
-  const flip = false;
-  const straights = true;
+  export let connectionId: string | null = null;
+  export let source: ConnectedBox | null = null;
+  export let target: ConnectedBox | null = null;
+  export let selectOnMakingConnection: boolean = false;
 
-  const getBoxToBoxConnection = (b1: Box, b2: Box): number[] => {
-    if (!b1 || !b2) return [];
-    return getBoxToBoxArrow(b1.x, b1.y, b1.width, b1.height, b2.x, b2.y, b2.width, b2.height, {
-      padStart,
-      padEnd,
-      bow,
-      straights,
-      stretch,
-      stretchMax,
-      stretchMin,
-      flip,
-    });
+  const ARROW_OPTIONS: ArrowOptions = {
+    bow: 0.25,
+    stretch: 0.5,
+    stretchMin: 0,
+    stretchMax: 360,
+    padStart: 0,
+    padEnd: 11,
+    flip: false,
+    straights: true,
   };
 
-  $: [sx, sy, cx, cy, ex, ey, ae, as, sc] = getBoxToBoxConnection(boxA, boxB);
+  const endArrowRadius = 6;
+  const t = 0.5;
 
-  $: _render = ({ context }: RenderProps) => {
+  let active: boolean = false;
+  let isMoving: boolean = false;
+
+  const handleCurvePointMove = (e: CustomEvent<CurveLayerEventDetails>) => {
+    if (!e.detail || selectOnMakingConnection) return;
+    isMoving = true;
+    controlPoint = e.detail.point;
+  };
+
+  const handleConnectionActive = () => {
+    if (!connectionId || selectOnMakingConnection) return;
+    active = true;
+    toolbarStore.changeTool(null);
+    connectionStore.selectConnection(connectionId, { source: source!, target: target! });
+  };
+
+  const handleConnectionLeave = () => {
+    if (!connectionId || selectOnMakingConnection) return;
+    active = false;
+    isMoving = false;
+    connectionStore.deselectConnection(connectionId);
+  };
+
+  const getBoxToBoxConnection = (source: Box, target: Box): number[] => {
+    if (!source || !target) return [];
+    return getBoxToBoxArrow(
+      source.x,
+      source.y,
+      source.width,
+      source.height,
+      target.x,
+      target.y,
+      target.width,
+      target.height,
+      ARROW_OPTIONS,
+    );
+  };
+
+  $: [sx, sy, cx, cy, ex, ey, _ae, _as, _ac] = getBoxToBoxConnection(source?.box, target?.box);
+
+  $: controlPoint = { x: cx, y: cy };
+
+  $: if (isMoving) {
+    let midX = (sx + ex) / 2;
+    let midY = (sy + ey) / 2;
+    controlPoint = {
+      x: 2 * controlPoint.x - midX,
+      y: 2 * controlPoint.y - midY,
+    };
+  }
+
+  $: arrowAngle = Math.atan2(ey - controlPoint.y, ex - controlPoint.x);
+
+  $: curvePoint = {
+    x: Math.pow(1 - t, 2) * sx + 2 * (1 - t) * t * controlPoint.x + Math.pow(t, 2) * ex,
+    y: Math.pow(1 - t, 2) * sy + 2 * (1 - t) * t * controlPoint.y + Math.pow(t, 2) * ey,
+  };
+</script>
+
+<Layer
+  render={({ context }) => {
     if (!context) return;
-
-    // Draw start circle
     context.beginPath();
-    context.arc(sx, sy, 4, 0, Math.PI * 2);
-    context.fillStyle = '#000';
+    context.arc(sx, sy, 5, 0, Math.PI * 2);
+    context.fillStyle = active && !selectOnMakingConnection ? COLORS.SELECTION : '#000';
     context.fill();
+  }}
+/>
 
-    // Draw line between
-    context.beginPath();
-    context.moveTo(sx, sy);
-    context.quadraticCurveTo(cx, cy, ex, ey);
-    context.lineWidth = 3;
-    context.strokeStyle = '#000';
-    context.stroke();
+<ControlPoints
+  controlPoints={[curvePoint]}
+  {selectOnMakingConnection}
+  on:point.move={handleCurvePointMove}
+  on:point.touch={handleConnectionActive}
+  on:point.leave={handleConnectionLeave}
+>
+  <QuadraticCurve {active} controlPoints={[{ x: sx, y: sy }, controlPoint, { x: ex, y: ey }]} />
+</ControlPoints>
 
-    // Draw arrowhead
+<Layer
+  render={({ context }) => {
+    if (!context) return;
     context.save();
-    context.translate(ex + Math.cos(ae) * 12, ey + Math.sin(ae) * 12);
-    context.rotate(ae);
+    context.translate(ex + Math.cos(arrowAngle) * 12, ey + Math.sin(arrowAngle) * 12);
+    context.rotate(arrowAngle);
     context.beginPath();
     context.moveTo(0, 0);
     context.lineTo(-endArrowRadius * 2, -endArrowRadius);
     context.lineTo(-endArrowRadius * 2, endArrowRadius);
     context.closePath();
-    context.fillStyle = '#000';
+    context.fillStyle = active && !selectOnMakingConnection ? COLORS.SELECTION : '#000';
     context.fill();
     context.restore();
-  };
-</script>
-
-<Layer render={_render} />
+  }}
+/>

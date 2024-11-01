@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Tools, type Tool } from 'client/interfaces';
   import { canvasStore } from 'client/ui/Canvas/store';
+  import { connectionStore } from 'client/ui/Connection/store';
 
   import PanIcon from './PanIcon.svelte';
   import SelectIcon from './SelectIcon.svelte';
@@ -12,6 +13,7 @@
 
   const { tool } = toolbarStore;
   const { selectedShapes } = canvasStore;
+  const { selectedConnections } = connectionStore;
 
   $: tools = [
     {
@@ -28,7 +30,7 @@
       type: Tools.TEXT,
       icon: TextIcon,
       hoverText: 'Drag to add a new text area',
-      disabled: false,
+      disabled: true,
     },
     {
       id: 'pan',
@@ -60,12 +62,13 @@
       type: Tools.DELETE,
       icon: TrashIcon,
       hoverText: 'Delete selected item(s)',
-      disabled: $selectedShapes.size === 0,
+      disabled: $selectedShapes.size === 0 && Object.keys($selectedConnections).length === 0,
     },
   ];
 
   const handleDelete = () => {
     canvasStore.deleteShape();
+    connectionStore.removeConnection();
   };
 
   const onClick = (type: Tool) => {

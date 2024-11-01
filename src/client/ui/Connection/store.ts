@@ -8,7 +8,7 @@ import { geometryManager } from 'core/services';
 import { Tools, type Tool } from 'client/interfaces';
 import { toolbarStore } from 'client/ui/Toolbar/store';
 
-interface ConnectedBox {
+export interface ConnectedBox {
   id?: string;
   box: RectDimension;
 }
@@ -25,8 +25,9 @@ interface BoxToBoxConnection {
 class ConnectionStore {
   currentConnection: Writable<Partial<BoxToBoxConnection> | null> = writable(null);
   connections: Writable<Connection> = writable({});
-  connectionIdsByBoxId: { [uuid: string]: string[] } = {};
+  selectedConnections: Writable<Connection> = writable({});
 
+  connectionIdsByBoxId: { [boxId: string]: string[] } = {};
   #tool: Tool | null = null;
 
   constructor() {
@@ -121,6 +122,53 @@ class ConnectionStore {
       });
       return store;
     });
+
+    this.selectedConnections.update((connections) => this.#removeSelectedConnections(connections));
+  }
+
+  removeConnection() {
+    this.connections.update((store) => this.#removeSelectedConnections(store));
+    this.selectedConnections.update((store) => this.#removeSelectedConnections(store));
+  }
+
+  selectConnection(connectionId: string, connection: BoxToBoxConnection) {
+    this.selectedConnections.update((connections) => ({
+      ...connections,
+      [connectionId]: connection,
+    }));
+  }
+
+  deselectConnection(connectionId: string) {
+    this.selectedConnections.update((connections) => {
+      if (connections[connectionId]) {
+        delete connections[connectionId];
+      }
+      return connections;
+    });
+  }
+
+  #removeSelectedConnections(store: Connection): Connection {
+    const selected = get(this.selectedConnections);
+    const boxIds: string[] = [];
+
+    for (const connectionId of Object.keys(selected)) {
+      if (store[connectionId]) {
+        boxIds.push(store[connectionId].source.id!);
+        boxIds.push(store[connectionId].target.id!);
+        delete store[connectionId];
+      }
+    }
+
+    if (!boxIds.length) return store;
+
+    boxIds.forEach((boxId) => {
+      const connectionIds = this.connectionIdsByBoxId[boxId];
+      this.connectionIdsByBoxId[boxId] = connectionIds.filter(
+        (id) => !Object.keys(selected).includes(id),
+      );
+    });
+
+    return store;
   }
 
   #updateConnectionIdsByBoxId(boxId: string, connectionId: string) {

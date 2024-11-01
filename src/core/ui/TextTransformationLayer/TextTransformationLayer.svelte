@@ -1,14 +1,13 @@
 <script lang="ts">
   import type { Point } from 'core/interfaces';
-  import { geometryManager } from 'core/services';
 
-  import ControlPoint from './ControlPoint.svelte';
-  import Curve from './Curve.svelte';
   import Text from './Text.svelte';
+  import BezierCurve from './BezierCurve.svelte';
+  import ControlPoints from './ControlPoints.svelte';
+  import type { CurveLayerEventDetails } from './interfaces';
 
   export let text: string;
 
-  let selectedPoint: number | null = null;
   let controlPoints: Point[] = [
     { x: 100, y: 300 },
     { x: 200, y: 200 },
@@ -16,41 +15,8 @@
     { x: 400, y: 300 },
   ];
 
-  let draggedHandler: number | null = null;
-  let hoveredHandler: number | null = null;
-
-  $: active = draggedHandler !== null || hoveredHandler !== null;
-
-  const onMouseLeave = () => {
-    hoveredHandler = null;
-  };
-
-  const onMouseUp = () => {
-    draggedHandler = null;
-    selectedPoint = null;
-  };
-
-  const onMouseMove = (e: MouseEvent) => {
-    if (selectedPoint === null) return;
-    controlPoints[selectedPoint] = geometryManager.calculatePosition(e);
-  };
-
-  const onHandlePointMouseEnter = (handle: number) => {
-    hoveredHandler = handle;
-  };
-
-  const onHandleMouseDown = (handle: number) => {
-    draggedHandler = handle;
-    selectedPoint = handle;
-  };
-
-  const getPathPoints = (points: Point[], textLength: number) => {
-    return new Array(textLength).fill(null).map((_, i) => {
-      const t = i / textLength;
-      const { x, y } = getBezierPoint(t, points);
-      const angle = getBezierAngle(t, points);
-      return { x, y, angle };
-    });
+  const handleCurvePointMove = (e: CustomEvent<CurveLayerEventDetails>) => {
+    controlPoints[e.detail.index] = e.detail.point;
   };
 
   const getBezierPoint = (t: number, points: Point[]) => {
@@ -83,28 +49,20 @@
     return Math.atan2(dy, dx);
   };
 
-  const cursor = (node: HTMLElement, _: unknown) => ({
-    update: (cursorType: string) => (node.style.cursor = cursorType),
-  });
+  const getTextPathPoints = (points: Point[], textLength: number) => {
+    return new Array(textLength).fill(null).map((_, i) => {
+      const t = i / textLength;
+      const { x, y } = getBezierPoint(t, points);
+      const angle = getBezierAngle(t, points);
+      return { x, y, angle };
+    });
+  };
 
-  $: pathPoints = getPathPoints(controlPoints, text.length);
+  $: pathPoints = getTextPathPoints(controlPoints, text.length);
 </script>
 
-<svelte:body
-  use:cursor={active ? 'pointer' : 'auto'}
-  on:mousemove={onMouseMove}
-  on:mouseup={onMouseUp}
-/>
-
 <Text {text} {pathPoints} />
-<Curve {controlPoints} />
 
-{#each controlPoints as point, index}
-  <ControlPoint
-    {point}
-    active={hoveredHandler === index || draggedHandler === index}
-    on:mouseleave={onMouseLeave}
-    on:mouseenter={() => onHandlePointMouseEnter(index)}
-    on:mousedown={() => onHandleMouseDown(index)}
-  />
-{/each}
+<ControlPoints {controlPoints} on:point.move={handleCurvePointMove}>
+  <BezierCurve {controlPoints} />
+</ControlPoints>
