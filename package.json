@@ -13,7 +13,9 @@
     "format": "prettier --write .",
     "check-updates": "yarn npm-check-updates",
     "update-packages": "yarn npm-check-updates -u",
-    "knip": "knip"
+    "knip": "knip",
+    "pre-commit": "yarn lefthook run pre-commit",
+    "pre-push": "yarn lefthook run pre-push"
   },
   "dependencies": {
     "bezier-js": "^6.1.4",
