@@ -16,6 +16,7 @@
   ];
 
   const handleCurvePointMove = (e: CustomEvent<CurveLayerEventDetails>) => {
+    if (!e.detail) return;
     controlPoints[e.detail.index] = e.detail.point;
   };
 

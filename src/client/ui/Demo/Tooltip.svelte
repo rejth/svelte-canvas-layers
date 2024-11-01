@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { Layer } from 'core/ui';
   import { position, activeLayer } from './store';
 
