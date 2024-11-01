@@ -1,0 +1,15 @@
+# EXAMPLE USAGE:
+#
+#   Refer for explanation to following link:
+#   https://github.com/evilmartians/lefthook/blob/master/docs/configuration.md
+
+pre-commit:
+  parallel: true
+  commands:
+    svelte-check:
+      run: yarn svelte-check --tsconfig ./tsconfig.json {staged_files}
+    lint:
+      glob: '*.{ts,svelte}'
+      run: yarn prettier --check {staged_files} && yarn eslint {staged_files}
+    format:
+      run: yarn prettier --write {staged_files}
