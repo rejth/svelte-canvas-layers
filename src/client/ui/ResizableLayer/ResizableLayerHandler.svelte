@@ -1,8 +1,9 @@
 <script lang="ts">
   import type { RenderProps } from 'core/interfaces';
-  import { COLORS } from 'core/constants';
   import { geometryManager } from 'core/services';
   import { Layer } from 'core/ui';
+
+  import { COLORS } from 'client/constants';
 
   export let x: number;
   export let y: number;

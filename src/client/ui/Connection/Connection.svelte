@@ -2,9 +2,13 @@
   import { getBoxToBoxArrow, type ArrowOptions } from 'perfect-arrows';
 
   import type { RectDimension } from 'core/interfaces';
-  import { Layer, QuadraticCurve, ControlPoints, type CurveLayerEventDetails } from 'core/ui';
+  import { Layer } from 'core/ui';
+
   import { COLORS } from 'client/constants';
 
+  import QuadraticCurve from '../Curve/QuadraticCurve.svelte';
+  import ControlPoints from '../Curve/ControlPoints.svelte';
+  import { type CurveLayerEventDetails } from '../Curve/interfaces';
   import { connectionStore, type ConnectedBox } from './store';
   import { toolbarStore } from '../Toolbar/store';
 

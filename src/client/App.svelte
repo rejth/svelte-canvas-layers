@@ -4,7 +4,7 @@
   import type { Point } from 'core/interfaces';
   import { type Viewport } from 'core/services';
   import { dndWatcher } from 'core/lib';
-  import { Canvas, Layer, ResizableLayer, type LayerEventDetails } from 'core/ui';
+  import { Canvas, Layer } from 'core/ui';
 
   import { Tools } from 'client/interfaces';
   import { CURSORS } from 'client/constants';
@@ -15,6 +15,8 @@
   import UndoRedo from 'client/ui/UndoRedo/UndoRedo.svelte';
   import Toolbar from 'client/ui/Toolbar/Toolbar.svelte';
   import Connection from './ui/Connection/Connection.svelte';
+  import ResizableLayer from './ui/ResizableLayer/ResizableLayer.svelte';
+  import type { LayerEventDetails } from './ui/ResizableLayer/interfaces';
   import { canvasStore } from './ui/Canvas/store';
   import { toolbarStore } from './ui/Toolbar/store';
   import { connectionStore } from './ui/Connection/store';
@@ -30,20 +32,6 @@
   const { tool } = toolbarStore;
   const { shapes, selectionPath } = canvasStore;
   const { currentConnection, connections } = connectionStore;
-
-  // TODO:
-  // [x] EASY: disable mousemove and touchmove events when the tool is "CONNECT"
-  // [x] EASY: avoid geometryManager.getRectDimensionFromBounds(bounds) in the ResizableLayer component
-
-  // [x] MEDIUM: draw an arrow at the end of a connection
-  // [x] MEDIUM: handle connection on selected shape properly (reset selection when toolbar is clicked)
-
-  // [x] HARD: implement connection deletion via Trash button in toolbar
-  // [x] HARD: select (see ourboard.io) shape on hovering during connection
-  // [x] HARD: connect (see ourboard.io) arrow with a box when hovering
-  // [x] HARD: reset selection when toolbar is clicked
-  // [ ] replace context with ctx
-  // [x] replace w and h with width and height
 
   onMount(async () => {
     viewport = canvas.getViewport();

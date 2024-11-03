@@ -1,16 +1,17 @@
 <script lang="ts">
-  import { COLORS } from 'core/constants';
   import type { Point, RenderProps } from 'core/interfaces';
   import { Layer } from 'core/ui';
 
-  export let point: Point;
-  export let active: boolean = false;
+  import { COLORS } from 'client/constants';
 
-  const radius = 5;
+  export let start: Point;
+  export let control: Point;
+  export let end: Point;
+  export let active: boolean = false;
 
   $: render = ({ drawer }: RenderProps) => {
     const color = active ? COLORS.SELECTION : '#000';
-    drawer.fillCircle({ x: point.x, y: point.y, radius, color });
+    drawer.strokeQuadraticCurve({ start, control, end, color, lineWidth: 3 });
   };
 </script>
 

@@ -8,9 +8,9 @@ pre-commit:
   commands:
     svelte-check:
       run: yarn svelte-check --tsconfig ./tsconfig.json {staged_files}
-    lint:
-      glob: '*.{ts,js,svelte}'
-      run: yarn prettier --check {staged_files} && yarn eslint {staged_files}
     format:
       glob: '*.{ts,js,svelte,css,scss,json,svg,html,md}'
       run: yarn prettier --write {staged_files}
+    lint:
+      glob: '*.{ts,js,svelte}'
+      run: yarn prettier --check {staged_files} && yarn eslint {staged_files}

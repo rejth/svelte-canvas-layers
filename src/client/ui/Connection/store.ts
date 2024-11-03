@@ -2,11 +2,12 @@ import { get, type Writable, writable } from 'svelte/store';
 import { v4 as uuid } from 'uuid';
 
 import type { RectDimension } from 'core/interfaces';
-import type { LayerEventDetails } from 'core/ui';
 import { geometryManager } from 'core/services';
 
 import { Tools, type Tool } from 'client/interfaces';
 import { toolbarStore } from 'client/ui/Toolbar/store';
+
+import type { LayerEventDetails } from '../ResizableLayer/interfaces';
 
 export interface ConnectedBox {
   id?: string;

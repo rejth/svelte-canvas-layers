@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { COLORS } from 'core/constants';
   import type { Point, RenderProps } from 'core/interfaces';
   import { Layer } from 'core/ui';
+
+  import { COLORS } from 'client/constants';
 
   export let text: string;
   export let pathPoints: (Point & { angle: number })[];

@@ -2,9 +2,9 @@
   import type { Point } from 'core/interfaces';
 
   import Text from './Text.svelte';
-  import BezierCurve from './BezierCurve.svelte';
-  import ControlPoints from './ControlPoints.svelte';
-  import type { CurveLayerEventDetails } from './interfaces';
+  import BezierCurve from '../Curve/BezierCurve.svelte';
+  import ControlPoints from '../Curve/ControlPoints.svelte';
+  import { type CurveLayerEventDetails } from '../Curve/interfaces';
 
   export let text: string;
 

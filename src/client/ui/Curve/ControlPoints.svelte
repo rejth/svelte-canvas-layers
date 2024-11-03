@@ -4,8 +4,8 @@
   import type { Point } from 'core/interfaces';
   import { geometryManager } from 'core/services';
 
-  import { CurveLayerEvent, type CurveLayerEventDetails } from './interfaces';
   import ControlPoint from './Point.svelte';
+  import { CurveLayerEvent, type CurveLayerEventDetails } from './interfaces';
 
   export let controlPoints: Point[];
   export let selectOnMakingConnection: boolean = false;

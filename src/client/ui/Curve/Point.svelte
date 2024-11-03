@@ -1,17 +1,17 @@
 <script lang="ts">
-  import { COLORS } from 'core/constants';
   import type { Point, RenderProps } from 'core/interfaces';
   import { Layer } from 'core/ui';
 
-  export let start: Point;
-  export let cp1: Point;
-  export let cp2: Point;
-  export let end: Point;
+  import { COLORS } from 'client/constants';
+
+  export let point: Point;
   export let active: boolean = false;
+
+  const radius = 5;
 
   $: render = ({ drawer }: RenderProps) => {
     const color = active ? COLORS.SELECTION : '#000';
-    drawer.strokeBezierCurve({ start, cp1, cp2, end, color, lineWidth: 3 });
+    drawer.fillCircle({ x: point.x, y: point.y, radius, color });
   };
 </script>
 
