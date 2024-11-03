@@ -106,18 +106,18 @@
 </ControlPoints>
 
 <Layer
-  render={({ context }) => {
-    if (!context) return;
-    context.save();
-    context.translate(ex + Math.cos(arrowAngle) * 12, ey + Math.sin(arrowAngle) * 12);
-    context.rotate(arrowAngle);
-    context.beginPath();
-    context.moveTo(0, 0);
-    context.lineTo(-endArrowRadius * 2, -endArrowRadius);
-    context.lineTo(-endArrowRadius * 2, endArrowRadius);
-    context.closePath();
-    context.fillStyle = active && !selectOnMakingConnection ? COLORS.SELECTION : '#000';
-    context.fill();
-    context.restore();
+  render={({ ctx }) => {
+    if (!ctx) return;
+    ctx.save();
+    ctx.translate(ex + Math.cos(arrowAngle) * 12, ey + Math.sin(arrowAngle) * 12);
+    ctx.rotate(arrowAngle);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(-endArrowRadius * 2, -endArrowRadius);
+    ctx.lineTo(-endArrowRadius * 2, endArrowRadius);
+    ctx.closePath();
+    ctx.fillStyle = active && !selectOnMakingConnection ? COLORS.SELECTION : '#000';
+    ctx.fill();
+    ctx.restore();
   }}
 />

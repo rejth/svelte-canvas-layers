@@ -151,7 +151,7 @@ export class RenderManager {
   #render() {
     if (!this.needsRedraw) return;
 
-    const context = this.renderer.getContext()!;
+    const ctx = this.renderer.getContext()!;
     const options = this.renderer.getCanvasOptions();
     const transformedArea = this.renderer.getTransformedArea();
     const drawer = this.drawer!;
@@ -163,7 +163,7 @@ export class RenderManager {
     for (const layerId of this.visibleLayerIds) {
       const { render } = this.drawers.get(layerId) || {};
       this.layerChangeCallback?.(layerId);
-      render?.({ context, drawer, options });
+      render?.({ ctx, drawer, options });
     }
 
     this.needsRedraw = false;

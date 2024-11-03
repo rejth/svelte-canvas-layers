@@ -8,15 +8,15 @@
   export let active: boolean;
   export let selectOnMakingConnection: boolean;
 
-  $: render = ({ context, drawer }: RenderProps) => {
+  $: render = ({ ctx, drawer }: RenderProps) => {
     const rect = geometryManager.getRectDimensionFromBounds(bounds);
     if (!rect) return;
 
     const { x, y, width, height } = rect;
 
-    context.globalAlpha = 0;
+    ctx.globalAlpha = 0;
     drawer.fillRect({ x, y, width, height });
-    context.globalAlpha = 1;
+    ctx.globalAlpha = 1;
 
     if (active) {
       const color = selectOnMakingConnection ? '#000' : COLORS.SELECTION;

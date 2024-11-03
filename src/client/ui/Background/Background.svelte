@@ -14,11 +14,11 @@
   export let height: number;
   export let render: BackgroundPatternRenderer;
 
-  $: _render = ({ context, options }: RenderProps) => {
-    if (!context) return;
+  $: _render = ({ ctx, options }: RenderProps) => {
+    if (!ctx) return;
 
     const { initialPixelRatio, pixelRatio } = options;
-    const transform = context.getTransform();
+    const transform = ctx.getTransform();
 
     const offscreenCanvas = new OffscreenCanvas(width, height);
     offscreenCanvas.width = Math.floor(width * pixelRatio);
@@ -29,11 +29,11 @@
 
     render({ context: offscreenContext });
 
-    const pattern = context.createPattern(offscreenCanvas, 'repeat');
+    const pattern = ctx.createPattern(offscreenCanvas, 'repeat');
     if (!pattern) return;
 
-    context.save();
-    context.setTransform(
+    ctx.save();
+    ctx.setTransform(
       initialPixelRatio,
       transform.b,
       transform.c,
@@ -41,14 +41,14 @@
       transform.e,
       transform.f,
     );
-    context.fillStyle = pattern;
-    context.fillRect(
+    ctx.fillStyle = pattern;
+    ctx.fillRect(
       -transform.e / initialPixelRatio,
       -transform.f / initialPixelRatio,
       window.innerWidth,
       window.innerHeight,
     );
-    context.restore();
+    ctx.restore();
   };
 </script>
 

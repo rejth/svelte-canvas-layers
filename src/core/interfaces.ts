@@ -42,7 +42,7 @@ export type CanvasOptions = {
 };
 
 export type RenderProps = {
-  context: CanvasContextType;
+  ctx: CanvasContextType;
   drawer: Drawer;
   options: CanvasOptions;
 };

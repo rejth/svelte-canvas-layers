@@ -1,5 +1,7 @@
 import { writable, type Writable } from 'svelte/store';
+
 import type { CanvasContextType, Point } from 'core/interfaces';
+import type { Drawer } from 'core/services';
 
 export interface ActiveLayer {
   id: symbol;
@@ -7,7 +9,8 @@ export interface ActiveLayer {
 }
 
 export interface RenderProps {
-  context: CanvasContextType;
+  ctx: CanvasContextType;
+  drawer: Drawer;
   width: number;
   height: number;
   active: () => boolean;

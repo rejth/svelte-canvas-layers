@@ -6,11 +6,11 @@
   export let text: string;
   export let pathPoints: (Point & { angle: number })[];
 
-  $: render = ({ context }: RenderProps) => {
-    if (!context) return;
+  $: render = ({ ctx }: RenderProps) => {
+    if (!ctx) return;
 
-    context.font = `130px 'Fira Mono', monospace`;
-    context.fillStyle = COLORS.SELECTION;
+    ctx.font = `130px 'Fira Mono', monospace`;
+    ctx.fillStyle = COLORS.SELECTION;
 
     let overallBoundingBox = {
       xMin: Infinity,
@@ -21,11 +21,11 @@
 
     text.split('').forEach((char, i) => {
       const { x, y, angle } = pathPoints[i];
-      context.save();
-      context.translate(x, y);
-      context.rotate(angle);
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
 
-      const metrics = context.measureText(char);
+      const metrics = ctx.measureText(char);
       const width = metrics.width;
       const height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
 
@@ -49,8 +49,8 @@
         boundingBox.y + boundingBox.height,
       );
 
-      context.fillText(char, 0, 0);
-      context.restore();
+      ctx.fillText(char, 0, 0);
+      ctx.restore();
     });
 
     // Calculate the overall bounding box dimensions

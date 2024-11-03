@@ -7,18 +7,18 @@
 
   export let path: Point[];
 
-  $: _render = ({ context, drawer }: RenderProps) => {
-    if (!context) return;
+  $: _render = ({ ctx, drawer }: RenderProps) => {
+    if (!ctx) return;
 
     const rect = geometryManager.getRectDimensionFromPath(path);
     if (!rect) return;
 
     const { x, y, width, height } = rect;
 
-    context.globalAlpha = 0.9;
+    ctx.globalAlpha = 0.9;
     drawer.strokeRect({ x, y, width, height, color: COLORS.SELECTION, lineWidth: 2 });
     drawer.fillRect({ x, y, width, height, color: '#35b2dc33' });
-    context.globalAlpha = 1;
+    ctx.globalAlpha = 1;
   };
 </script>
 

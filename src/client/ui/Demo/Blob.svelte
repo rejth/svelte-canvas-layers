@@ -7,17 +7,17 @@
 
 <AnimatedLayer
   name="Blob"
-  render={({ context, width, height, active }) => {
+  render={({ ctx, width, height, active }) => {
     const path = new Path2D(pathString);
-    context.fillStyle = 'mediumturquoise';
-    context.translate(width * 0.85, height * 0.6);
+    ctx.fillStyle = 'mediumturquoise';
+    ctx.translate(width * 0.85, height * 0.6);
 
     const scale = width * 0.0018;
-    context.scale(scale * 0.9, scale);
-    context.fill(path);
+    ctx.scale(scale * 0.9, scale);
+    ctx.fill(path);
 
     if (active()) {
-      context.stroke(path);
+      ctx.stroke(path);
     }
   }}
 />

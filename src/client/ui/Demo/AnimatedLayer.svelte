@@ -45,18 +45,18 @@
     return active;
   };
 
-  $: _render = ({ context, options }: RenderProps) => {
+  $: _render = ({ ctx, drawer, options }: RenderProps) => {
     const { width, height } = options;
-    context.save();
+    ctx.save();
 
-    context.translate(point.x, point.y);
-    context.scale($scale, $scale);
-    context.translate(-point.x, -point.y);
-    context.globalAlpha = $opacity;
-    context.filter = `blur(${width * $blur}px) saturate(${$saturation * 100}%)`;
-    render({ context, width, height, active: styleActive(context) });
+    ctx.translate(point.x, point.y);
+    ctx.scale($scale, $scale);
+    ctx.translate(-point.x, -point.y);
+    ctx.globalAlpha = $opacity;
+    ctx.filter = `blur(${width * $blur}px) saturate(${$saturation * 100}%)`;
+    render({ ctx, drawer, width, height, active: styleActive(ctx) });
 
-    context.restore();
+    ctx.restore();
   };
 </script>
 

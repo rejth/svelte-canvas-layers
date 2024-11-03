@@ -19,6 +19,7 @@
 <div>
   <Canvas
     useLayerEvents
+    handleEventsOnLayerMove
     width={760}
     height={560}
     style="cursor: {$activeLayer ? 'pointer' : 'default'}"

@@ -9,18 +9,19 @@
 
 <AnimatedLayer
   name="Text"
-  render={({ context, width, height, active }) => {
+  render={({ ctx, width, height, active }) => {
     const size = width * scale;
     const offset = height * yOffset;
 
-    context.font = `${size}px 'Fira Mono', monospace`;
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.fillStyle = '#dcdcdc';
-    context.globalAlpha = opacity;
-    context.fillText(text, width / 2, height / 2 + offset);
+    ctx.font = `${size}px 'Fira Mono', monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#dcdcdc';
+    ctx.globalAlpha = opacity;
+    ctx.fillText(text, width / 2, height / 2 + offset);
 
-    const { width: w } = context.measureText(text);
+    const { width: w } = ctx.measureText(text);
+
     const rect = {
       x: width / 2 - w / 2,
       y: height / 2 - size / 2 + offset,
@@ -28,12 +29,12 @@
       height: size,
     };
 
-    context.globalAlpha = 0;
-    context.fillRect(rect.x, rect.y, rect.width, rect.height);
-    context.globalAlpha = 1;
+    ctx.globalAlpha = 0;
+    ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
+    ctx.globalAlpha = 1;
 
     if (active()) {
-      context.strokeRect(rect.x, rect.y, rect.width, rect.height);
+      ctx.strokeRect(rect.x, rect.y, rect.width, rect.height);
     }
   }}
 />
