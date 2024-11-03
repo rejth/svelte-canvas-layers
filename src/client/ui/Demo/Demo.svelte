@@ -30,8 +30,8 @@
     <Rect />
     <Blob />
     <Circle />
-    <Text text="Canvasio" yOffset={-0.03} scale={0.06} />
-    <Text text="Simple whiteboard" scale={0.0297} yOffset={0.04} opacity={0.7} />
+    <Text text="Whiteboard X" yOffset={-0.03} scale={0.06} />
+    <Text text="Embrace your creativity" scale={0.0297} yOffset={0.04} opacity={0.7} />
     {#if $activeLayer?.id}
       <Tooltip />
     {/if}
