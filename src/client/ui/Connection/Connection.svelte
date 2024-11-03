@@ -15,8 +15,8 @@
   export let target: ConnectedBox | null = null;
   export let selectOnMakingConnection: boolean = false;
 
-  const ARROW_OPTIONS: ArrowOptions = {
-    bow: 0.25,
+  const arrowOptions: ArrowOptions = {
+    bow: 0.1,
     stretch: 0.5,
     stretchMin: 0,
     stretchMax: 360,
@@ -63,7 +63,7 @@
       target.y,
       target.width,
       target.height,
-      ARROW_OPTIONS,
+      arrowOptions,
     );
   };
 
@@ -89,12 +89,9 @@
 </script>
 
 <Layer
-  render={({ context }) => {
-    if (!context) return;
-    context.beginPath();
-    context.arc(sx, sy, 5, 0, Math.PI * 2);
-    context.fillStyle = active && !selectOnMakingConnection ? COLORS.SELECTION : '#000';
-    context.fill();
+  render={({ drawer }) => {
+    const color = active && !selectOnMakingConnection ? COLORS.SELECTION : '#000';
+    drawer.fillCircle({ x: sx, y: sy, radius: 5, color });
   }}
 />
 
@@ -105,7 +102,7 @@
   on:point.touch={handleConnectionActive}
   on:point.leave={handleConnectionLeave}
 >
-  <QuadraticCurve {active} controlPoints={[{ x: sx, y: sy }, controlPoint, { x: ex, y: ey }]} />
+  <QuadraticCurve {active} start={{ x: sx, y: sy }} control={controlPoint} end={{ x: ex, y: ey }} />
 </ControlPoints>
 
 <Layer

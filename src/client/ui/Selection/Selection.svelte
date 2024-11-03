@@ -7,7 +7,7 @@
 
   export let path: Point[];
 
-  $: _render = ({ context }: RenderProps) => {
+  $: _render = ({ context, drawer }: RenderProps) => {
     if (!context) return;
 
     const rect = geometryManager.getRectDimensionFromPath(path);
@@ -16,12 +16,8 @@
     const { x, y, width, height } = rect;
 
     context.globalAlpha = 0.9;
-    context.strokeStyle = COLORS.SELECTION;
-    context.lineWidth = 2;
-    context.strokeRect(x, y, width, height);
-
-    context.fillStyle = '#35b2dc33';
-    context.fillRect(x, y, width, height);
+    drawer.strokeRect({ x, y, width, height, color: COLORS.SELECTION, lineWidth: 2 });
+    drawer.fillRect({ x, y, width, height, color: '#35b2dc33' });
     context.globalAlpha = 1;
   };
 </script>

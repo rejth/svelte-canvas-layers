@@ -6,6 +6,7 @@ import type {
   RectDimension,
   PixelRatio,
   RectPosition,
+  RectCorners,
 } from 'core/interfaces';
 
 class GeometryManager {
@@ -91,6 +92,15 @@ class GeometryManager {
       minY: rect.y,
       maxX: rect.x + rect.width,
       maxY: rect.y + rect.height,
+    };
+  }
+
+  getRectCorners(x: number, y: number, w: number, h: number): RectCorners {
+    return {
+      topLeft: { x, y },
+      topRight: { x: x + w, y },
+      bottomLeft: { x, y: y + h },
+      bottomRight: { x: x + w, y: y + h },
     };
   }
 

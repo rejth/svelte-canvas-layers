@@ -11,11 +11,11 @@ import type {
   CanvasContextType,
   LayerBBox,
 } from 'core/interfaces';
-import { geometryManager, type Renderer } from 'core/services';
+import { Drawer, geometryManager, type Renderer } from 'core/services';
 
 export class RenderManager {
   renderer: Renderer;
-
+  drawer: Drawer | null;
   currentLayerId: LayerId;
   activeLayerId: LayerId;
   layerSequence: LayerId[];
@@ -34,6 +34,7 @@ export class RenderManager {
 
   constructor(renderer: Renderer) {
     this.renderer = renderer;
+    this.drawer = null;
 
     this.currentLayerId = 1;
     this.activeLayerId = 0;
@@ -60,6 +61,7 @@ export class RenderManager {
   }
 
   run(layerContainer: HTMLDivElement) {
+    this.drawer = new Drawer(<CanvasContextType>this.renderer.getContext());
     this.layerContainer = layerContainer;
     this.#observeLayerSequence();
 
@@ -152,6 +154,7 @@ export class RenderManager {
     const context = this.renderer.getContext()!;
     const options = this.renderer.getCanvasOptions();
     const transformedArea = this.renderer.getTransformedArea();
+    const drawer = this.drawer!;
 
     if (transformedArea) {
       this.renderer.clearRectSync(transformedArea);
@@ -160,7 +163,7 @@ export class RenderManager {
     for (const layerId of this.visibleLayerIds) {
       const { render } = this.drawers.get(layerId) || {};
       this.layerChangeCallback?.(layerId);
-      render?.({ context, options });
+      render?.({ context, drawer, options });
     }
 
     this.needsRedraw = false;

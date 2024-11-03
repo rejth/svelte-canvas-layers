@@ -29,9 +29,13 @@ class CanvasStore {
     return {
       uuid: uuid(),
       type: type,
+      isSelected: false,
       initialBounds: { x0: x, y0: y, x1: x + 168, y1: y + 168 },
       color: COLORS.STICKER_YELLOW,
-      isSelected: false,
+      shadowColor: 'rgba(0, 0, 0, 0.3)',
+      shadowOffsetY: 10,
+      shadowOffsetX: 3,
+      shadowBlur: 5,
     };
   }
 

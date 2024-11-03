@@ -44,9 +44,25 @@
 
   $: getHandlerPosition = (handler: number): Point => {
     return {
-      x: handler & W ? x0 : handler & E ? x1 : geometryManager.getMiddlePoint(x0, x1),
-      y: handler & N ? y0 : handler & S ? y1 : geometryManager.getMiddlePoint(y0, y1),
+      x: handler & W ? x0 - 5 : handler & E ? x1 + 5 : geometryManager.getMiddlePoint(x0, x1),
+      y: handler & N ? y0 - 5 : handler & S ? y1 + 5 : geometryManager.getMiddlePoint(y0, y1),
     };
+  };
+
+  $: handlerCursor = (handler: number | null): string => {
+    if (!handler) return selected ? 'pointer' : 'auto';
+
+    if (handler === (N | W) || handler === (S | E)) {
+      return 'nwse-resize';
+    } else if (handler === (N | E) || handler === (S | W)) {
+      return 'nesw-resize';
+    } else if (handler === N || handler === S) {
+      return 'ns-resize';
+    } else if (handler === W || handler === E) {
+      return 'ew-resize';
+    }
+
+    return 'auto';
   };
 
   const onMouseMove = (e: MouseEvent) => {
@@ -94,7 +110,7 @@
 </script>
 
 <svelte:body
-  use:cursor={selected ? 'pointer' : 'auto'}
+  use:cursor={handlerCursor(hoveredHandler ?? draggedHandler)}
   on:mousemove={onMouseMove}
   on:mouseup={onMouseUp}
   on:touchstart={onTouchStart}

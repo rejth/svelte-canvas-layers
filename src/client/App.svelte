@@ -42,6 +42,8 @@
   // [x] HARD: select (see ourboard.io) shape on hovering during connection
   // [x] HARD: connect (see ourboard.io) arrow with a box when hovering
   // [x] HARD: reset selection when toolbar is clicked
+  // [ ] replace context with ctx
+  // [x] replace w and h with width and height
 
   onMount(async () => {
     viewport = canvas.getViewport();
@@ -155,7 +157,7 @@
     {#each Object.entries($connections) as [connectionId, { source, target }]}
       <Connection {connectionId} {source} {target} selectOnMakingConnection={connection} />
     {/each}
-    {#each $shapes.values() as { uuid, initialBounds, color, isSelected } (uuid)}
+    {#each $shapes.values() as { uuid, initialBounds, isSelected, ...rest } (uuid)}
       <ResizableLayer
         {initialBounds}
         {isSelected}
@@ -172,12 +174,9 @@
       >
         <Layer
           {bounds}
-          render={({ context }) => {
+          render={({ drawer }) => {
             const { x0, y0, x1, y1 } = bounds;
-            context.globalAlpha = 0.9;
-            context.fillStyle = color;
-            context.fillRect(x0, y0, x1 - x0, y1 - y0);
-            context.globalAlpha = 1;
+            drawer.fillRect({ x: x0, y: y0, width: x1 - x0, height: y1 - y0, ...rest });
           }}
         />
       </ResizableLayer>

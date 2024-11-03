@@ -8,23 +8,26 @@
   export let active: boolean;
   export let selectOnMakingConnection: boolean;
 
-  $: render = ({ context }: RenderProps) => {
-    if (!context) return;
-
+  $: render = ({ context, drawer }: RenderProps) => {
     const rect = geometryManager.getRectDimensionFromBounds(bounds);
     if (!rect) return;
 
     const { x, y, width, height } = rect;
 
-    if (active) {
-      context.strokeStyle = selectOnMakingConnection ? '#000' : COLORS.SELECTION;
-      context.lineWidth = 2;
-      context.strokeRect(x, y, width, height);
-    }
-
     context.globalAlpha = 0;
-    context.fillRect(x, y, width, height);
+    drawer.fillRect({ x, y, width, height });
     context.globalAlpha = 1;
+
+    if (active) {
+      const color = selectOnMakingConnection ? '#000' : COLORS.SELECTION;
+      let boundaries = { x: x - 5, y: y - 5, width: width + 10, height: height + 10 };
+
+      if (selectOnMakingConnection) {
+        boundaries = { x, y, width, height };
+      }
+
+      drawer.strokeRect({ ...boundaries, color, lineWidth: 2 });
+    }
   };
 </script>
 

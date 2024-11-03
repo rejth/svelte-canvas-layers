@@ -65,5 +65,10 @@
 <Text {text} {pathPoints} />
 
 <ControlPoints {controlPoints} on:point.move={handleCurvePointMove}>
-  <BezierCurve {controlPoints} />
+  <BezierCurve
+    start={controlPoints[0]}
+    cp1={controlPoints[1]}
+    cp2={controlPoints[2]}
+    end={controlPoints[3]}
+  />
 </ControlPoints>

@@ -1,6 +1,6 @@
 import type { BBox } from 'rbush';
 import type { createEventDispatcher } from 'svelte';
-import type { RenderManager } from 'core/services';
+import type { Drawer, RenderManager } from 'core/services';
 
 export type AppContext = {
   renderManager: RenderManager;
@@ -13,6 +13,13 @@ export type Point = Pick<DOMRect, 'x' | 'y'>;
 export type Dimension = Pick<DOMRect, 'width' | 'height'>;
 export type RectPosition = Pick<DOMRect, 'top' | 'bottom' | 'left' | 'right'>;
 export type RectDimension = Point & Dimension;
+
+export type RectCorners = {
+  topLeft: Point;
+  topRight: Point;
+  bottomLeft: Point;
+  bottomRight: Point;
+};
 
 export interface LayerBBox extends BBox {
   layerId: LayerId;
@@ -36,6 +43,7 @@ export type CanvasOptions = {
 
 export type RenderProps = {
   context: CanvasContextType;
+  drawer: Drawer;
   options: CanvasOptions;
 };
 

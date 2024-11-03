@@ -8,18 +8,17 @@
   export let y: number;
   export let active: boolean;
 
-  $: bounds = { x0: x - 6, y0: y - 6, x1: x + 6, y1: y + 6 };
+  const radius = 5;
 
-  $: render = ({ context }: RenderProps) => {
-    if (!context) return;
+  $: bounds = { x0: x, y0: y, x1: x, y1: y };
 
+  $: render = ({ drawer }: RenderProps) => {
     const rect = geometryManager.getRectDimensionFromBounds(bounds);
     if (!rect) return;
 
-    const { x, y, width, height } = rect;
-
-    context.fillStyle = active ? COLORS.STICKER_BLUE : COLORS.SELECTION;
-    context.fillRect(x, y, width, height);
+    const { x, y } = rect;
+    const color = active ? COLORS.STICKER_BLUE : COLORS.SELECTION;
+    drawer.fillCircle({ x, y, radius, color });
   };
 </script>
 

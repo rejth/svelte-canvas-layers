@@ -19,4 +19,8 @@ export type ShapeConfig = {
   initialBounds: Bounds;
   color: COLORS;
   isSelected: boolean;
+  shadowColor?: string;
+  shadowOffsetY?: number;
+  shadowOffsetX?: number;
+  shadowBlur?: number;
 };

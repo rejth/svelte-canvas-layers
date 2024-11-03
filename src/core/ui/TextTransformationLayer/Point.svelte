@@ -6,13 +6,11 @@
   export let point: Point;
   export let active: boolean = false;
 
-  $: render = ({ context }: RenderProps) => {
-    if (!context) return;
+  const radius = 5;
 
-    context.beginPath();
-    context.arc(point.x, point.y, 5, 0, Math.PI * 2);
-    context.fillStyle = active ? COLORS.SELECTION : '#000';
-    context.fill();
+  $: render = ({ drawer }: RenderProps) => {
+    const color = active ? COLORS.SELECTION : '#000';
+    drawer.fillCircle({ x: point.x, y: point.y, radius, color });
   };
 </script>
 
