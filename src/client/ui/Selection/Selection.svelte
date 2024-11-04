@@ -3,7 +3,7 @@
   import { geometryManager } from 'core/services';
   import { Layer } from 'core/ui';
 
-  import { COLORS } from 'client/constants';
+  import { COLORS } from 'client/shared/constants';
 
   export let path: Point[];
 

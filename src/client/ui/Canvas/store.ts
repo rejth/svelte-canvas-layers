@@ -4,8 +4,8 @@ import { v4 as uuid } from 'uuid';
 import type { Point } from 'core/interfaces';
 import { geometryManager } from 'core/services';
 
-import { Tools, type ShapeConfig, type ShapeType, type Tool } from 'client/interfaces';
-import { COLORS } from 'client/constants';
+import { Tools, type ShapeConfig, type ShapeType, type Tool } from 'client/shared/interfaces';
+import { COLORS } from 'client/shared/constants';
 import { toolbarStore } from 'client/ui/Toolbar/store';
 import { connectionStore } from 'client/ui/Connection/store';
 

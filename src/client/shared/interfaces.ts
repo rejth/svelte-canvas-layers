@@ -1,5 +1,5 @@
 import type { Bounds } from 'core/interfaces';
-import { COLORS } from 'client/constants';
+import { COLORS } from 'client/shared/constants';
 
 export const enum Tools {
   NOTE = 'NOTE',

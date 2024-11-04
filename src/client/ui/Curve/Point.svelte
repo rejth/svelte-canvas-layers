@@ -2,7 +2,7 @@
   import type { Point, RenderProps } from 'core/interfaces';
   import { Layer } from 'core/ui';
 
-  import { COLORS } from 'client/constants';
+  import { COLORS } from 'client/shared/constants';
 
   export let point: Point;
   export let active: boolean = false;

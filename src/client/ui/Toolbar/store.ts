@@ -1,5 +1,5 @@
 import { type Writable, writable } from 'svelte/store';
-import { Tools, type ShapeType, type Tool } from 'client/interfaces';
+import { Tools, type ShapeType, type Tool } from 'client/shared/interfaces';
 
 class ToolbarStore {
   tool: Writable<Tool | null> = writable(Tools.NOTE);

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Tools, type Tool } from 'client/interfaces';
+  import { Tools, type Tool } from 'client/shared/interfaces';
   import { canvasStore } from 'client/ui/Canvas/store';
   import { connectionStore } from 'client/ui/Connection/store';
 

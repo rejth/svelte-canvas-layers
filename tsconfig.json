@@ -21,7 +21,9 @@
     "isolatedModules": true,
     "paths": {
       "client/*": ["src/client/*"],
-      "core/*": ["src/core/*"]
+      "core/*": ["src/core/*"],
+      "$lib": ["src/lib"],
+      "$lib/*": ["src/lib/*"]
     }
   },
   // Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias

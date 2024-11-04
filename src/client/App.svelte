@@ -6,13 +6,12 @@
   import { dndWatcher } from 'core/lib';
   import { Canvas, Layer } from 'core/ui';
 
-  import { Tools } from 'client/interfaces';
-  import { CURSORS } from 'client/constants';
+  import { Tools } from 'client/shared/interfaces';
+  import { CURSORS } from 'client/shared/constants';
 
   import Zoom from 'client/ui/Zoom/Zoom.svelte';
   import Background from 'client/ui/Background/Background.svelte';
   import Selection from 'client/ui/Selection/Selection.svelte';
-  import UndoRedo from 'client/ui/UndoRedo/UndoRedo.svelte';
   import Toolbar from 'client/ui/Toolbar/Toolbar.svelte';
   import Connection from './ui/Connection/Connection.svelte';
   import ResizableLayer from './ui/ResizableLayer/ResizableLayer.svelte';
@@ -170,6 +169,5 @@
       </ResizableLayer>
     {/each}
   </Canvas>
-  <UndoRedo />
   <Zoom />
 </main>

@@ -4,7 +4,7 @@
   import type { RectDimension } from 'core/interfaces';
   import { Layer } from 'core/ui';
 
-  import { COLORS } from 'client/constants';
+  import { COLORS } from 'client/shared/constants';
 
   import QuadraticCurve from '../Curve/QuadraticCurve.svelte';
   import ControlPoints from '../Curve/ControlPoints.svelte';
