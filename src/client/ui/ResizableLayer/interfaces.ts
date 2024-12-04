@@ -1,11 +1,19 @@
-import type { Bounds } from 'core/interfaces';
+import type { Bounds, LayerEventDetails } from 'core/interfaces';
 
-export const enum LayerEvent {
+export const enum ResizableLayerEvent {
   ACTIVE = 'layer.active',
   LEAVE = 'layer.leave',
   MOVE = 'layer.move',
   TOUCH = 'layer.touch',
   ENTER = 'layer.enter',
+  DOUBLE_CLICK = 'layer.dblclick',
 }
 
-export type LayerEventDetails = { bounds: Bounds } | undefined;
+interface EventDetails {
+  bounds: Bounds;
+  data?: LayerEventDetails;
+}
+
+export type ResizableLayerEventDetails = EventDetails | undefined;
+
+export type ResizableLayerEventDispatcher = Record<ResizableLayerEvent, ResizableLayerEventDetails>;

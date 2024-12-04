@@ -1,5 +1,5 @@
-import type { CanvasContextType, Point } from 'core/interfaces';
-import type { RenderManager, Renderer } from 'core/services';
+import type { Bounds, CanvasContextType, LayerEventDetails, Point } from 'core/interfaces';
+import { geometryManager, type RenderManager, type Renderer } from 'core/services';
 
 export class Viewport {
   context: CanvasContextType | null;
@@ -53,6 +53,24 @@ export class Viewport {
     );
 
     renderManager.searchVisibleLayers();
+  }
+
+  onLayerDoubleClick(e: LayerEventDetails, layerBounds: Bounds): Point {
+    if (!this.renderer) return { x: e.x, y: e.y };
+
+    const { pageX, pageY } = e.originalEvent as MouseEvent;
+    const transformedPoint = this.renderer.getTransformedPoint(pageX, pageY);
+    const transform = this.renderer.getTransform();
+
+    if (!transform) return { x: e.x, y: e.y };
+
+    const { scaleX, initialScale } = transform;
+    const scale = scaleX !== initialScale ? scaleX / initialScale : 1;
+
+    const x = pageX + (layerBounds.x0 - transformedPoint.x) * scale;
+    const y = pageY + (layerBounds.y0 - transformedPoint.y) * scale;
+
+    return { x, y };
   }
 
   onWheel(e: WheelEvent) {

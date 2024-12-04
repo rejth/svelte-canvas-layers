@@ -1175,7 +1175,7 @@ __metadata:
     eslint-plugin-svelte: "npm:^2.35.1"
     knip: "npm:^5.34.4"
     lefthook: "npm:^1.8.2"
-    lucide-svelte: "npm:^0.454.0"
+    lucide-svelte: "npm:^0.456.0"
     npm-check-updates: "npm:^17.1.9"
     perfect-arrows: "npm:^0.3.7"
     prettier: "npm:^3.3.3"
@@ -2692,12 +2692,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lucide-svelte@npm:^0.454.0":
-  version: 0.454.0
-  resolution: "lucide-svelte@npm:0.454.0"
+"lucide-svelte@npm:^0.456.0":
+  version: 0.456.0
+  resolution: "lucide-svelte@npm:0.456.0"
   peerDependencies:
     svelte: ^3 || ^4 || ^5.0.0-next.42
-  checksum: 10c0/6779dbe311012deac5b9da6d0d42fdf436290a67fb36b61495b53b59cb66367ddba2527d62fabafe637f4e36350ace3dbc9225812ab385cf6f2b53b21eca32a5
+  checksum: 10c0/998f8d641d02427841d080cd7ce570d8d9aa28205aef43b849db85c65449f35aed3d70ed1560df807109c386fbba8b8755f84f4b86729e87448a37a7c6512734
   languageName: node
   linkType: hard
 

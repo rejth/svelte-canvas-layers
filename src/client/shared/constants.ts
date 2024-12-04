@@ -11,6 +11,59 @@ export const enum COLORS {
   GRID = '#d2d6db',
 }
 
+export const COLOR_LIST = [
+  {
+    id: 'blue',
+    label: '#70d6ff',
+  },
+  {
+    id: 'pink',
+    label: '#ff70a6',
+  },
+  {
+    id: 'orange',
+    label: '#ff9770',
+  },
+  {
+    id: 'yellow',
+    label: '#ffd670',
+  },
+  {
+    id: 'green',
+    label: '#e9ff70',
+  },
+];
+
+export const FONT_SIZES = [
+  {
+    id: 'tiny',
+    label: 'Tiny',
+    value: 8,
+  },
+  {
+    id: 'small',
+    label: 'Small',
+    value: 12,
+  },
+  {
+    id: 'medium',
+    label: 'Medium',
+    value: 14,
+  },
+  {
+    id: 'big',
+    label: 'Big',
+    value: 18,
+  },
+  {
+    id: 'large',
+    label: 'Large',
+    value: 26,
+  },
+];
+
+const TEXT_ALIGN: CanvasTextAlign[] = ['left', 'center', 'right'];
+
 const handCursor = new Image();
 
 handCursor.src =

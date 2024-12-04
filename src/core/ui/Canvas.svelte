@@ -47,7 +47,7 @@
    */
   export let useLayerEvents = false;
   export let handleEventsOnLayerMove = false;
-  export let clickOutsideExcluded: HTMLElement[] = [];
+  export let clickOutsideExcluded: string[] = [];
   export let className = '';
   export let style = '';
 

@@ -1,12 +1,12 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
 
-  import type { Point, Bounds } from 'core/interfaces';
+  import type { Point, Bounds, LayerEventDetails } from 'core/interfaces';
   import { geometryManager } from 'core/services';
 
   import Surface from './ResizableLayerSurface.svelte';
   import Handler from './ResizableLayerHandler.svelte';
-  import { LayerEvent, type LayerEventDetails } from './interfaces';
+  import { ResizableLayerEvent, type ResizableLayerEventDispatcher } from './interfaces';
 
   export let initialBounds: Bounds = { x0: 0, y0: 0, x1: 0, y1: 0 };
   export let selectionPath: Point[] = [];
@@ -14,7 +14,7 @@
   export let selectOnMakingConnection: boolean = false;
   export let isMovingBlocked: boolean = false;
 
-  const dispatcher = createEventDispatcher<Record<LayerEvent, LayerEventDetails>>();
+  const dispatcher = createEventDispatcher<ResizableLayerEventDispatcher>();
 
   const [N, S, W, E] = [1, 2, 4, 8];
   const HANDLERS = [N, S, W, E, N | W, N | E, S | W, S | E];
@@ -29,14 +29,8 @@
   $: active = Boolean(draggedHandler || hoveredHandler) || isOverlapped(selectionPath);
   $: selected = active || isSelected;
 
-  $: active && dispatcher(LayerEvent.ACTIVE, { bounds });
-  $: !active && dispatcher(LayerEvent.LEAVE);
-
-  const isOverlapped = (selectionPath: Point[]) => {
-    const selectionBounds = geometryManager.getPathBounds(selectionPath);
-    if (!selectionBounds) return false;
-    return geometryManager.isOverlapping(selectionBounds, bounds);
-  };
+  $: active && dispatcher(ResizableLayerEvent.ACTIVE, { bounds });
+  $: !active && dispatcher(ResizableLayerEvent.LEAVE);
 
   $: sortedHandlers = HANDLERS.sort((a, b) =>
     a === hoveredHandler ? 1 : b === hoveredHandler ? -1 : 0,
@@ -72,7 +66,7 @@
     y0 += draggedHandler & N && movementY;
     x1 += draggedHandler & E && movementX;
     y1 += draggedHandler & S && movementY;
-    dispatcher(LayerEvent.MOVE, { bounds });
+    dispatcher(ResizableLayerEvent.MOVE, { bounds });
   };
 
   const onTouchMove = (e: TouchEvent) => {
@@ -85,24 +79,48 @@
     x1 += draggedHandler & E && movementX;
     y1 += draggedHandler & S && movementY;
     previousTouch = e.touches[0];
-    dispatcher(LayerEvent.MOVE, { bounds });
+    dispatcher(ResizableLayerEvent.MOVE, { bounds });
   };
 
-  const onHandlerMouseEnter = (handler: number) => (hoveredHandler = handler);
+  const onHandlerMouseEnter = (handler: number) => {
+    hoveredHandler = handler;
+  };
+
+  const onHandlerMouseDown = (handler: number) => {
+    draggedHandler = handler;
+  };
+
   const onSurfaceMouseEnter = () => {
     hoveredHandler = SURFACE;
-    dispatcher(LayerEvent.ENTER, { bounds });
+    dispatcher(ResizableLayerEvent.ENTER, { bounds });
   };
 
-  const onHandlerMouseDown = (handler: number) => (draggedHandler = handler);
   const onSurfaceMouseDown = () => {
     draggedHandler = SURFACE;
-    dispatcher(LayerEvent.TOUCH, { bounds });
+    dispatcher(ResizableLayerEvent.TOUCH, { bounds });
   };
 
-  const onMouseLeave = () => (hoveredHandler = null);
-  const onMouseUp = () => (draggedHandler = null);
-  const onTouchStart = (e: TouchEvent) => (previousTouch = e.touches[0]);
+  const onMouseLeave = () => {
+    hoveredHandler = null;
+  };
+
+  const onMouseUp = () => {
+    draggedHandler = null;
+  };
+
+  const onTouchStart = (e: TouchEvent) => {
+    previousTouch = e.touches[0];
+  };
+
+  const onDoubleClick = (e: CustomEvent<LayerEventDetails>) => {
+    dispatcher(ResizableLayerEvent.DOUBLE_CLICK, { data: e.detail, bounds });
+  };
+
+  const isOverlapped = (selectionPath: Point[]) => {
+    const selectionBounds = geometryManager.getPathBounds(selectionPath);
+    if (!selectionBounds) return false;
+    return geometryManager.isOverlapping(selectionBounds, bounds);
+  };
 
   const cursor = (node: HTMLElement, _: unknown) => ({
     update: (cursorType: string) => (node.style.cursor = cursorType),
@@ -124,6 +142,7 @@
   {bounds}
   active={selected}
   {selectOnMakingConnection}
+  on:dblclick={onDoubleClick}
   on:mouseleave={onMouseLeave}
   on:mouseenter={onSurfaceMouseEnter}
   on:mousedown={onSurfaceMouseDown}

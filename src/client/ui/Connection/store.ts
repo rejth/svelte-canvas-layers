@@ -6,8 +6,7 @@ import { geometryManager } from 'core/services';
 
 import { Tools, type Tool } from 'client/shared/interfaces';
 import { toolbarStore } from 'client/ui/Toolbar/store';
-
-import type { LayerEventDetails } from '../ResizableLayer/interfaces';
+import type { ResizableLayerEventDetails } from 'client/ui/ResizableLayer/interfaces';
 
 export interface ConnectedBox {
   id?: string;
@@ -47,7 +46,7 @@ class ConnectionStore {
     });
   }
 
-  handleBoxEnter(e: CustomEvent<LayerEventDetails>, boxId: string) {
+  handleBoxEnter(e: CustomEvent<ResizableLayerEventDetails>, boxId: string) {
     const currentConnection = get(this.currentConnection);
     if (this.#tool !== Tools.CONNECT || !currentConnection?.source) return;
 
@@ -59,7 +58,7 @@ class ConnectionStore {
     });
   }
 
-  handleBoxSelect = (e: CustomEvent<LayerEventDetails>, boxId: string) => {
+  handleBoxSelect = (e: CustomEvent<ResizableLayerEventDetails>, boxId: string) => {
     if (this.#tool !== Tools.CONNECT) return;
     const currentConnection = get(this.currentConnection);
     const rect = geometryManager.getRectDimensionFromBounds(e.detail?.bounds);
@@ -88,7 +87,7 @@ class ConnectionStore {
     }
   };
 
-  handleBoxMove = (e: CustomEvent<LayerEventDetails>, boxId: string) => {
+  handleBoxMove = (e: CustomEvent<ResizableLayerEventDetails>, boxId: string) => {
     const connectionIds = this.connectionIdsByBoxId[boxId];
     if (!connectionIds) return;
 

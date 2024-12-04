@@ -1,5 +1,5 @@
 import type { Bounds } from 'core/interfaces';
-import { COLORS } from 'client/shared/constants';
+import { COLOR_LIST, COLORS, FONT_SIZES } from 'client/shared/constants';
 
 export const enum Tools {
   NOTE = 'NOTE',
@@ -24,3 +24,25 @@ export type ShapeConfig = {
   shadowOffsetX?: number;
   shadowBlur?: number;
 };
+
+export interface DoubleClickData {
+  x: number;
+  y: number;
+  layerWidth: number;
+  layerHeight: number;
+}
+
+export type ColorId = keyof typeof COLOR_LIST;
+
+export interface Color {
+  id: string;
+  label: string;
+}
+
+export type FontSizeId = keyof typeof FONT_SIZES;
+
+export interface FontSize {
+  id: string;
+  label: string;
+  value: number;
+}

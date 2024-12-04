@@ -69,6 +69,7 @@ export type ResizeEvent = {
 
 export type CanvasEvents =
   | 'click'
+  | 'dblclick'
   | 'contextmenu'
   | 'wheel'
   | 'mousedown'

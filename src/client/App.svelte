@@ -2,23 +2,25 @@
   import { onMount } from 'svelte';
 
   import type { Point } from 'core/interfaces';
-  import { type Viewport } from 'core/services';
+  import { geometryManager, type Viewport } from 'core/services';
   import { dndWatcher } from 'core/lib';
   import { Canvas, Layer } from 'core/ui';
 
-  import { Tools } from 'client/shared/interfaces';
+  import { Tools, type DoubleClickData } from 'client/shared/interfaces';
   import { CURSORS } from 'client/shared/constants';
 
   import Zoom from 'client/ui/Zoom/Zoom.svelte';
   import Background from 'client/ui/Background/Background.svelte';
   import Selection from 'client/ui/Selection/Selection.svelte';
   import Toolbar from 'client/ui/Toolbar/Toolbar.svelte';
-  import Connection from './ui/Connection/Connection.svelte';
-  import ResizableLayer from './ui/ResizableLayer/ResizableLayer.svelte';
-  import type { LayerEventDetails } from './ui/ResizableLayer/interfaces';
-  import { canvasStore } from './ui/Canvas/store';
-  import { toolbarStore } from './ui/Toolbar/store';
-  import { connectionStore } from './ui/Connection/store';
+  import Connection from 'client/ui/Connection/Connection.svelte';
+  import TextEditor from 'client/ui/TextEditor/TextEditor.svelte';
+  import ResizableLayer from 'client/ui/ResizableLayer/ResizableLayer.svelte';
+  import type { ResizableLayerEventDetails } from 'client/ui/ResizableLayer/interfaces';
+
+  import { canvasStore } from 'client/ui/Canvas/store';
+  import { toolbarStore } from 'client/ui/Toolbar/store';
+  import { connectionStore } from 'client/ui/Connection/store';
 
   import './App.css';
 
@@ -26,11 +28,18 @@
   let viewport: Viewport;
   let selection: Point[] = [];
   let isLayerEntered = false;
-  let clickOutsideExcluded: HTMLElement[] = [];
+  let isLayerEditable = false;
+  let clickOutsideExcluded: string[] = ['trash', 'text-editor-menu', 'text-editor-menu-dropdown'];
+  let textEditorCoordinates: DoubleClickData = { x: 0, y: 0, layerWidth: 0, layerHeight: 0 };
 
   const { tool } = toolbarStore;
   const { shapes, selectionPath } = canvasStore;
   const { currentConnection, connections } = connectionStore;
+
+  $: connection = $tool === Tools.CONNECT;
+  $: panning = $tool === Tools.PAN;
+  $: cursorStyle = panning ? `cursor: ${CURSORS.HAND}` : ``;
+  $: selection = $selectionPath.length > 0 ? $selectionPath : selection;
 
   onMount(async () => {
     viewport = canvas.getViewport();
@@ -38,25 +47,16 @@
     const ref = canvas.getCanvasElement();
     const rect = ref.getBoundingClientRect();
     const selectionWatcher = dndWatcher(ref);
-    const trashIcon = document.getElementById('trash');
-
-    if (trashIcon) {
-      clickOutsideExcluded = [trashIcon];
-    }
 
     for await (const e of selectionWatcher) {
       canvasStore.dragSelection(<MouseEvent>e, rect);
     }
   });
 
-  $: connection = $tool === Tools.CONNECT;
-  $: panning = $tool === Tools.PAN;
-  $: cursorStyle = panning ? `cursor: ${CURSORS.HAND}` : ``;
-  $: selection = $selectionPath.length > 0 ? $selectionPath : selection;
-
   const handleCanvasClick = (e: MouseEvent) => {
     canvasStore.addShape(e);
     selection = $selectionPath;
+    isLayerEditable = false;
     canvasStore.resetSelection();
   };
 
@@ -91,25 +91,46 @@
   const handleLayerLeave = (uuid: string) => {
     canvasStore.deselectShape(uuid);
     canvasStore.setIsSelected(false);
+    isLayerEditable = false;
     isLayerEntered = false;
   };
 
-  const handleLayerTouch = (e: CustomEvent<LayerEventDetails>, uuid: string) => {
+  const handleLayerTouch = (e: CustomEvent<ResizableLayerEventDetails>, uuid: string) => {
     connectionStore.handleBoxSelect(e, uuid);
   };
 
-  const handleLayerMove = (e: CustomEvent<LayerEventDetails>, uuid: string) => {
+  const handleLayerMove = (e: CustomEvent<ResizableLayerEventDetails>, uuid: string) => {
     connectionStore.handleBoxMove(e, uuid);
   };
 
-  const handleLayerEnter = (e: CustomEvent<LayerEventDetails>, uuid: string) => {
+  const handleLayerEnter = (e: CustomEvent<ResizableLayerEventDetails>, uuid: string) => {
     isLayerEntered = true;
     connectionStore.handleBoxEnter(e, uuid);
+  };
+
+  const handleLayerDoubleClick = (e: CustomEvent<ResizableLayerEventDetails>) => {
+    if (!e.detail) return;
+
+    const { data, bounds } = e.detail;
+    const rect = geometryManager.getRectDimensionFromBounds(bounds);
+
+    if (!rect) return;
+
+    isLayerEditable = true;
+
+    textEditorCoordinates = {
+      ...viewport.onLayerDoubleClick(data!, bounds),
+      layerWidth: rect.width,
+      layerHeight: rect.height,
+    };
   };
 </script>
 
 <main>
   <Toolbar />
+  {#if isLayerEditable}
+    <TextEditor position={textEditorCoordinates} />
+  {/if}
   <Canvas
     useLayerEvents={!panning}
     handleEventsOnLayerMove={connection}
@@ -152,6 +173,7 @@
         selectOnMakingConnection={connection}
         isMovingBlocked={connection}
         on:mousedown={handleLayerMouseDown}
+        on:layer.dblclick={handleLayerDoubleClick}
         on:layer.active={() => handleLayerActive(uuid)}
         on:layer.leave={() => handleLayerLeave(uuid)}
         on:layer.touch={(e) => handleLayerTouch(e, uuid)}
@@ -163,7 +185,13 @@
           {bounds}
           render={({ drawer }) => {
             const { x0, y0, x1, y1 } = bounds;
-            drawer.fillRect({ x: x0, y: y0, width: x1 - x0, height: y1 - y0, ...rest });
+            drawer.fillRect({
+              x: x0,
+              y: y0,
+              width: x1 - x0,
+              height: y1 - y0,
+              ...rest,
+            });
           }}
         />
       </ResizableLayer>
