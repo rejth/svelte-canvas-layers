@@ -27,6 +27,8 @@
   )}
   {value}
   {...$$restProps}
+  on:click
+  on:keydown
 >
   <slot />
 </ToggleGroupPrimitive.Item>

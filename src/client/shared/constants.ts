@@ -1,3 +1,5 @@
+import type { Color, FontSize } from './interfaces';
+
 export const enum COLORS {
   STICKER_YELLOW = '#ffd670',
   STICKER_ORANGE = '#ff9770',
@@ -11,58 +13,53 @@ export const enum COLORS {
   GRID = '#d2d6db',
 }
 
-export const COLOR_LIST = [
+export const COLOR_LIST: Color[] = [
   {
-    id: 'blue',
+    value: '#70d6ff',
     label: '#70d6ff',
   },
   {
-    id: 'pink',
+    value: '#ff70a6',
     label: '#ff70a6',
   },
   {
-    id: 'orange',
+    value: '#ff9770',
     label: '#ff9770',
   },
   {
-    id: 'yellow',
+    value: '#ffd670',
     label: '#ffd670',
   },
   {
-    id: 'green',
+    value: '#e9ff70',
     label: '#e9ff70',
   },
 ];
 
-export const FONT_SIZES = [
+export const FONT_SIZES: FontSize[] = [
   {
-    id: 'tiny',
+    value: '8',
     label: 'Tiny',
-    value: 8,
   },
   {
-    id: 'small',
+    value: '12',
     label: 'Small',
-    value: 12,
   },
   {
-    id: 'medium',
+    value: '16',
     label: 'Medium',
-    value: 14,
   },
   {
-    id: 'big',
+    value: '20',
     label: 'Big',
-    value: 18,
   },
   {
-    id: 'large',
+    value: '24',
     label: 'Large',
-    value: 26,
   },
 ];
 
-const TEXT_ALIGN: CanvasTextAlign[] = ['left', 'center', 'right'];
+export const TEXT_ALIGN: CanvasTextAlign[] = ['left', 'center', 'right'];
 
 const handCursor = new Image();
 

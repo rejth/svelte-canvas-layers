@@ -13,6 +13,7 @@ export const enum Tools {
 export type Tool = keyof typeof Tools;
 export type ShapeType = 'NOTE' | 'TEXT';
 
+// TODO: rename to Entity
 export type ShapeConfig = {
   uuid: string;
   type: ShapeType;
@@ -35,14 +36,13 @@ export interface DoubleClickData {
 export type ColorId = keyof typeof COLOR_LIST;
 
 export interface Color {
-  id: string;
+  value: string;
   label: string;
 }
 
 export type FontSizeId = keyof typeof FONT_SIZES;
 
 export interface FontSize {
-  id: string;
+  value: string;
   label: string;
-  value: number;
 }

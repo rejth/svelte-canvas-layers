@@ -1,7 +1,6 @@
 <script lang="ts">
   import Bold from 'lucide-svelte/icons/bold';
   import Italic from 'lucide-svelte/icons/italic';
-  import Underline from 'lucide-svelte/icons/underline';
   import AlignLeft from 'lucide-svelte/icons/align-left';
   import AlignCenter from 'lucide-svelte/icons/align-center';
   import AlignRight from 'lucide-svelte/icons/align-right';
@@ -12,8 +11,53 @@
   import { Button } from '$lib/components/ui/button/index.js';
   import { Separator } from '$lib/components/ui/separator';
 
-  let fontSize = 'medium';
-  let color = 'blue';
+  import type { Color, FontSize } from 'client/shared/interfaces';
+  import { COLOR_LIST, FONT_SIZES } from 'client/shared/constants';
+
+  export let onItalic: () => void;
+  export let onBold: () => void;
+  export let onTextAlignChange: (index: number) => void;
+  export let onColorChange: (color: Color['value']) => void;
+  export let onFontSizeChange: (fontSize: FontSize['value']) => void;
+
+  let fontSize = '16';
+  let color = '#70d6ff';
+
+  const FONT_STYLE_LIST = [
+    {
+      value: 'bold',
+      ariaLabel: 'Toggle bold',
+      Icon: Bold,
+      onClick: () => onBold(),
+    },
+    {
+      value: 'italic',
+      ariaLabel: 'Toggle italic',
+      Icon: Italic,
+      onClick: () => onItalic(),
+    },
+  ];
+
+  const TEXT_ALIGN_LIST = [
+    {
+      value: 'align-left',
+      ariaLabel: 'Left',
+      Icon: AlignLeft,
+      onClick: () => onTextAlignChange(0),
+    },
+    {
+      value: 'align-center',
+      ariaLabel: 'Center',
+      Icon: AlignCenter,
+      onClick: () => onTextAlignChange(1),
+    },
+    {
+      value: 'align-right',
+      ariaLabel: 'Right',
+      Icon: AlignRight,
+      onClick: () => onTextAlignChange(2),
+    },
+  ];
 </script>
 
 <Menubar.Root>
@@ -23,9 +67,11 @@
     </DropdownMenu.Trigger>
     <DropdownMenu.Content id="text-editor-menu-dropdown" class="w-56">
       <DropdownMenu.RadioGroup bind:value={color}>
-        <DropdownMenu.RadioItem value="blue">Blue</DropdownMenu.RadioItem>
-        <DropdownMenu.RadioItem value="red">Red</DropdownMenu.RadioItem>
-        <DropdownMenu.RadioItem value="green">Green</DropdownMenu.RadioItem>
+        {#each COLOR_LIST as { value }}
+          <DropdownMenu.RadioItem {value} on:click={() => onColorChange(value)}>
+            <div style:background-color={value} class="h-6 w-16 rounded-md"></div>
+          </DropdownMenu.RadioItem>
+        {/each}
       </DropdownMenu.RadioGroup>
     </DropdownMenu.Content>
   </DropdownMenu.Root>
@@ -33,26 +79,21 @@
   <Separator orientation="vertical" />
 
   <ToggleGroup.Root type="multiple">
-    <ToggleGroup.Item value="bold" aria-label="Toggle bold">
-      <Bold class="h-4 w-4" />
-    </ToggleGroup.Item>
-    <ToggleGroup.Item value="italic" aria-label="Toggle italic">
-      <Italic class="h-4 w-4" />
-    </ToggleGroup.Item>
+    {#each FONT_STYLE_LIST as { value, ariaLabel, Icon, onClick }}
+      <ToggleGroup.Item {value} aria-label={ariaLabel} on:click={onClick}>
+        <Icon class="h-4 w-4" />
+      </ToggleGroup.Item>
+    {/each}
   </ToggleGroup.Root>
 
   <Separator orientation="vertical" />
 
   <ToggleGroup.Root>
-    <ToggleGroup.Item value="align-left" aria-label="Text align">
-      <AlignLeft class="h-4 w-4" />
-    </ToggleGroup.Item>
-    <ToggleGroup.Item value="align-center" aria-label="Text align">
-      <AlignCenter class="h-4 w-4" />
-    </ToggleGroup.Item>
-    <ToggleGroup.Item value="align-right" aria-label="Text align">
-      <AlignRight class="h-4 w-4" />
-    </ToggleGroup.Item>
+    {#each TEXT_ALIGN_LIST as { value, ariaLabel, Icon, onClick }}
+      <ToggleGroup.Item {value} aria-label={ariaLabel} on:click={onClick}>
+        <Icon class="h-4 w-4" />
+      </ToggleGroup.Item>
+    {/each}
   </ToggleGroup.Root>
 
   <Separator orientation="vertical" />
@@ -63,11 +104,11 @@
     </DropdownMenu.Trigger>
     <DropdownMenu.Content id="text-editor-menu-dropdown" class="w-56">
       <DropdownMenu.RadioGroup bind:value={fontSize}>
-        <DropdownMenu.RadioItem value="tiny">Tiny</DropdownMenu.RadioItem>
-        <DropdownMenu.RadioItem value="small">Small</DropdownMenu.RadioItem>
-        <DropdownMenu.RadioItem value="medium">Medium</DropdownMenu.RadioItem>
-        <DropdownMenu.RadioItem value="big">Big</DropdownMenu.RadioItem>
-        <DropdownMenu.RadioItem value="large">Large</DropdownMenu.RadioItem>
+        {#each FONT_SIZES as { value, label }}
+          <DropdownMenu.RadioItem {value} on:click={() => onFontSizeChange(value)}>
+            <span>{label}</span>
+          </DropdownMenu.RadioItem>
+        {/each}
       </DropdownMenu.RadioGroup>
     </DropdownMenu.Content>
   </DropdownMenu.Root>
