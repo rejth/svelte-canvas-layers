@@ -29,6 +29,7 @@
   $: active = Boolean(draggedHandler || hoveredHandler) || isOverlapped(selectionPath);
   $: selected = active || isSelected;
 
+  // TODO: remove bounds
   $: active && dispatcher(ResizableLayerEvent.ACTIVE, { bounds });
   $: !active && dispatcher(ResizableLayerEvent.LEAVE);
 
@@ -66,6 +67,7 @@
     y0 += draggedHandler & N && movementY;
     x1 += draggedHandler & E && movementX;
     y1 += draggedHandler & S && movementY;
+    // TODO: update canvas store with the bounds
     dispatcher(ResizableLayerEvent.MOVE, { bounds });
   };
 
@@ -79,6 +81,7 @@
     x1 += draggedHandler & E && movementX;
     y1 += draggedHandler & S && movementY;
     previousTouch = e.touches[0];
+    // TODO: update canvas store with the bounds
     dispatcher(ResizableLayerEvent.MOVE, { bounds });
   };
 
@@ -92,11 +95,13 @@
 
   const onSurfaceMouseEnter = () => {
     hoveredHandler = SURFACE;
+    // TODO: update canvas store with the bounds
     dispatcher(ResizableLayerEvent.ENTER, { bounds });
   };
 
   const onSurfaceMouseDown = () => {
     draggedHandler = SURFACE;
+    // TODO: update canvas store with the bounds
     dispatcher(ResizableLayerEvent.TOUCH, { bounds });
   };
 
