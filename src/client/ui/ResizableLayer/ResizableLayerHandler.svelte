@@ -32,4 +32,5 @@
   on:mouseup
   on:touchstart
   on:touchend
+  on:click
 />

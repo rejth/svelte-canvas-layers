@@ -17,6 +17,7 @@
   $: _render = ({ ctx, options }: RenderProps) => {
     if (!ctx) return;
 
+    // TODO: move to Drawer
     const { initialPixelRatio, pixelRatio } = options;
     const transform = ctx.getTransform();
 

@@ -1,14 +1,18 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, type ComponentType } from 'svelte';
 
   import type { Point } from 'core/interfaces';
   import { geometryManager, type Viewport } from 'core/services';
   import { dndWatcher } from 'core/lib';
-  import { Canvas, Layer } from 'core/ui';
+  import { Canvas } from 'core/ui';
 
   import { Tools, type DoubleClickData } from 'client/shared/interfaces';
   import { CURSORS } from 'client/shared/constants';
+  import { CanvasEntityType } from 'client/ui/Canvas/BaseCanvasEntity';
+  import type { RectDrawOptions } from 'client/ui/Canvas/CanvasRect';
 
+  import Rect from 'client/ui/Canvas/Rect.svelte';
+  import Text from 'client/ui/Canvas/Text.svelte';
   import Zoom from 'client/ui/Zoom/Zoom.svelte';
   import Background from 'client/ui/Background/Background.svelte';
   import Selection from 'client/ui/Selection/Selection.svelte';
@@ -22,18 +26,22 @@
   import { toolbarStore } from 'client/ui/Toolbar/store';
   import { connectionStore } from 'client/ui/Connection/store';
 
-  import './App.css';
+  import 'client/shared/styles/_global.css';
+
+  const widgets: Partial<Record<CanvasEntityType, ComponentType>> = {
+    [CanvasEntityType.RECT]: Rect,
+    [CanvasEntityType.TEXT]: Text,
+  };
 
   let canvas: Canvas;
   let viewport: Viewport;
   let selection: Point[] = [];
   let isLayerEntered = false;
-  let isLayerEditable = false;
   let clickOutsideExcluded: string[] = ['trash', 'text-editor-menu', 'text-editor-menu-dropdown'];
-  let textEditorCoordinates: DoubleClickData = { x: 0, y: 0, layerWidth: 0, layerHeight: 0 };
+  let entityData: DoubleClickData = { entityId: '', x: 0, y: 0, layerWidth: 0, layerHeight: 0 };
 
   const { tool } = toolbarStore;
-  const { shapes, selectionPath } = canvasStore;
+  const { shapes, selectionPath, textEditor } = canvasStore;
   const { currentConnection, connections } = connectionStore;
 
   $: connection = $tool === Tools.CONNECT;
@@ -56,7 +64,6 @@
   const handleCanvasClick = (e: MouseEvent) => {
     canvasStore.addShape(e);
     selection = $selectionPath;
-    isLayerEditable = false;
     canvasStore.resetSelection();
   };
 
@@ -84,42 +91,59 @@
     canvasStore.setIsSelected(true);
   };
 
-  const handleLayerActive = (uuid: string) => {
-    canvasStore.selectShape(uuid);
+  const handleLayerActive = (e: CustomEvent<ResizableLayerEventDetails>) => {
+    if (!e.detail) return;
+    canvasStore.selectShape(e.detail.entityId);
   };
 
-  const handleLayerLeave = (uuid: string) => {
-    canvasStore.deselectShape(uuid);
+  const handleLayerLeave = (e: CustomEvent<ResizableLayerEventDetails>) => {
+    if (!e.detail) return;
+    canvasStore.deselectShape(e.detail.entityId);
     canvasStore.setIsSelected(false);
-    isLayerEditable = false;
+    canvasStore.saveText();
     isLayerEntered = false;
   };
 
-  const handleLayerTouch = (e: CustomEvent<ResizableLayerEventDetails>, uuid: string) => {
-    connectionStore.handleBoxSelect(e, uuid);
+  const handleLayerTouch = (e: CustomEvent<ResizableLayerEventDetails>) => {
+    if (!e.detail) return;
+    connectionStore.handleBoxSelect(e, e.detail.entityId);
   };
 
-  const handleLayerMove = (e: CustomEvent<ResizableLayerEventDetails>, uuid: string) => {
-    connectionStore.handleBoxMove(e, uuid);
+  const handleLayerMove = (e: CustomEvent<ResizableLayerEventDetails>) => {
+    if (!e.detail) return;
+    connectionStore.handleBoxMove(e, e.detail.entityId);
   };
 
-  const handleLayerEnter = (e: CustomEvent<ResizableLayerEventDetails>, uuid: string) => {
+  const handleLayerEnter = (e: CustomEvent<ResizableLayerEventDetails>) => {
+    if (!e.detail) return;
     isLayerEntered = true;
-    connectionStore.handleBoxEnter(e, uuid);
+    connectionStore.handleBoxEnter(e, e.detail.entityId);
   };
 
   const handleLayerDoubleClick = (e: CustomEvent<ResizableLayerEventDetails>) => {
     if (!e.detail) return;
 
-    const { data, bounds } = e.detail;
+    const { entityId, data, bounds } = e.detail;
     const rect = geometryManager.getRectDimensionFromBounds(bounds);
 
     if (!rect) return;
 
-    isLayerEditable = true;
+    const rectOptions = $shapes.get(entityId)?.getOptions() as RectDrawOptions;
+    const textOptions = rectOptions?.editor?.getOptions();
 
-    textEditorCoordinates = {
+    canvasStore.updateTextEditor({
+      anchorId: entityId,
+      text: textOptions?.text || '',
+      fontSize: textOptions?.fontSize,
+      textAlign: textOptions?.textAlign,
+      bold: Boolean(/bold/.test(textOptions?.fontStyle || '')),
+      italic: Boolean(/italic/.test(textOptions?.fontStyle || '')),
+      isEditable: true,
+    });
+
+    entityData = {
       ...viewport.onLayerDoubleClick(data!, bounds),
+      entityId,
       layerWidth: rect.width,
       layerHeight: rect.height,
     };
@@ -128,8 +152,8 @@
 
 <main>
   <Toolbar />
-  {#if isLayerEditable}
-    <TextEditor position={textEditorCoordinates} />
+  {#if $textEditor?.isEditable}
+    <TextEditor anchorData={entityData} />
   {/if}
   <Canvas
     useLayerEvents={!panning}
@@ -165,35 +189,24 @@
     {#each Object.entries($connections) as [connectionId, { source, target }]}
       <Connection {connectionId} {source} {target} selectOnMakingConnection={connection} />
     {/each}
-    {#each $shapes.values() as { uuid, initialBounds, isSelected, ...rest } (uuid)}
+    {#each $shapes.values() as shape (shape.id)}
       <ResizableLayer
-        {initialBounds}
-        {isSelected}
+        entityId={shape.id}
+        initialBounds={shape.getBounds()}
+        isSelected={shape.isSelected}
         selectionPath={selection}
         selectOnMakingConnection={connection}
         isMovingBlocked={connection}
         on:mousedown={handleLayerMouseDown}
+        on:layer.enter={handleLayerEnter}
+        on:layer.touch={handleLayerTouch}
         on:layer.dblclick={handleLayerDoubleClick}
-        on:layer.active={() => handleLayerActive(uuid)}
-        on:layer.leave={() => handleLayerLeave(uuid)}
-        on:layer.touch={(e) => handleLayerTouch(e, uuid)}
-        on:layer.move={(e) => handleLayerMove(e, uuid)}
-        on:layer.enter={(e) => handleLayerEnter(e, uuid)}
+        on:layer.active={handleLayerActive}
+        on:layer.leave={handleLayerLeave}
+        on:layer.move={handleLayerMove}
         let:bounds
       >
-        <Layer
-          {bounds}
-          render={({ drawer }) => {
-            const { x0, y0, x1, y1 } = bounds;
-            drawer.fillRect({
-              x: x0,
-              y: y0,
-              width: x1 - x0,
-              height: y1 - y0,
-              ...rest,
-            });
-          }}
-        />
+        <svelte:component this={widgets[shape.getType()]} entityId={shape.id} {bounds} />
       </ResizableLayer>
     {/each}
   </Canvas>

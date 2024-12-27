@@ -17,7 +17,7 @@
 
   const { layerId, unregister } = renderManager.register({ render, dispatcher, bounds });
 
-  // TODO: implement redrawLayer method to render only one layer on update, not all the layers
+  // TODO: Implement redrawLayer method to render only one layer on update, not all the layers
   afterUpdate(renderManager.redraw);
   onDestroy(unregister);
 </script>

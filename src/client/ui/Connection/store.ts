@@ -24,6 +24,7 @@ interface BoxToBoxConnection {
 
 class ConnectionStore {
   currentConnection: Writable<Partial<BoxToBoxConnection> | null> = writable(null);
+  // TODO: Use Map here
   connections: Writable<Connection> = writable({});
   selectedConnections: Writable<Connection> = writable({});
 
@@ -81,7 +82,7 @@ class ConnectionStore {
       }
 
       this.#updateConnectionIdsByBoxId(boxId, connectionId);
-      this.currentConnection.set(null);
+      this.resetCurrentConnection();
     } else {
       this.currentConnection.set({ source: { id: boxId, box: rect! } });
     }
@@ -145,6 +146,10 @@ class ConnectionStore {
       }
       return connections;
     });
+  }
+
+  resetCurrentConnection() {
+    this.currentConnection.set(null);
   }
 
   #removeSelectedConnections(store: Connection): Connection {

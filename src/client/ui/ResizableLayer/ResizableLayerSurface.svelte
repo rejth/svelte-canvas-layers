@@ -42,4 +42,5 @@
   on:touchstart
   on:touchend
   on:dblclick
+  on:click
 />

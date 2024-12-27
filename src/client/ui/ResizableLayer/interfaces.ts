@@ -10,6 +10,7 @@ export const enum ResizableLayerEvent {
 }
 
 interface EventDetails {
+  entityId: string;
   bounds: Bounds;
   data?: LayerEventDetails;
 }

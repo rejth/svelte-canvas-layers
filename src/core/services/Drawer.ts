@@ -1,5 +1,7 @@
-import type { CanvasContextType, Point } from 'core/interfaces';
+import type { CanvasContextType, CanvasOptions, Point } from 'core/interfaces';
 import { geometryManager } from 'core/services';
+
+import { SMALL_PADDING } from 'client/shared/constants';
 
 interface RectDrawOptions {
   x: number;
@@ -57,6 +59,25 @@ interface BezierCurveDrawOptions {
   end: Point;
   color: string;
   lineWidth: number;
+}
+
+interface ImageDrawOptions {
+  image: CanvasImageSource;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface TextDrawOptions {
+  fontSize: number;
+  fontStyle: string;
+  textAlign: CanvasTextAlign;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  scale: number;
 }
 
 export class Drawer {
@@ -194,5 +215,59 @@ export class Drawer {
     this.ctx.strokeStyle = color;
     this.ctx.lineWidth = lineWidth;
     this.ctx.stroke();
+  }
+
+  drawImage(options: ImageDrawOptions) {
+    if (!options.image) return;
+
+    this.ctx.save();
+    this.ctx.drawImage(options.image, options.x, options.y, options.width, options.height);
+    this.ctx.restore();
+  }
+
+  renderTextSnapshot(
+    fragments: string[],
+    textOptions: TextDrawOptions,
+    canvasOptions: CanvasOptions,
+  ) {
+    const { fontSize, fontStyle, textAlign, x, y, width, height, scale = 1 } = textOptions;
+    const { pixelRatio, initialPixelRatio } = canvasOptions;
+
+    const offscreenCanvas = new OffscreenCanvas(width, width);
+    offscreenCanvas.width = Math.floor(width * pixelRatio);
+    offscreenCanvas.height = Math.floor(height * pixelRatio);
+
+    const context = offscreenCanvas.getContext('2d') as OffscreenCanvasRenderingContext2D;
+
+    context.textAlign = textAlign;
+    context.textBaseline = 'alphabetic';
+    context.font = `${fontStyle ? fontStyle : 400} ${fontSize}px monospace`;
+    context.scale(scale * pixelRatio, scale * pixelRatio);
+
+    const textMetrics = context.measureText('text');
+    const transform = context.getTransform();
+    const lineHeight = textMetrics.fontBoundingBoxDescent + textMetrics.fontBoundingBoxAscent;
+
+    let newX = SMALL_PADDING;
+    if (textAlign === 'center') {
+      newX = offscreenCanvas.width / transform.a / initialPixelRatio;
+    }
+    if (textAlign === 'right') {
+      newX = offscreenCanvas.width / transform.a - SMALL_PADDING;
+    }
+
+    let newY = lineHeight;
+    for (const fragment of fragments) {
+      if (fragment === '') {
+        newY += lineHeight;
+      } else {
+        context.fillText(fragment, newX, newY);
+        newY += lineHeight;
+      }
+    }
+
+    this.ctx.drawImage(offscreenCanvas, x, y, width, height);
+
+    return offscreenCanvas;
   }
 }

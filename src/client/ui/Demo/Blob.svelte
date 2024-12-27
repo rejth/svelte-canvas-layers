@@ -9,10 +9,10 @@
   name="Blob"
   render={({ ctx, width, height, active }) => {
     const path = new Path2D(pathString);
+    const scale = width * 0.0018;
+
     ctx.fillStyle = 'mediumturquoise';
     ctx.translate(width * 0.85, height * 0.6);
-
-    const scale = width * 0.0018;
     ctx.scale(scale * 0.9, scale);
     ctx.fill(path);
 

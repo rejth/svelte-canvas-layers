@@ -4,7 +4,7 @@ const rootElement = document.getElementById('app') as HTMLDivElement;
 
 if (!rootElement) {
   throw new Error(
-    'Root container was not found. Failed to mount Svelte app. Please make sure the container exists and is in the DOM.',
+    'Root container was not found. Failed to mount the app. Please make sure the container exists and is in the DOM.',
   );
 }
 

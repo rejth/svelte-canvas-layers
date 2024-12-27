@@ -1,5 +1,10 @@
 import type { Color, FontSize } from './interfaces';
 
+export const SMALL_PADDING = 5;
+export const LARGE_PADDING = 10;
+export const DEFAULT_FONT_SIZE = 16;
+export const DEFAULT_RECT_SIZE = 200;
+
 export const enum COLORS {
   STICKER_YELLOW = '#ffd670',
   STICKER_ORANGE = '#ff9770',

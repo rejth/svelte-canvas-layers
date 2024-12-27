@@ -4,10 +4,13 @@
   import type { Point, Bounds, LayerEventDetails } from 'core/interfaces';
   import { geometryManager } from 'core/services';
 
+  import { canvasStore } from 'client/ui/Canvas/store';
   import Surface from './ResizableLayerSurface.svelte';
   import Handler from './ResizableLayerHandler.svelte';
   import { ResizableLayerEvent, type ResizableLayerEventDispatcher } from './interfaces';
 
+  // TODO: Get rid of the bounds, use { x, y, width, height } instead
+  export let entityId: string;
   export let initialBounds: Bounds = { x0: 0, y0: 0, x1: 0, y1: 0 };
   export let selectionPath: Point[] = [];
   export let isSelected: boolean = false;
@@ -29,9 +32,8 @@
   $: active = Boolean(draggedHandler || hoveredHandler) || isOverlapped(selectionPath);
   $: selected = active || isSelected;
 
-  // TODO: remove bounds
-  $: active && dispatcher(ResizableLayerEvent.ACTIVE, { bounds });
-  $: !active && dispatcher(ResizableLayerEvent.LEAVE);
+  $: active && dispatcher(ResizableLayerEvent.ACTIVE, { entityId, bounds });
+  $: !active && dispatcher(ResizableLayerEvent.LEAVE, { entityId, bounds });
 
   $: sortedHandlers = HANDLERS.sort((a, b) =>
     a === hoveredHandler ? 1 : b === hoveredHandler ? -1 : 0,
@@ -44,6 +46,7 @@
     };
   };
 
+  // TODO: Handle cursor type change on "mouseover" event
   $: handlerCursor = (handler: number | null): string => {
     if (!handler) return selected ? 'pointer' : 'auto';
 
@@ -67,8 +70,7 @@
     y0 += draggedHandler & N && movementY;
     x1 += draggedHandler & E && movementX;
     y1 += draggedHandler & S && movementY;
-    // TODO: update canvas store with the bounds
-    dispatcher(ResizableLayerEvent.MOVE, { bounds });
+    dispatcher(ResizableLayerEvent.MOVE, { entityId, bounds });
   };
 
   const onTouchMove = (e: TouchEvent) => {
@@ -81,8 +83,7 @@
     x1 += draggedHandler & E && movementX;
     y1 += draggedHandler & S && movementY;
     previousTouch = e.touches[0];
-    // TODO: update canvas store with the bounds
-    dispatcher(ResizableLayerEvent.MOVE, { bounds });
+    dispatcher(ResizableLayerEvent.MOVE, { entityId, bounds });
   };
 
   const onHandlerMouseEnter = (handler: number) => {
@@ -95,14 +96,12 @@
 
   const onSurfaceMouseEnter = () => {
     hoveredHandler = SURFACE;
-    // TODO: update canvas store with the bounds
-    dispatcher(ResizableLayerEvent.ENTER, { bounds });
+    dispatcher(ResizableLayerEvent.ENTER, { entityId, bounds });
   };
 
   const onSurfaceMouseDown = () => {
     draggedHandler = SURFACE;
-    // TODO: update canvas store with the bounds
-    dispatcher(ResizableLayerEvent.TOUCH, { bounds });
+    dispatcher(ResizableLayerEvent.TOUCH, { entityId, bounds });
   };
 
   const onMouseLeave = () => {
@@ -118,13 +117,18 @@
   };
 
   const onDoubleClick = (e: CustomEvent<LayerEventDetails>) => {
-    dispatcher(ResizableLayerEvent.DOUBLE_CLICK, { data: e.detail, bounds });
+    dispatcher(ResizableLayerEvent.DOUBLE_CLICK, { entityId, data: e.detail, bounds });
   };
 
   const isOverlapped = (selectionPath: Point[]) => {
     const selectionBounds = geometryManager.getPathBounds(selectionPath);
     if (!selectionBounds) return false;
     return geometryManager.isOverlapping(selectionBounds, bounds);
+  };
+
+  const updateEntityData = () => {
+    const rect = geometryManager.getRectDimensionFromBounds(bounds);
+    canvasStore.updateShape(entityId, rect || {});
   };
 
   const cursor = (node: HTMLElement, _: unknown) => ({
@@ -147,6 +151,7 @@
   {bounds}
   active={selected}
   {selectOnMakingConnection}
+  on:click={updateEntityData}
   on:dblclick={onDoubleClick}
   on:mouseleave={onMouseLeave}
   on:mouseenter={onSurfaceMouseEnter}
@@ -164,6 +169,7 @@
     <Handler
       {...getHandlerPosition(handler)}
       active={hoveredHandler === handler || draggedHandler === handler}
+      on:click={updateEntityData}
       on:mouseleave={onMouseLeave}
       on:mouseenter={() => onHandlerMouseEnter(handler)}
       on:mousedown={() => onHandlerMouseDown(handler)}

@@ -47,6 +47,7 @@
 
   $: _render = ({ ctx, drawer, options }: RenderProps) => {
     const { width, height } = options;
+
     ctx.save();
 
     ctx.translate(point.x, point.y);

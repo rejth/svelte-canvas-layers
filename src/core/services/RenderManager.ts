@@ -13,6 +13,7 @@ import type {
 } from 'core/interfaces';
 import { Drawer, geometryManager, type Renderer } from 'core/services';
 
+// TODO: Rename to LayerManager
 export class RenderManager {
   renderer: Renderer;
   drawer: Drawer | null;
@@ -164,7 +165,7 @@ export class RenderManager {
       const { render } = this.drawers.get(layerId) || {};
       this.layerChangeCallback?.(layerId);
       render?.({ ctx, drawer, options });
-      // TODO: we have to update the R-tree here. Otherwise, the tree will have irrelevant object data (bounding box) and the collision logic will be incorrect
+      // TODO: We have to update the R-tree here. Otherwise, the tree will have irrelevant object data (bounding box) and the collision logic will be incorrect
       // Also, we cannot just update the tree element. We have to remove and add the element again with the new data, which is quite resource-consuming operation
     }
 

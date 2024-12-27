@@ -17,3 +17,8 @@ body {
   overscroll-behavior-x: none;
   overscroll-behavior-y: none;
 }
+
+#app {
+  margin: 0 auto;
+  height: 100%;
+}

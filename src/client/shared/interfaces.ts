@@ -1,5 +1,5 @@
 import type { Bounds } from 'core/interfaces';
-import { COLOR_LIST, COLORS, FONT_SIZES } from 'client/shared/constants';
+import { COLOR_LIST, FONT_SIZES } from 'client/shared/constants';
 
 export const enum Tools {
   NOTE = 'NOTE',
@@ -13,12 +13,23 @@ export const enum Tools {
 export type Tool = keyof typeof Tools;
 export type ShapeType = 'NOTE' | 'TEXT';
 
-// TODO: rename to Entity
+export interface TextEditorData {
+  anchorId: string;
+  text: string;
+  bold: boolean;
+  italic: boolean;
+  fontSize: number;
+  textAlign: CanvasTextAlign;
+  isEditable: boolean;
+}
+
+// TODO: Rename to Entity
 export type ShapeConfig = {
   uuid: string;
   type: ShapeType;
   initialBounds: Bounds;
-  color: COLORS;
+  color: ColorId;
+  scale: number;
   isSelected: boolean;
   shadowColor?: string;
   shadowOffsetY?: number;
@@ -27,20 +38,23 @@ export type ShapeConfig = {
 };
 
 export interface DoubleClickData {
+  entityId: string;
   x: number;
   y: number;
   layerWidth: number;
   layerHeight: number;
 }
 
-export type ColorId = keyof typeof COLOR_LIST;
+// TODO: Get the colors values from the constants as a type
+export type ColorId = (typeof COLOR_LIST)[number]['value'];
 
 export interface Color {
   value: string;
   label: string;
 }
 
-export type FontSizeId = keyof typeof FONT_SIZES;
+// TODO: Get the font sizes values from the constants as a type
+export type FontSizeId = (typeof FONT_SIZES)[number]['value'];
 
 export interface FontSize {
   value: string;
