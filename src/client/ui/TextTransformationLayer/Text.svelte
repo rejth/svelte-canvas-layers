@@ -13,7 +13,7 @@
     ctx.font = `130px 'Fira Mono', monospace`;
     ctx.fillStyle = COLORS.SELECTION;
 
-    let overallBoundingBox = {
+    let overallBBox = {
       xMin: Infinity,
       yMin: Infinity,
       xMax: -Infinity,
@@ -38,33 +38,20 @@
         height,
       };
 
-      // Update overall bounding box
-      overallBoundingBox.xMin = Math.min(overallBoundingBox.xMin, boundingBox.x);
-      overallBoundingBox.yMin = Math.min(overallBoundingBox.yMin, boundingBox.y);
-      overallBoundingBox.xMax = Math.max(
-        overallBoundingBox.xMax,
-        boundingBox.x + boundingBox.width,
-      );
-      overallBoundingBox.yMax = Math.max(
-        overallBoundingBox.yMax,
-        boundingBox.y + boundingBox.height,
-      );
+      overallBBox.xMin = Math.min(overallBBox.xMin, boundingBox.x);
+      overallBBox.yMin = Math.min(overallBBox.yMin, boundingBox.y);
+      overallBBox.xMax = Math.max(overallBBox.xMax, boundingBox.x + boundingBox.width);
+      overallBBox.yMax = Math.max(overallBBox.yMax, boundingBox.y + boundingBox.height);
 
       ctx.fillText(char, 0, 0);
       ctx.restore();
     });
 
-    // Calculate the overall bounding box dimensions
-    const overallWidth = overallBoundingBox.xMax - overallBoundingBox.xMin;
-    const overallHeight = overallBoundingBox.yMax - overallBoundingBox.yMin;
+    const overallWidth = overallBBox.xMax - overallBBox.xMin;
+    const overallHeight = overallBBox.yMax - overallBBox.yMin;
 
-    // context.strokeStyle = COLORS.STICKER_ORANGE;
-    // context.strokeRect(
-    //   overallBoundingBox.xMin,
-    //   overallBoundingBox.yMin,
-    //   overallWidth,
-    //   overallHeight,
-    // );
+    ctx.strokeStyle = COLORS.STICKER_ORANGE;
+    ctx.strokeRect(overallBBox.xMin, overallBBox.yMin, overallWidth, overallHeight);
   };
 </script>
 

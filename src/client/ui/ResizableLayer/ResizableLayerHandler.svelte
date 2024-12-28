@@ -13,13 +13,13 @@
 
   $: bounds = { x0: x, y0: y, x1: x, y1: y };
 
-  $: render = ({ drawer }: RenderProps) => {
+  $: render = ({ renderer }: RenderProps) => {
     const rect = geometryManager.getRectDimensionFromBounds(bounds);
     if (!rect) return;
 
     const { x, y } = rect;
     const color = active ? COLORS.STICKER_BLUE : COLORS.SELECTION;
-    drawer.fillCircle({ x, y, radius, color });
+    renderer.fillCircle({ x, y, radius, color });
   };
 </script>
 

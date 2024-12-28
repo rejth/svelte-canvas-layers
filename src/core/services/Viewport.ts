@@ -1,48 +1,48 @@
 import type { Bounds, CanvasContextType, LayerEventDetails, Point } from 'core/interfaces';
-import { geometryManager, type RenderManager, type Renderer } from 'core/services';
+import { type LayerManager, type Renderer } from 'core/services';
 
 export class Viewport {
   context: CanvasContextType | null;
   renderer: Renderer | null;
-  renderManager: RenderManager | null;
+  layerManager: LayerManager | null;
 
   currentTransformedCursor: Point;
   currentPosition: Point;
   dragStartPosition: Point;
   isDragging = false;
 
-  constructor(renderManager: RenderManager) {
+  constructor(layerManager: LayerManager) {
     this.context = null;
-    this.renderManager = renderManager;
-    this.renderer = renderManager.getRenderer();
+    this.layerManager = layerManager;
+    this.renderer = layerManager.getRenderer();
 
     this.dragStartPosition = { x: 0, y: 0 };
     this.currentTransformedCursor = { x: 0, y: 0 };
     this.currentPosition = { x: 0, y: 0 };
 
-    this.onMouseDown = this.onMouseDown.bind(this);
-    this.onMouseUp = this.onMouseUp.bind(this);
-    this.onMouseMove = this.onMouseMove.bind(this);
-    this.onWheel = this.onWheel.bind(this);
+    this.handleMouseDown = this.handleMouseDown.bind(this);
+    this.handleMouseUp = this.handleMouseUp.bind(this);
+    this.handleMouseMove = this.handleMouseMove.bind(this);
+    this.handleWheelChange = this.handleWheelChange.bind(this);
   }
 
   init(context: CanvasContextType | null) {
     this.context = context;
   }
 
-  onMouseDown(e: MouseEvent) {
+  handleMouseDown(e: MouseEvent) {
     this.isDragging = true;
     this.dragStartPosition = this.renderer!.getTransformedPoint(e.pageX, e.pageY);
   }
 
-  onMouseUp(_e: MouseEvent) {
+  handleMouseUp(_e: MouseEvent) {
     this.isDragging = false;
   }
 
-  onMouseMove(e: MouseEvent) {
+  handleMouseMove(e: MouseEvent) {
     if (!this.context || !this.isDragging) return;
 
-    const renderManager = this.renderManager!;
+    const layerManager = this.layerManager!;
     const renderer = this.renderer!;
 
     this.currentTransformedCursor = renderer.getTransformedPoint(e.pageX, e.pageY);
@@ -52,10 +52,10 @@ export class Viewport {
       this.currentTransformedCursor.y - this.dragStartPosition.y,
     );
 
-    renderManager.searchVisibleLayers();
+    layerManager.searchVisibleLayers();
   }
 
-  onLayerDoubleClick(e: LayerEventDetails, layerBounds: Bounds): Point {
+  handleLayerDoubleClick(e: LayerEventDetails, layerBounds: Bounds): Point {
     if (!this.renderer) return { x: e.x, y: e.y };
 
     const { pageX, pageY } = e.originalEvent as MouseEvent;
@@ -73,7 +73,7 @@ export class Viewport {
     return { x, y };
   }
 
-  onWheel(e: WheelEvent) {
+  handleWheelChange(e: WheelEvent) {
     if (!this.context) return;
 
     const renderer = this.renderer!;
@@ -82,16 +82,16 @@ export class Viewport {
     this.currentPosition = { x: e.pageX, y: e.pageY };
 
     if (e.ctrlKey) {
-      this.#zoom(e);
+      this.#zoomCanvas(e);
     } else {
-      this.#move(e);
+      this.#moveCanvas(e);
     }
   }
 
-  #move(e: WheelEvent) {
+  #moveCanvas(e: WheelEvent) {
     if (!this.context) return;
 
-    const renderManager = this.renderManager!;
+    const layerManager = this.layerManager!;
     const renderer = this.renderer!;
 
     this.currentPosition = {
@@ -108,13 +108,13 @@ export class Viewport {
       this.currentTransformedCursor.y - this.dragStartPosition.y,
     );
 
-    renderManager.searchVisibleLayers();
+    layerManager.searchVisibleLayers();
   }
 
-  #zoom(e: WheelEvent) {
+  #zoomCanvas(e: WheelEvent) {
     if (!this.context) return;
 
-    const renderManager = this.renderManager!;
+    const layerManager = this.layerManager!;
     const renderer = this.renderer!;
 
     this.currentPosition = {
@@ -136,7 +136,7 @@ export class Viewport {
       this.context.translate(this.currentTransformedCursor.x, this.currentTransformedCursor.y);
       renderer.scale(scale, scale);
       this.context.translate(-this.currentTransformedCursor.x, -this.currentTransformedCursor.y);
-      renderManager.searchVisibleLayers();
+      layerManager.searchVisibleLayers();
     }
   }
 

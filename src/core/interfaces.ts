@@ -1,9 +1,9 @@
 import type { BBox } from 'rbush';
 import type { createEventDispatcher } from 'svelte';
-import type { Drawer, RenderManager } from 'core/services';
+import type { LayerManager, Renderer } from 'core/services';
 
 export type AppContext = {
-  renderManager: RenderManager;
+  layerManager: LayerManager;
 };
 
 export type CanvasContextType = CanvasRenderingContext2D | HitCanvasRenderingContext2D;
@@ -35,16 +35,15 @@ export interface HitCanvasRenderingContext2D extends Omit<CanvasRenderingContext
 }
 
 export type CanvasOptions = {
-  initialPixelRatio: PixelRatio;
-  pixelRatio: PixelRatio;
   width: number;
   height: number;
+  initialPixelRatio: PixelRatio;
+  pixelRatio: PixelRatio;
 };
 
 export type RenderProps = {
   ctx: CanvasContextType;
-  drawer: Drawer;
-  options: CanvasOptions;
+  renderer: Renderer;
 };
 
 export interface Render {
@@ -91,3 +90,97 @@ export type CanvasEvents =
 export type LayerEvents = Record<CanvasEvents, LayerEventDetails>;
 export type LayerEventDispatcher = ReturnType<typeof createEventDispatcher<LayerEvents>>;
 export type LayerEventDetails = Point & { originalEvent: OriginalEvent };
+
+export interface RectDrawOptions {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  color?: string;
+  shadowColor?: string;
+  shadowOffsetY?: number;
+  shadowOffsetX?: number;
+  shadowBlur?: number;
+}
+
+export interface RoundedRectDrawOptions {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  radius: number;
+  color: string;
+  shadowColor?: string;
+  shadowOffsetY?: number;
+  shadowOffsetX?: number;
+  shadowBlur?: number;
+}
+
+export interface StrokeDrawOptions {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  lineWidth: number;
+  color: string;
+}
+
+export interface CircleDrawOptions {
+  x: number;
+  y: number;
+  radius: number;
+  color: string;
+}
+
+export interface QuadraticCurveDrawOptions {
+  start: Point;
+  control: Point;
+  end: Point;
+  color: string;
+  lineWidth: number;
+}
+
+export interface BezierCurveDrawOptions {
+  start: Point;
+  cp1: Point;
+  cp2: Point;
+  end: Point;
+  color: string;
+  lineWidth: number;
+}
+
+export interface ImageDrawOptions {
+  image: CanvasImageSource;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface TextDrawOptions {
+  fontSize: number;
+  fontStyle: string;
+  textAlign: CanvasTextAlign;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  scale: number;
+}
+
+export interface TransformationMatrix {
+  translationX: number;
+  translationY: number;
+  scaleX: number;
+  scaleY: number;
+  skewY: number;
+  skewX: number;
+  initialScale: number;
+}
+
+export interface ClearRectOptions {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}

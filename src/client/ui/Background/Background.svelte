@@ -14,11 +14,11 @@
   export let height: number;
   export let render: BackgroundPatternRenderer;
 
-  $: _render = ({ ctx, options }: RenderProps) => {
+  $: _render = ({ ctx, renderer }: RenderProps) => {
     if (!ctx) return;
 
     // TODO: move to Drawer
-    const { initialPixelRatio, pixelRatio } = options;
+    const { initialPixelRatio, pixelRatio } = renderer.getCanvasOptions();
     const transform = ctx.getTransform();
 
     const offscreenCanvas = new OffscreenCanvas(width, height);

@@ -1,4 +1,3 @@
-import type { Bounds } from 'core/interfaces';
 import { COLOR_LIST, FONT_SIZES } from 'client/shared/constants';
 
 export const enum Tools {
@@ -22,20 +21,6 @@ export interface TextEditorData {
   textAlign: CanvasTextAlign;
   isEditable: boolean;
 }
-
-// TODO: Rename to Entity
-export type ShapeConfig = {
-  uuid: string;
-  type: ShapeType;
-  initialBounds: Bounds;
-  color: ColorId;
-  scale: number;
-  isSelected: boolean;
-  shadowColor?: string;
-  shadowOffsetY?: number;
-  shadowOffsetX?: number;
-  shadowBlur?: number;
-};
 
 export interface DoubleClickData {
   entityId: string;

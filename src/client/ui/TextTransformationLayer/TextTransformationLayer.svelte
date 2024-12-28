@@ -1,10 +1,11 @@
 <script lang="ts">
   import type { Point } from 'core/interfaces';
 
+  import BezierCurve from 'client/ui/Curve/BezierCurve.svelte';
+  import ControlPoints from 'client/ui/Curve/ControlPoints.svelte';
+  import { type CurveLayerEventDetails } from 'client/ui/Curve/interfaces';
+
   import Text from './Text.svelte';
-  import BezierCurve from '../Curve/BezierCurve.svelte';
-  import ControlPoints from '../Curve/ControlPoints.svelte';
-  import { type CurveLayerEventDetails } from '../Curve/interfaces';
 
   export let text: string;
 

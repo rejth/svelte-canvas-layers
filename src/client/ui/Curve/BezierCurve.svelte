@@ -10,9 +10,9 @@
   export let end: Point;
   export let active: boolean = false;
 
-  $: render = ({ drawer }: RenderProps) => {
+  $: render = ({ renderer }: RenderProps) => {
     const color = active ? COLORS.SELECTION : '#000';
-    drawer.strokeBezierCurve({ start, cp1, cp2, end, color, lineWidth: 3 });
+    renderer.strokeBezierCurve({ start, cp1, cp2, end, color, lineWidth: 3 });
   };
 </script>
 

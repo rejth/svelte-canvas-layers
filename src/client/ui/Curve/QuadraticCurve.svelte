@@ -9,9 +9,9 @@
   export let end: Point;
   export let active: boolean = false;
 
-  $: render = ({ drawer }: RenderProps) => {
+  $: render = ({ renderer }: RenderProps) => {
     const color = active ? COLORS.SELECTION : '#000';
-    drawer.strokeQuadraticCurve({ start, control, end, color, lineWidth: 3 });
+    renderer.strokeQuadraticCurve({ start, control, end, color, lineWidth: 3 });
   };
 </script>
 

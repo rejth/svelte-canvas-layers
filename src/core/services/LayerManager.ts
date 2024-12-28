@@ -11,12 +11,10 @@ import type {
   CanvasContextType,
   LayerBBox,
 } from 'core/interfaces';
-import { Drawer, geometryManager, type Renderer } from 'core/services';
+import { geometryManager, type Renderer } from 'core/services';
 
-// TODO: Rename to LayerManager
-export class RenderManager {
+export class LayerManager {
   renderer: Renderer;
-  drawer: Drawer | null;
   currentLayerId: LayerId;
   activeLayerId: LayerId;
   layerSequence: LayerId[];
@@ -26,6 +24,7 @@ export class RenderManager {
   tree: RBush<LayerBBox>;
   visibleLayers: Array<LayerBBox>;
   visibleLayerIds: Array<LayerId>;
+  // TODO: Implement a class for layer to handle layer's events and rendering
   drawers: Map<LayerId, { layerBBox: LayerBBox; render: Render }>;
   dispatchers: Map<LayerId, LayerEventDispatcher>;
   needsRedraw: boolean;
@@ -35,7 +34,6 @@ export class RenderManager {
 
   constructor(renderer: Renderer) {
     this.renderer = renderer;
-    this.drawer = null;
 
     this.currentLayerId = 1;
     this.activeLayerId = 0;
@@ -62,7 +60,6 @@ export class RenderManager {
   }
 
   run(layerContainer: HTMLDivElement) {
-    this.drawer = new Drawer(<CanvasContextType>this.renderer.getContext());
     this.layerContainer = layerContainer;
     this.#observeLayerSequence();
 
@@ -153,9 +150,7 @@ export class RenderManager {
     if (!this.needsRedraw) return;
 
     const ctx = this.renderer.getContext()!;
-    const options = this.renderer.getCanvasOptions();
     const transformedArea = this.renderer.getTransformedArea();
-    const drawer = this.drawer!;
 
     if (transformedArea) {
       this.renderer.clearRectSync(transformedArea);
@@ -164,7 +159,7 @@ export class RenderManager {
     for (const layerId of this.visibleLayerIds) {
       const { render } = this.drawers.get(layerId) || {};
       this.layerChangeCallback?.(layerId);
-      render?.({ ctx, drawer, options });
+      render?.({ ctx, renderer: this.renderer });
       // TODO: We have to update the R-tree here. Otherwise, the tree will have irrelevant object data (bounding box) and the collision logic will be incorrect
       // Also, we cannot just update the tree element. We have to remove and add the element again with the new data, which is quite resource-consuming operation
     }

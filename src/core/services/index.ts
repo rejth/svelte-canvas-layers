@@ -1,6 +1,5 @@
-export { RenderManager } from './RenderManager';
+export { LayerManager } from './LayerManager';
 export { Renderer } from './Renderer';
-export { Drawer } from './Drawer';
 export { Viewport } from './Viewport';
 export { geometryManager } from './GeometryManager';
 

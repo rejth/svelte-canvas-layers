@@ -13,7 +13,7 @@
   import {
     Viewport,
     Renderer,
-    RenderManager,
+    LayerManager,
     createHitCanvas,
     getMaxPixelRatio,
   } from 'core/services';
@@ -51,10 +51,10 @@
   export let className = '';
   export let style = '';
 
-  export const getRenderManager = () => renderManager;
+  export const getRenderManager = () => layerManager;
   export const getViewport = () => viewport;
   export const getCanvasElement = (): HTMLCanvasElement => canvas;
-  export const getCanvasContext = (): CanvasContextType | null => renderer.context;
+  export const getCanvasContext = (): CanvasContextType | null => renderer.ctx;
 
   let canvas: HTMLCanvasElement;
   let layerContainer: HTMLDivElement;
@@ -64,11 +64,11 @@
   let devicePixelRatio: number | undefined;
 
   const renderer = new Renderer();
-  const renderManager = new RenderManager(renderer);
-  const viewport = new Viewport(renderManager);
+  const layerManager = new LayerManager(renderer);
+  const viewport = new Viewport(layerManager);
   const dispatch = createEventDispatcher<ResizeEvent>();
 
-  setContext<AppContext>(KEY, { renderManager });
+  setContext<AppContext>(KEY, { layerManager });
 
   onMount(() => {
     const context = createHitCanvas(canvas, settings);
@@ -87,9 +87,9 @@
     renderer.init(context, initialScale);
     context.scale(initialScale, initialScale);
 
-    renderManager.onLayerChange(context.setActiveLayerId);
-    renderManager.run(layerContainer);
-    return () => renderManager.destroy();
+    layerManager.onLayerChange(context.setActiveLayerId);
+    layerManager.run(layerContainer);
+    return () => layerManager.destroy();
   });
 
   const resize = (node: HTMLElement) => {
@@ -107,24 +107,24 @@
 
   const handleLayerMouseMove = (e: MouseEvent) => {
     if (handleEventsOnLayerMove) {
-      renderManager.findActiveLayer(e);
+      layerManager.findActiveLayer(e);
     }
   };
 
   const handleLayerTouchStart = (e: TouchEvent) => {
-    renderManager.findActiveLayer(e);
-    renderManager.dispatchEvent(e);
+    layerManager.findActiveLayer(e);
+    layerManager.dispatchEvent(e);
   };
 
   const handleEvent = (e: OriginalEvent) => {
     if (!handleEventsOnLayerMove) {
-      renderManager.findActiveLayer(e);
+      layerManager.findActiveLayer(e);
     }
-    renderManager.dispatchEvent(e);
+    layerManager.dispatchEvent(e);
   };
 
   const handleClickOutside = (e: CustomEvent) => {
-    renderManager.leaveActiveLayer(e);
+    layerManager.leaveActiveLayer(e);
   };
 
   $: _width = width ?? canvasWidth ?? 0;
@@ -163,7 +163,7 @@
   /**
    * Adjust canvas's transformation matrix to scale drawings according to the width, height values or device's pixel ratio
    */
-  $: canvas?.width, canvas?.height, _width, _height, _pixelRatio, renderManager.redraw();
+  $: canvas?.width, canvas?.height, _width, _height, _pixelRatio, layerManager.redraw();
 
   /**
    * Dispatch "resize" event to the parent component each time _width, _height or _pixelRatio values of the canvas change

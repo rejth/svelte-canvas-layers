@@ -12,13 +12,13 @@
   export let render: Render;
   export let bounds: Bounds = { x0: 0, y0: 0, x1: 0, y1: 0 };
 
-  const { renderManager } = getContext<AppContext>(KEY);
+  const { layerManager } = getContext<AppContext>(KEY);
   const dispatcher = createEventDispatcher<LayerEvents>();
 
-  const { layerId, unregister } = renderManager.register({ render, dispatcher, bounds });
+  const { layerId, unregister } = layerManager.register({ render, dispatcher, bounds });
 
   // TODO: Implement redrawLayer method to render only one layer on update, not all the layers
-  afterUpdate(renderManager.redraw);
+  afterUpdate(layerManager.redraw);
   onDestroy(unregister);
 </script>
 

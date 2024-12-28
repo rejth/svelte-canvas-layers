@@ -93,9 +93,9 @@
 </script>
 
 <Layer
-  render={({ drawer }) => {
+  render={({ renderer }) => {
     const color = active && !selectOnMakingConnection ? COLORS.SELECTION : '#000';
-    drawer.fillCircle({ x: sx, y: sy, radius: 5, color });
+    renderer.fillCircle({ x: sx, y: sy, radius: 5, color });
   }}
 />
 

@@ -9,14 +9,14 @@
   export let active: boolean;
   export let selectOnMakingConnection: boolean;
 
-  $: render = ({ ctx, drawer }: RenderProps) => {
+  $: render = ({ ctx, renderer }: RenderProps) => {
     const rect = geometryManager.getRectDimensionFromBounds(bounds);
     if (!rect) return;
 
     const { x, y, width, height } = rect;
 
     ctx.globalAlpha = 0;
-    drawer.fillRect({ x, y, width, height });
+    renderer.fillRect({ x, y, width, height });
     ctx.globalAlpha = 1;
 
     if (active) {
@@ -27,7 +27,7 @@
         boundaries = { x, y, width, height };
       }
 
-      drawer.strokeRect({ ...boundaries, color, lineWidth: 2 });
+      renderer.strokeRect({ ...boundaries, color, lineWidth: 2 });
     }
   };
 </script>

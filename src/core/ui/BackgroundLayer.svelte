@@ -11,8 +11,8 @@
 
   export let render: Render;
 
-  const { renderManager } = getContext<AppContext>(KEY);
-  const { layerId, unregister } = renderManager.register({ render });
+  const { layerManager } = getContext<AppContext>(KEY);
+  const { layerId, unregister } = layerManager.register({ render });
 
   onDestroy(unregister);
 </script>

@@ -11,7 +11,7 @@
 
   const { shapes } = canvasStore;
 
-  $: render = ({ drawer, options }: RenderProps) => {
+  $: render = ({ renderer }: RenderProps) => {
     const textEntity = $shapes.get(entityId);
     if (!textEntity || !(textEntity instanceof CanvasText)) return;
 
@@ -22,11 +22,15 @@
     };
 
     if (snapshot) {
-      drawer.drawImage({ image: snapshot, ...textOptions });
+      renderer.drawImage({ image: snapshot, ...textOptions });
     } else {
       const textToRender = textEntity.getPreparedText();
-      const snapshot = drawer.renderTextSnapshot(textToRender, textOptions, options);
-      textEntity.setSnapshot(snapshot);
+      const snapshot = renderer.renderTextSnapshot(
+        textToRender,
+        textOptions,
+        renderer.getCanvasOptions(),
+      );
+      textEntity.setSnapshot(snapshot || null);
     }
   };
 </script>

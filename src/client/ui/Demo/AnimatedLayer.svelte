@@ -45,8 +45,8 @@
     return active;
   };
 
-  $: _render = ({ ctx, drawer, options }: RenderProps) => {
-    const { width, height } = options;
+  $: _render = ({ ctx, renderer }: RenderProps) => {
+    const { width, height } = renderer.getCanvasOptions();
 
     ctx.save();
 
@@ -55,7 +55,7 @@
     ctx.translate(-point.x, -point.y);
     ctx.globalAlpha = $opacity;
     ctx.filter = `blur(${width * $blur}px) saturate(${$saturation * 100}%)`;
-    render({ ctx, drawer, width, height, active: styleActive(ctx) });
+    render({ ctx, renderer, width, height, active: styleActive(ctx) });
 
     ctx.restore();
   };

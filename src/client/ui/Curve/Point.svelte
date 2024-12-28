@@ -9,9 +9,9 @@
 
   const radius = 5;
 
-  $: render = ({ drawer }: RenderProps) => {
+  $: render = ({ renderer }: RenderProps) => {
     const color = active ? COLORS.SELECTION : '#000';
-    drawer.fillCircle({ x: point.x, y: point.y, radius, color });
+    renderer.fillCircle({ x: point.x, y: point.y, radius, color });
   };
 </script>
 

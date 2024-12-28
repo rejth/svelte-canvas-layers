@@ -11,6 +11,7 @@
   import { CanvasEntityType } from 'client/ui/Canvas/BaseCanvasEntity';
   import type { RectDrawOptions } from 'client/ui/Canvas/CanvasRect';
 
+  import When from 'client/ui/When/When.svelte';
   import Rect from 'client/ui/Canvas/Rect.svelte';
   import Text from 'client/ui/Canvas/Text.svelte';
   import Zoom from 'client/ui/Zoom/Zoom.svelte';
@@ -69,22 +70,22 @@
 
   const handleCanvasMouseDown = (e: MouseEvent) => {
     if (!panning) return;
-    viewport.onMouseDown(e);
+    viewport.handleMouseDown(e);
   };
 
   const handleCanvasMouseUp = (e: MouseEvent) => {
     if (!panning) return;
-    viewport.onMouseUp(e);
+    viewport.handleMouseUp(e);
   };
 
   const handleCanvasMouseMove = (e: MouseEvent) => {
-    viewport.onMouseMove(e);
+    viewport.handleMouseMove(e);
     if (isLayerEntered) return;
     connectionStore.handleCanvasMouseMove(e);
   };
 
   const handleCanvasWheel = (e: WheelEvent) => {
-    viewport.onWheel(e);
+    viewport.handleWheelChange(e);
   };
 
   const handleLayerMouseDown = () => {
@@ -130,6 +131,7 @@
 
     const rectOptions = $shapes.get(entityId)?.getOptions() as RectDrawOptions;
     const textOptions = rectOptions?.editor?.getOptions();
+    const doubleClickData = viewport.handleLayerDoubleClick(data!, bounds);
 
     canvasStore.updateTextEditor({
       anchorId: entityId,
@@ -142,19 +144,19 @@
     });
 
     entityData = {
-      ...viewport.onLayerDoubleClick(data!, bounds),
       entityId,
       layerWidth: rect.width,
       layerHeight: rect.height,
+      ...doubleClickData,
     };
   };
 </script>
 
 <main>
   <Toolbar />
-  {#if $textEditor?.isEditable}
+  <When isVisible={Boolean($textEditor?.isEditable)}>
     <TextEditor anchorData={entityData} />
-  {/if}
+  </When>
   <Canvas
     useLayerEvents={!panning}
     handleEventsOnLayerMove={connection}
@@ -180,12 +182,12 @@
         context.fill();
       }}
     />
-    {#if $tool === Tools.SELECT}
+    <When isVisible={$tool === Tools.SELECT}>
       <Selection path={$selectionPath} />
-    {/if}
-    {#if connection && $currentConnection}
+    </When>
+    <When isVisible={connection && Boolean($currentConnection)}>
       <Connection source={$currentConnection?.source} target={$currentConnection?.target} />
-    {/if}
+    </When>
     {#each Object.entries($connections) as [connectionId, { source, target }]}
       <Connection {connectionId} {source} {target} selectOnMakingConnection={connection} />
     {/each}
