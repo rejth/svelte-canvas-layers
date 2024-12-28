@@ -2,7 +2,7 @@ import type { Bounds, CanvasContextType, LayerEventDetails, Point } from 'core/i
 import { type LayerManager, type Renderer } from 'core/services';
 
 export class Viewport {
-  context: CanvasContextType | null;
+  ctx: CanvasContextType | null;
   renderer: Renderer | null;
   layerManager: LayerManager | null;
 
@@ -12,7 +12,7 @@ export class Viewport {
   isDragging = false;
 
   constructor(layerManager: LayerManager) {
-    this.context = null;
+    this.ctx = null;
     this.layerManager = layerManager;
     this.renderer = layerManager.getRenderer();
 
@@ -27,12 +27,13 @@ export class Viewport {
   }
 
   init(context: CanvasContextType | null) {
-    this.context = context;
+    this.ctx = context;
   }
 
   handleMouseDown(e: MouseEvent) {
+    if (!this.renderer) return;
     this.isDragging = true;
-    this.dragStartPosition = this.renderer!.getTransformedPoint(e.pageX, e.pageY);
+    this.dragStartPosition = this.renderer.getTransformedPoint(e.pageX, e.pageY);
   }
 
   handleMouseUp(_e: MouseEvent) {
@@ -40,19 +41,16 @@ export class Viewport {
   }
 
   handleMouseMove(e: MouseEvent) {
-    if (!this.context || !this.isDragging) return;
+    if (!this.ctx || !this.renderer || !this.isDragging) return;
 
-    const layerManager = this.layerManager!;
-    const renderer = this.renderer!;
+    this.currentTransformedCursor = this.renderer.getTransformedPoint(e.pageX, e.pageY);
 
-    this.currentTransformedCursor = renderer.getTransformedPoint(e.pageX, e.pageY);
-
-    this.context.translate(
+    this.ctx.translate(
       this.currentTransformedCursor.x - this.dragStartPosition.x,
       this.currentTransformedCursor.y - this.dragStartPosition.y,
     );
 
-    layerManager.searchVisibleLayers();
+    this.layerManager?.redraw();
   }
 
   handleLayerDoubleClick(e: LayerEventDetails, layerBounds: Bounds): Point {
@@ -74,11 +72,9 @@ export class Viewport {
   }
 
   handleWheelChange(e: WheelEvent) {
-    if (!this.context) return;
+    if (!this.ctx || !this.renderer) return;
 
-    const renderer = this.renderer!;
-
-    this.dragStartPosition = renderer.getTransformedPoint(e.pageX, e.pageY);
+    this.dragStartPosition = this.renderer.getTransformedPoint(e.pageX, e.pageY);
     this.currentPosition = { x: e.pageX, y: e.pageY };
 
     if (e.ctrlKey) {
@@ -89,43 +85,38 @@ export class Viewport {
   }
 
   #moveCanvas(e: WheelEvent) {
-    if (!this.context) return;
-
-    const layerManager = this.layerManager!;
-    const renderer = this.renderer!;
+    if (!this.ctx || !this.renderer) return;
 
     this.currentPosition = {
       x: this.currentPosition.x + e.deltaX * -1,
       y: this.currentPosition.y + e.deltaY * -1,
     };
 
-    this.currentTransformedCursor = renderer.getTransformedPoint(
+    this.currentTransformedCursor = this.renderer.getTransformedPoint(
       this.currentPosition.x,
       this.currentPosition.y,
     );
-    this.context.translate(
+
+    this.ctx.translate(
       this.currentTransformedCursor.x - this.dragStartPosition.x,
       this.currentTransformedCursor.y - this.dragStartPosition.y,
     );
 
-    layerManager.searchVisibleLayers();
+    this.layerManager?.redraw();
   }
 
   #zoomCanvas(e: WheelEvent) {
-    if (!this.context) return;
-
-    const layerManager = this.layerManager!;
-    const renderer = this.renderer!;
+    if (!this.ctx || !this.renderer) return;
 
     this.currentPosition = {
       x: this.currentPosition.x + e.deltaX * -1,
       y: this.currentPosition.y + e.deltaY * -1,
     };
 
-    this.currentTransformedCursor = renderer.getTransformedPoint(e.clientX, e.clientY);
+    this.currentTransformedCursor = this.renderer.getTransformedPoint(e.clientX, e.clientY);
 
     const zoom = e.deltaY < 0 ? 1.1 : 0.9;
-    const transform = renderer.getTransform();
+    const transform = this.renderer.getTransform();
 
     if (!transform) return;
 
@@ -133,10 +124,10 @@ export class Viewport {
     const scale = this.#zoomPercentageToScale(nextZoomPercentage) / transform.scaleX;
 
     if (nextZoomPercentage <= 200 && nextZoomPercentage >= 10) {
-      this.context.translate(this.currentTransformedCursor.x, this.currentTransformedCursor.y);
-      renderer.scale(scale, scale);
-      this.context.translate(-this.currentTransformedCursor.x, -this.currentTransformedCursor.y);
-      layerManager.searchVisibleLayers();
+      this.ctx.translate(this.currentTransformedCursor.x, this.currentTransformedCursor.y);
+      this.renderer.scale(scale, scale);
+      this.ctx.translate(-this.currentTransformedCursor.x, -this.currentTransformedCursor.y);
+      this.layerManager?.redraw();
     }
   }
 

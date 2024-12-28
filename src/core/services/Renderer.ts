@@ -230,7 +230,6 @@ export class Renderer {
 
   strokeRect(options: StrokeDrawOptions) {
     if (!this.ctx) return;
-
     const { x, y, width, height, lineWidth, color } = options;
 
     this.ctx.save();
@@ -242,7 +241,6 @@ export class Renderer {
 
   fillCircle(options: CircleDrawOptions) {
     if (!this.ctx) return;
-
     const { x, y, radius, color } = options;
 
     this.ctx.save();
@@ -255,7 +253,6 @@ export class Renderer {
 
   strokeQuadraticCurve(options: QuadraticCurveDrawOptions) {
     if (!this.ctx) return;
-
     const { start, control, end, color, lineWidth } = options;
 
     this.ctx.beginPath();
@@ -269,7 +266,6 @@ export class Renderer {
 
   strokeBezierCurve(options: BezierCurveDrawOptions) {
     if (!this.ctx) return;
-
     const { start, cp1, cp2, end, color, lineWidth } = options;
 
     this.ctx.beginPath();

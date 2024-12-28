@@ -1,4 +1,3 @@
-import type { BBox } from 'rbush';
 import type { createEventDispatcher } from 'svelte';
 import type { LayerManager, Renderer } from 'core/services';
 
@@ -14,16 +13,19 @@ export type Dimension = Pick<DOMRect, 'width' | 'height'>;
 export type RectPosition = Pick<DOMRect, 'top' | 'bottom' | 'left' | 'right'>;
 export type RectDimension = Point & Dimension;
 
+export type BBox = {
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
+};
+
 export type RectCorners = {
   topLeft: Point;
   topRight: Point;
   bottomLeft: Point;
   bottomRight: Point;
 };
-
-export interface LayerBBox extends BBox {
-  layerId: LayerId;
-}
 
 export type PixelRatio = number;
 export type Bounds = { x0: number; y0: number; x1: number; y1: number };

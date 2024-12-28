@@ -1,4 +1,3 @@
-import type { BBox } from 'rbush';
 import type {
   OriginalEvent,
   Bounds,
@@ -7,6 +6,7 @@ import type {
   PixelRatio,
   RectPosition,
   RectCorners,
+  BBox,
 } from 'core/interfaces';
 
 class GeometryManager {
@@ -76,25 +76,6 @@ class GeometryManager {
     };
   }
 
-  getBBox(bounds: Bounds = { x0: 0, y0: 0, x1: 0, y1: 0 }): BBox {
-    const { x0, y0, x1, y1 } = bounds;
-    return {
-      minX: Math.min(x0, x1),
-      minY: Math.min(y0, y1),
-      maxX: Math.max(x0, x1),
-      maxY: Math.max(y0, y1),
-    };
-  }
-
-  convertRectToBBox(rect: DOMRect | RectDimension): BBox {
-    return {
-      minX: rect.x,
-      minY: rect.y,
-      maxX: rect.x + rect.width,
-      maxY: rect.y + rect.height,
-    };
-  }
-
   getRectCorners(x: number, y: number, w: number, h: number): RectCorners {
     return {
       topLeft: { x, y },
@@ -110,6 +91,16 @@ class GeometryManager {
 
   isPointInsideRect(p: Point, rect: DOMRect | RectPosition): boolean {
     return p.x > rect.left && p.x < rect.right && p.y > rect.top && p.y < rect.bottom;
+  }
+
+  getBBox(bounds: Bounds = { x0: 0, y0: 0, x1: 0, y1: 0 }): BBox {
+    const { x0, y0, x1, y1 } = bounds;
+    return {
+      minX: Math.min(x0, x1),
+      minY: Math.min(y0, y1),
+      maxX: Math.max(x0, x1),
+      maxY: Math.max(y0, y1),
+    };
   }
 
   isOverlapping(rectA: Bounds, rectB: Bounds): boolean {

@@ -5,6 +5,7 @@
   import { geometryManager } from 'core/services';
 
   import { canvasStore } from 'client/ui/Canvas/store';
+
   import Surface from './ResizableLayerSurface.svelte';
   import Handler from './ResizableLayerHandler.svelte';
   import { ResizableLayerEvent, type ResizableLayerEventDispatcher } from './interfaces';

@@ -5,12 +5,12 @@
   import { Layer } from 'core/ui';
 
   import { COLORS } from 'client/shared/constants';
+  import { type CurveLayerEventDetails } from 'client/ui/Curve/interfaces';
+  import QuadraticCurve from 'client/ui/Curve/QuadraticCurve.svelte';
+  import ControlPoints from 'client/ui/Curve/ControlPoints.svelte';
+  import { toolbarStore } from 'client/ui/Toolbar/store';
 
-  import QuadraticCurve from '../Curve/QuadraticCurve.svelte';
-  import ControlPoints from '../Curve/ControlPoints.svelte';
-  import { type CurveLayerEventDetails } from '../Curve/interfaces';
   import { connectionStore, type ConnectedBox } from './store';
-  import { toolbarStore } from '../Toolbar/store';
 
   type Box = RectDimension | undefined;
 

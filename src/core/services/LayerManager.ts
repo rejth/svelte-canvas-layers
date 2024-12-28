@@ -1,4 +1,3 @@
-import RBush from 'rbush';
 import type {
   HitCanvasRenderingContext2D,
   OriginalEvent,
@@ -9,7 +8,6 @@ import type {
   LayerEventDispatcher,
   RegisteredLayerMetadata,
   CanvasContextType,
-  LayerBBox,
 } from 'core/interfaces';
 import { geometryManager, type Renderer } from 'core/services';
 
@@ -21,11 +19,8 @@ export class LayerManager {
   layerContainer: HTMLDivElement | null;
   layerObserver: MutationObserver | null;
 
-  tree: RBush<LayerBBox>;
-  visibleLayers: Array<LayerBBox>;
-  visibleLayerIds: Array<LayerId>;
   // TODO: Implement a class for layer to handle layer's events and rendering
-  drawers: Map<LayerId, { layerBBox: LayerBBox; render: Render }>;
+  drawers: Map<LayerId, { render: Render }>;
   dispatchers: Map<LayerId, LayerEventDispatcher>;
   needsRedraw: boolean;
 
@@ -41,9 +36,6 @@ export class LayerManager {
     this.layerContainer = null;
     this.layerObserver = null;
 
-    this.tree = new RBush();
-    this.visibleLayers = [];
-    this.visibleLayerIds = [];
     this.drawers = new Map();
     this.dispatchers = new Map();
     this.needsRedraw = true;
@@ -62,18 +54,6 @@ export class LayerManager {
   run(layerContainer: HTMLDivElement) {
     this.layerContainer = layerContainer;
     this.#observeLayerSequence();
-
-    this.tree.clear();
-    const layerBBoxes = this.layerSequence.map((layerId) => this.drawers.get(layerId)!.layerBBox);
-    this.tree.load(layerBBoxes);
-
-    const transformedArea = this.renderer.getTransformedArea();
-
-    if (transformedArea) {
-      const transformedBBox = geometryManager.convertRectToBBox(transformedArea!);
-      this.visibleLayers = this.tree.search(transformedBBox);
-    }
-
     this.#startRenderLoop();
   }
 
@@ -91,16 +71,11 @@ export class LayerManager {
   #getLayerSequence() {
     const layers = <HTMLElement[]>[...this.layerContainer!.children];
     this.layerSequence = layers.map((layer) => +layer.dataset.layerId!);
-    this.searchVisibleLayers();
   }
 
-  register({ render, dispatcher, bounds }: RegisteredLayerMetadata) {
+  register({ render, dispatcher }: RegisteredLayerMetadata) {
     const layerId = this.currentLayerId;
-    const bbox = geometryManager.getBBox(bounds);
-    const layerBBox = { layerId, ...bbox };
-
-    this.tree.insert(layerBBox);
-    this.#addDrawer(layerId, { layerBBox, render });
+    this.#addDrawer(layerId, { render });
 
     if (dispatcher) {
       this.#addDispatcher(layerId, dispatcher);
@@ -120,7 +95,7 @@ export class LayerManager {
     this.redraw();
   }
 
-  #addDrawer(layerId: LayerId, layerData: { layerBBox: LayerBBox; render: Render }) {
+  #addDrawer(layerId: LayerId, layerData: { render: Render }) {
     this.drawers.set(layerId, layerData);
   }
 
@@ -129,12 +104,6 @@ export class LayerManager {
   }
 
   #removeDrawer(layerId: LayerId) {
-    const { layerBBox } = this.drawers.get(layerId) || {};
-
-    if (layerBBox) {
-      this.tree.remove(layerBBox, (a, b) => a.layerId === b.layerId);
-    }
-
     this.drawers.delete(layerId);
   }
 
@@ -156,27 +125,13 @@ export class LayerManager {
       this.renderer.clearRectSync(transformedArea);
     }
 
-    for (const layerId of this.visibleLayerIds) {
+    for (const layerId of this.layerSequence) {
       const { render } = this.drawers.get(layerId) || {};
       this.layerChangeCallback?.(layerId);
       render?.({ ctx, renderer: this.renderer });
-      // TODO: We have to update the R-tree here. Otherwise, the tree will have irrelevant object data (bounding box) and the collision logic will be incorrect
-      // Also, we cannot just update the tree element. We have to remove and add the element again with the new data, which is quite resource-consuming operation
     }
 
     this.needsRedraw = false;
-  }
-
-  searchVisibleLayers() {
-    const transformedArea = this.renderer.getTransformedArea();
-
-    if (transformedArea) {
-      const transfromedBBox = geometryManager.convertRectToBBox(transformedArea);
-      this.visibleLayers = this.tree.search(transfromedBBox);
-      this.visibleLayerIds = this.layerSequence.slice(0, this.visibleLayers.length);
-    }
-
-    this.needsRedraw = true;
   }
 
   /**
@@ -257,7 +212,6 @@ export class LayerManager {
 
   destroy() {
     if (typeof window === 'undefined') return;
-
     this.layerObserver?.disconnect();
     cancelAnimationFrame(this.animationFrame!);
   }
