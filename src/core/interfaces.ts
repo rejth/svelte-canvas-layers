@@ -170,6 +170,14 @@ export interface TextDrawOptions {
   scale: number;
 }
 
+export interface BackgroundPatternRendererData {
+  ctx: OffscreenCanvasRenderingContext2D;
+}
+
+export interface BackgroundPatternRenderer {
+  (data: BackgroundPatternRendererData): void;
+}
+
 export interface TransformationMatrix {
   translationX: number;
   translationY: number;

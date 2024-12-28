@@ -14,8 +14,9 @@ import type {
   TextDrawOptions,
   TransformationMatrix,
   ClearRectOptions,
+  BackgroundPatternRenderer,
 } from 'core/interfaces';
-import { geometryManager } from 'core/services';
+import { geometryManager as geometry } from 'core/services';
 
 import { SMALL_PADDING } from 'client/shared/constants';
 
@@ -125,7 +126,7 @@ export class Renderer {
    */
   clearRect({ x, y, width, height }: ClearRectOptions, callBack: () => void) {
     requestAnimationFrame(() => {
-      this.ctx!.clearRect(x, y, width, height);
+      this.ctx?.clearRect(x, y, width, height);
       callBack();
     });
   }
@@ -136,7 +137,7 @@ export class Renderer {
    * @param {{ x: number, y: number, width: number, height: number }}
    */
   clearRectSync({ x, y, width, height }: ClearRectOptions) {
-    this.ctx!.clearRect(x, y, width, height);
+    this.ctx?.clearRect(x, y, width, height);
   }
 
   fillRect(options: RectDrawOptions) {
@@ -183,7 +184,7 @@ export class Renderer {
       shadowBlur,
     } = options;
 
-    const { topLeft, topRight, bottomLeft, bottomRight } = geometryManager.getRectCorners(
+    const { topLeft, topRight, bottomLeft, bottomRight } = geometry.getRectCorners(
       x,
       y,
       width,
@@ -285,29 +286,25 @@ export class Renderer {
     this.ctx.restore();
   }
 
-  renderTextSnapshot(
-    fragments: string[],
-    textOptions: TextDrawOptions,
-    canvasOptions: CanvasOptions,
-  ) {
+  renderTextSnapshot(fragments: string[], textOptions: TextDrawOptions) {
     if (!this.ctx) return;
 
     const { fontSize, fontStyle, textAlign, x, y, width, height, scale = 1 } = textOptions;
-    const { pixelRatio, initialPixelRatio } = canvasOptions;
+    const { initialPixelRatio, pixelRatio } = this.getCanvasOptions();
 
-    const offscreenCanvas = new OffscreenCanvas(width, width);
+    const offscreenCanvas = new OffscreenCanvas(width, height);
     offscreenCanvas.width = Math.floor(width * pixelRatio);
     offscreenCanvas.height = Math.floor(height * pixelRatio);
 
-    const ctx = offscreenCanvas.getContext('2d') as OffscreenCanvasRenderingContext2D;
+    const offscreenContext = offscreenCanvas.getContext('2d') as OffscreenCanvasRenderingContext2D;
 
-    ctx.textAlign = textAlign;
-    ctx.textBaseline = 'alphabetic';
-    ctx.font = `${fontStyle ? fontStyle : 400} ${fontSize}px monospace`;
-    ctx.scale(scale * pixelRatio, scale * pixelRatio);
+    offscreenContext.textAlign = textAlign;
+    offscreenContext.textBaseline = 'alphabetic';
+    offscreenContext.font = `${fontStyle ? fontStyle : 400} ${fontSize}px monospace`;
+    offscreenContext.scale(scale * pixelRatio, scale * pixelRatio);
 
-    const textMetrics = ctx.measureText('text');
-    const transform = ctx.getTransform();
+    const textMetrics = offscreenContext.measureText('text');
+    const transform = offscreenContext.getTransform();
     const lineHeight = textMetrics.fontBoundingBoxDescent + textMetrics.fontBoundingBoxAscent;
 
     let newX = SMALL_PADDING;
@@ -323,7 +320,7 @@ export class Renderer {
       if (fragment === '') {
         newY += lineHeight;
       } else {
-        ctx.fillText(fragment, newX, newY);
+        offscreenContext.fillText(fragment, newX, newY);
         newY += lineHeight;
       }
     }
@@ -331,5 +328,42 @@ export class Renderer {
     this.ctx.drawImage(offscreenCanvas, x, y, width, height);
 
     return offscreenCanvas;
+  }
+
+  renderBackground(width: number, height: number, render: BackgroundPatternRenderer) {
+    if (!this.ctx) return;
+
+    const { initialPixelRatio, pixelRatio } = this.getCanvasOptions();
+    const transform = this.ctx.getTransform();
+
+    const offscreenCanvas = new OffscreenCanvas(width, height);
+    offscreenCanvas.width = Math.floor(width * pixelRatio);
+    offscreenCanvas.height = Math.floor(height * pixelRatio);
+
+    const offscreenContext = offscreenCanvas.getContext('2d') as OffscreenCanvasRenderingContext2D;
+    offscreenContext.scale(pixelRatio, pixelRatio);
+
+    render({ ctx: offscreenContext });
+
+    const pattern = this.ctx.createPattern(offscreenCanvas, 'repeat');
+    if (!pattern) return;
+
+    this.ctx.save();
+    this.ctx.setTransform(
+      initialPixelRatio,
+      transform.b,
+      transform.c,
+      initialPixelRatio,
+      transform.e,
+      transform.f,
+    );
+    this.ctx.fillStyle = pattern;
+    this.ctx.fillRect(
+      -transform.e / initialPixelRatio,
+      -transform.f / initialPixelRatio,
+      window.innerWidth,
+      window.innerHeight,
+    );
+    this.ctx.restore();
   }
 }

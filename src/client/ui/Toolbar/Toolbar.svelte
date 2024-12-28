@@ -62,7 +62,7 @@
       type: Tools.DELETE,
       icon: TrashIcon,
       hoverText: 'Delete selected item(s)',
-      disabled: $selectedShapes.size === 0 && Object.keys($selectedConnections).length === 0,
+      disabled: $selectedShapes.size === 0 && $selectedConnections.size === 0,
     },
   ];
 

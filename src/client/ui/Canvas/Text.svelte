@@ -25,11 +25,7 @@
       renderer.drawImage({ image: snapshot, ...textOptions });
     } else {
       const textToRender = textEntity.getPreparedText();
-      const snapshot = renderer.renderTextSnapshot(
-        textToRender,
-        textOptions,
-        renderer.getCanvasOptions(),
-      );
+      const snapshot = renderer.renderTextSnapshot(textToRender, textOptions);
       textEntity.setSnapshot(snapshot || null);
     }
   };

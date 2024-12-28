@@ -4,17 +4,13 @@ import { v4 as uuid } from 'uuid';
 import type { RectDimension } from 'core/interfaces';
 import { geometryManager } from 'core/services';
 
+import type { ResizableLayerEventDetails } from 'client/ui/ResizableLayer/interfaces';
 import { Tools, type Tool } from 'client/shared/interfaces';
 import { toolbarStore } from 'client/ui/Toolbar/store';
-import type { ResizableLayerEventDetails } from 'client/ui/ResizableLayer/interfaces';
 
 export interface ConnectedBox {
   id?: string;
   box: RectDimension;
-}
-
-interface Connection {
-  [connectionId: string]: BoxToBoxConnection;
 }
 
 interface BoxToBoxConnection {
@@ -24,11 +20,10 @@ interface BoxToBoxConnection {
 
 class ConnectionStore {
   currentConnection: Writable<Partial<BoxToBoxConnection> | null> = writable(null);
-  // TODO: Use Map here
-  connections: Writable<Connection> = writable({});
-  selectedConnections: Writable<Connection> = writable({});
+  connections: Writable<Map<string, BoxToBoxConnection>> = writable(new Map());
+  selectedConnections: Writable<Map<string, BoxToBoxConnection>> = writable(new Map());
 
-  connectionIdsByBoxId: { [boxId: string]: string[] } = {};
+  connectionIdsByBoxId: Map<string, string[]> = new Map();
   #tool: Tool | null = null;
 
   constructor() {
@@ -52,10 +47,11 @@ class ConnectionStore {
     if (this.#tool !== Tools.CONNECT || !currentConnection?.source) return;
 
     const rect = geometryManager.getRectDimensionFromBounds(e.detail?.bounds);
+    if (!rect) return;
 
     this.currentConnection.set({
       source: currentConnection.source,
-      target: { id: boxId, box: rect! },
+      target: { id: boxId, box: rect },
     });
   }
 
@@ -64,19 +60,20 @@ class ConnectionStore {
     const currentConnection = get(this.currentConnection);
     const rect = geometryManager.getRectDimensionFromBounds(e.detail?.bounds);
 
+    if (!rect) return;
+
     if (currentConnection?.source) {
       const connectionId = uuid();
 
-      this.connections.update((store) => {
-        store[connectionId] = {
-          source: currentConnection.source!,
-          target: { id: boxId, box: rect! },
-        };
-
-        return store;
-      });
+      this.connections.update((state) =>
+        state.set(connectionId, {
+          source: currentConnection.source as ConnectedBox,
+          target: { id: boxId, box: rect },
+        }),
+      );
 
       const sourceBoxId = currentConnection.source.id;
+
       if (sourceBoxId) {
         this.#updateConnectionIdsByBoxId(sourceBoxId, connectionId);
       }
@@ -84,67 +81,62 @@ class ConnectionStore {
       this.#updateConnectionIdsByBoxId(boxId, connectionId);
       this.resetCurrentConnection();
     } else {
-      this.currentConnection.set({ source: { id: boxId, box: rect! } });
+      this.currentConnection.set({ source: { id: boxId, box: rect } });
     }
   };
 
   handleBoxMove = (e: CustomEvent<ResizableLayerEventDetails>, boxId: string) => {
-    const connectionIds = this.connectionIdsByBoxId[boxId];
+    const connectionIds = this.connectionIdsByBoxId.get(boxId);
     if (!connectionIds) return;
 
     const connections = get(this.connections);
     const rect = geometryManager.getRectDimensionFromBounds(e.detail?.bounds);
+    if (!rect) return;
 
-    connectionIds.forEach((connectionId) => {
-      const connection = connections[connectionId];
+    for (const connectionId of connectionIds) {
+      const connection = connections.get(connectionId);
+
+      if (!connection) continue;
 
       if (connection.source.id === boxId) {
-        connection.source.box = rect!;
+        connection.source.box = rect;
       } else if (connection.target.id === boxId) {
-        connection.target.box = rect!;
+        connection.target.box = rect;
       }
 
-      this.connections.update((store) => {
-        store[connectionId] = connection;
-        return store;
-      });
-    });
+      this.connections.update((state) => state.set(connectionId, connection));
+    }
   };
 
   removeConnectionsByBoxId(boxId: string) {
-    const connectionIds = this.connectionIdsByBoxId[boxId];
+    const connectionIds = this.connectionIdsByBoxId.get(boxId);
     if (!connectionIds) return;
 
-    delete this.connectionIdsByBoxId[boxId];
+    this.connectionIdsByBoxId.delete(boxId);
 
-    this.connections.update((store) => {
-      connectionIds.forEach((connectionId) => {
-        delete store[connectionId];
-      });
-      return store;
+    this.connections.update((state) => {
+      for (const connectionId of connectionIds) {
+        state.delete(connectionId);
+      }
+      return state;
     });
 
-    this.selectedConnections.update((connections) => this.#removeSelectedConnections(connections));
+    this.selectedConnections.update((state) => this.#removeSelectedConnections(state));
   }
 
   removeConnection() {
-    this.connections.update((store) => this.#removeSelectedConnections(store));
-    this.selectedConnections.update((store) => this.#removeSelectedConnections(store));
+    this.connections.update((state) => this.#removeSelectedConnections(state));
+    this.selectedConnections.update((state) => this.#removeSelectedConnections(state));
   }
 
   selectConnection(connectionId: string, connection: BoxToBoxConnection) {
-    this.selectedConnections.update((connections) => ({
-      ...connections,
-      [connectionId]: connection,
-    }));
+    this.selectedConnections.update((state) => state.set(connectionId, connection));
   }
 
   deselectConnection(connectionId: string) {
-    this.selectedConnections.update((connections) => {
-      if (connections[connectionId]) {
-        delete connections[connectionId];
-      }
-      return connections;
+    this.selectedConnections.update((state) => {
+      if (state.get(connectionId)) state.delete(connectionId);
+      return state;
     });
   }
 
@@ -152,32 +144,37 @@ class ConnectionStore {
     this.currentConnection.set(null);
   }
 
-  #removeSelectedConnections(store: Connection): Connection {
+  #removeSelectedConnections(
+    connections: Map<string, BoxToBoxConnection>,
+  ): Map<string, BoxToBoxConnection> {
     const selected = get(this.selectedConnections);
     const boxIds: string[] = [];
 
-    for (const connectionId of Object.keys(selected)) {
-      if (store[connectionId]) {
-        boxIds.push(store[connectionId].source.id!);
-        boxIds.push(store[connectionId].target.id!);
-        delete store[connectionId];
-      }
+    for (const connectionId of selected.keys()) {
+      const connection = connections.get(connectionId);
+      if (!connection) continue;
+
+      boxIds.push(connection.source.id!);
+      boxIds.push(connection.target.id!);
+      connections.delete(connectionId);
     }
 
-    if (!boxIds.length) return store;
+    if (!boxIds.length) return connections;
 
-    boxIds.forEach((boxId) => {
-      const connectionIds = this.connectionIdsByBoxId[boxId];
-      this.connectionIdsByBoxId[boxId] = connectionIds.filter(
-        (id) => !Object.keys(selected).includes(id),
-      );
-    });
+    for (const boxId of boxIds) {
+      const connectionIds = this.connectionIdsByBoxId.get(boxId);
+      const filteredConnectionIds = (connectionIds || []).filter((id) => !selected.has(id));
+      this.connectionIdsByBoxId.set(boxId, filteredConnectionIds);
+    }
 
-    return store;
+    return connections;
   }
 
   #updateConnectionIdsByBoxId(boxId: string, connectionId: string) {
-    this.connectionIdsByBoxId[boxId] = [...(this.connectionIdsByBoxId[boxId] || []), connectionId];
+    this.connectionIdsByBoxId.set(boxId, [
+      ...(this.connectionIdsByBoxId.get(boxId) || []),
+      connectionId,
+    ]);
   }
 }
 

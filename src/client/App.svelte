@@ -172,23 +172,14 @@
     on:mouseup={handleCanvasMouseUp}
     on:wheel={handleCanvasWheel}
   >
-    <Background
-      width={10}
-      height={10}
-      render={({ context }) => {
-        context.beginPath();
-        context.fillStyle = '#d2d6db';
-        context.arc(1, 1, 0.5, 0, 2 * Math.PI);
-        context.fill();
-      }}
-    />
+    <Background />
     <When isVisible={$tool === Tools.SELECT}>
       <Selection path={$selectionPath} />
     </When>
     <When isVisible={connection && Boolean($currentConnection)}>
       <Connection source={$currentConnection?.source} target={$currentConnection?.target} />
     </When>
-    {#each Object.entries($connections) as [connectionId, { source, target }]}
+    {#each $connections.entries() as [connectionId, { source, target }]}
       <Connection {connectionId} {source} {target} selectOnMakingConnection={connection} />
     {/each}
     {#each $shapes.values() as shape (shape.id)}
