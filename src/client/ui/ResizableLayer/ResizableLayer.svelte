@@ -49,7 +49,7 @@
 
   // TODO: Handle cursor type change on "mouseover" event
   $: handlerCursor = (handler: number | null): string => {
-    if (!handler) return selected ? 'pointer' : 'auto';
+    if (handler === SURFACE) return 'pointer';
 
     if (handler === (N | W) || handler === (S | E)) {
       return 'nwse-resize';
