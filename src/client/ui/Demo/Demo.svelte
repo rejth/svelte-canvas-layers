@@ -1,6 +1,8 @@
 <script lang="ts">
   import { Canvas } from 'core/ui';
 
+  import When from 'client/ui/When/When.svelte';
+
   import Rect from './Rect.svelte';
   import Circle from './Circle.svelte';
   import Blob from './Blob.svelte';
@@ -32,9 +34,9 @@
     <Circle />
     <Text text="Whiteboard X" yOffset={-0.03} scale={0.06} />
     <Text text="Embrace your creativity" scale={0.0297} yOffset={0.04} opacity={0.7} />
-    {#if $activeLayer?.id}
+    <When isVisible={Boolean($activeLayer?.id)}>
       <Tooltip />
-    {/if}
+    </When>
   </Canvas>
 </div>
 

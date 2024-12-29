@@ -2,8 +2,15 @@ import type { Color, FontSize } from './interfaces';
 
 export const SMALL_PADDING = 5;
 export const LARGE_PADDING = 10;
+
 export const DEFAULT_FONT_SIZE = 16;
 export const DEFAULT_RECT_SIZE = 200;
+
+export const DEFAULT_TEXT_AREA_WIDTH = 500;
+export const DEFAULT_TEXT_AREA_HEIGHT = 300;
+
+export const DEFAULT_TEXT_BLOCK_WIDTH = 200;
+export const DEFAULT_TEXT_BLOCK_HEIGHT = 50;
 
 export const enum COLORS {
   STICKER_YELLOW = '#ffd670',
@@ -16,6 +23,7 @@ export const enum COLORS {
   STICKER_PINK = '#ff70a6',
   SELECTION = '#3a86ff',
   GRID = '#d2d6db',
+  TEXT_AREA = '#f6f2ff',
 }
 
 export const COLOR_LIST: Color[] = [

@@ -9,6 +9,7 @@
   import TextIcon from './TextIcon.svelte';
   import TrashIcon from './TrashIcon.svelte';
   import ConnectIcon from './ConnectIcon.svelte';
+  import TextAreaIcon from './TextAreaIcon.svelte';
   import { toolbarStore } from './store';
 
   const { tool } = toolbarStore;
@@ -25,11 +26,19 @@
       disabled: false,
     },
     {
+      id: 'area',
+      label: 'Area',
+      type: Tools.AREA,
+      icon: TextAreaIcon,
+      hoverText: 'Drag to add a new text area',
+      disabled: false,
+    },
+    {
       id: 'text',
       label: 'Text',
       type: Tools.TEXT,
       icon: TextIcon,
-      hoverText: 'Drag to add a new text area',
+      hoverText: 'Drag to add a new text',
       disabled: true,
     },
     {
@@ -68,12 +77,18 @@
 
   const handleDelete = () => {
     canvasStore.deleteShape();
+    canvasStore.resetTextEditor();
+    canvasStore.setIsSelected(false);
     connectionStore.removeConnection();
+    toolbarStore.changeTool(Tools.SELECT);
   };
 
   const onClick = (type: Tool) => {
     if (type === Tools.DELETE) return handleDelete();
+    canvasStore.saveAddedShape();
     canvasStore.resetSelectedShapes();
+    canvasStore.resetTextEditor();
+    connectionStore.resetCurrentConnection();
     toolbarStore.changeTool(type);
   };
 </script>

@@ -2,14 +2,13 @@
   import { onMount, type ComponentType } from 'svelte';
 
   import type { Point } from 'core/interfaces';
-  import { geometryManager, type Viewport } from 'core/services';
+  import { type Viewport } from 'core/services';
   import { dndWatcher } from 'core/lib';
   import { Canvas } from 'core/ui';
 
-  import { Tools, type DoubleClickData } from 'client/shared/interfaces';
+  import { Tools } from 'client/shared/interfaces';
   import { CURSORS } from 'client/shared/constants';
   import { CanvasEntityType } from 'client/ui/Canvas/BaseCanvasEntity';
-  import type { RectDrawOptions } from 'client/ui/Canvas/CanvasRect';
 
   import When from 'client/ui/When/When.svelte';
   import Rect from 'client/ui/Canvas/Rect.svelte';
@@ -38,11 +37,9 @@
   let viewport: Viewport;
   let selection: Point[] = [];
   let isLayerEntered = false;
-  let clickOutsideExcluded: string[] = ['trash', 'text-editor-menu', 'text-editor-menu-dropdown'];
-  let entityData: DoubleClickData = { entityId: '', x: 0, y: 0, layerWidth: 0, layerHeight: 0 };
 
   const { tool } = toolbarStore;
-  const { shapes, selectionPath, textEditor } = canvasStore;
+  const { shapes, selectionPath, textEditor, clickOutsideExcludedIds, isSelected } = canvasStore;
   const { currentConnection, connections } = connectionStore;
 
   $: connection = $tool === Tools.CONNECT;
@@ -63,6 +60,7 @@
   });
 
   const handleCanvasClick = (e: MouseEvent) => {
+    if ($isSelected) return;
     canvasStore.addShape(e);
     selection = $selectionPath;
     canvasStore.resetSelection();
@@ -122,45 +120,23 @@
   };
 
   const handleLayerDoubleClick = (e: CustomEvent<ResizableLayerEventDetails>) => {
-    if (!e.detail) return;
-
+    if (connection || !e.detail?.data) return;
     const { entityId, data, bounds } = e.detail;
-    const rect = geometryManager.getRectDimensionFromBounds(bounds);
-
-    if (!rect) return;
-
-    const rectOptions = $shapes.get(entityId)?.getOptions() as RectDrawOptions;
-    const textOptions = rectOptions?.editor?.getOptions();
-    const doubleClickData = viewport.handleLayerDoubleClick(data!, bounds);
-
-    canvasStore.updateTextEditor({
-      anchorId: entityId,
-      text: textOptions?.text || '',
-      fontSize: textOptions?.fontSize,
-      textAlign: textOptions?.textAlign,
-      bold: Boolean(/bold/.test(textOptions?.fontStyle || '')),
-      italic: Boolean(/italic/.test(textOptions?.fontStyle || '')),
-      isEditable: true,
-    });
-
-    entityData = {
-      entityId,
-      layerWidth: rect.width,
-      layerHeight: rect.height,
-      ...doubleClickData,
-    };
+    const position = viewport.handleLayerDoubleClick(data, bounds);
+    canvasStore.initTextEditor(entityId, position);
   };
 </script>
 
 <main>
   <Toolbar />
+  <Zoom />
   <When isVisible={Boolean($textEditor?.isEditable)}>
-    <TextEditor anchorData={entityData} />
+    <TextEditor anchorId={$textEditor?.anchorId} position={$textEditor?.position} />
   </When>
   <Canvas
     useLayerEvents={!panning}
     handleEventsOnLayerMove={connection}
-    {clickOutsideExcluded}
+    {clickOutsideExcludedIds}
     width={window.innerWidth}
     height={window.innerHeight}
     style={cursorStyle}
@@ -179,13 +155,16 @@
     <When isVisible={connection && Boolean($currentConnection)}>
       <Connection source={$currentConnection?.source} target={$currentConnection?.target} />
     </When>
-    {#each $connections.entries() as [connectionId, { source, target }]}
+    {#each $connections.entries() as [connectionId, { source, target }] (connectionId)}
       <Connection {connectionId} {source} {target} selectOnMakingConnection={connection} />
     {/each}
     {#each $shapes.values() as shape (shape.id)}
+      {@const entityId = shape.id}
+      {@const initialBounds = shape.getBounds()}
+      {@const widget = widgets[shape.getType()]}
       <ResizableLayer
-        entityId={shape.id}
-        initialBounds={shape.getBounds()}
+        {entityId}
+        {initialBounds}
         isSelected={shape.isSelected}
         selectionPath={selection}
         selectOnMakingConnection={connection}
@@ -199,9 +178,8 @@
         on:layer.move={handleLayerMove}
         let:bounds
       >
-        <svelte:component this={widgets[shape.getType()]} entityId={shape.id} {bounds} />
+        <svelte:component this={widget} {entityId} {bounds} />
       </ResizableLayer>
     {/each}
   </Canvas>
-  <Zoom />
 </main>

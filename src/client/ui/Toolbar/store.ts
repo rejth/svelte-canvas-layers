@@ -19,7 +19,7 @@ class ToolbarStore {
   }
 
   isShapeToolSelected(tool: Tool): boolean {
-    return ['NOTE', 'TEXT'].includes(tool);
+    return ['NOTE', 'TEXT', 'AREA'].includes(tool);
   }
 
   isServiceToolSelected(tool: Tool): boolean {

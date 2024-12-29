@@ -1,7 +1,9 @@
+import type { Point } from 'core/interfaces';
 import { COLOR_LIST, FONT_SIZES } from 'client/shared/constants';
 
 export const enum Tools {
   NOTE = 'NOTE',
+  AREA = 'AREA',
   TEXT = 'TEXT',
   PAN = 'PAN',
   SELECT = 'SELECT',
@@ -10,24 +12,17 @@ export const enum Tools {
 }
 
 export type Tool = keyof typeof Tools;
-export type ShapeType = 'NOTE' | 'TEXT';
+export type ShapeType = 'NOTE' | 'AREA' | 'TEXT';
 
 export interface TextEditorData {
   anchorId: string;
+  position: Point;
   text: string;
   bold: boolean;
   italic: boolean;
   fontSize: number;
   textAlign: CanvasTextAlign;
   isEditable: boolean;
-}
-
-export interface DoubleClickData {
-  entityId: string;
-  x: number;
-  y: number;
-  layerWidth: number;
-  layerHeight: number;
 }
 
 // TODO: Get the colors values from the constants as a type

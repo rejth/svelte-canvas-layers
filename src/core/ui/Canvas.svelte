@@ -47,7 +47,7 @@
    */
   export let useLayerEvents = false;
   export let handleEventsOnLayerMove = false;
-  export let clickOutsideExcluded: string[] = [];
+  export let clickOutsideExcludedIds: string[] = [];
   export let className = '';
   export let style = '';
 
@@ -184,7 +184,7 @@
 <canvas
   bind:this={canvas}
   use:resize
-  use:clickOutside={{ exclude: clickOutsideExcluded }}
+  use:clickOutside={{ exclude: clickOutsideExcludedIds }}
   bind:clientWidth={canvasWidth}
   bind:clientHeight={canvasHeight}
   class={className}

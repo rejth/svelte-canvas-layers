@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+  import { createEventDispatcher, onMount } from 'svelte';
 
   import type { Point, Bounds, LayerEventDetails } from 'core/interfaces';
   import { geometryManager } from 'core/services';
 
+  import When from 'client/ui/When/When.svelte';
   import { canvasStore } from 'client/ui/Canvas/store';
 
   import Surface from './ResizableLayerSurface.svelte';
@@ -28,6 +29,10 @@
   let draggedHandler: number | null = null;
   let hoveredHandler: number | null = null;
   let previousTouch: Touch;
+
+  onMount(() => {
+    dispatcher(ResizableLayerEvent.ACTIVE, { entityId, bounds });
+  });
 
   $: bounds = { x0, y0, x1, y1 };
   $: active = Boolean(draggedHandler || hoveredHandler) || isOverlapped(selectionPath);
@@ -165,11 +170,13 @@
   on:touchstart
 />
 
-{#if selected && !selectOnMakingConnection}
+<When isVisible={selected && !selectOnMakingConnection}>
   {#each sortedHandlers as handler (handler)}
+    {@const active = hoveredHandler === handler || draggedHandler === handler}
+    {@const position = getHandlerPosition(handler)}
     <Handler
-      {...getHandlerPosition(handler)}
-      active={hoveredHandler === handler || draggedHandler === handler}
+      {active}
+      {...position}
       on:click={updateEntityData}
       on:mouseleave={onMouseLeave}
       on:mouseenter={() => onHandlerMouseEnter(handler)}
@@ -182,4 +189,4 @@
       on:touchstart
     />
   {/each}
-{/if}
+</When>

@@ -32,18 +32,18 @@ class ConnectionStore {
 
   handleCanvasMouseMove(e: MouseEvent) {
     const currentConnection = get(this.currentConnection);
-    if (this.#tool !== Tools.CONNECT || !currentConnection?.source) return;
 
-    const point = geometryManager.calculatePosition(e);
+    if (this.#tool !== Tools.CONNECT || !currentConnection?.source) return;
 
     this.currentConnection.set({
       source: currentConnection.source,
-      target: { box: { x: point.x, y: point.y, width: 0, height: 0 } },
+      target: { box: { ...geometryManager.calculatePosition(e), width: 0, height: 0 } },
     });
   }
 
   handleBoxEnter(e: CustomEvent<ResizableLayerEventDetails>, boxId: string) {
     const currentConnection = get(this.currentConnection);
+
     if (this.#tool !== Tools.CONNECT || !currentConnection?.source) return;
 
     const rect = geometryManager.getRectDimensionFromBounds(e.detail?.bounds);
@@ -57,10 +57,14 @@ class ConnectionStore {
 
   handleBoxSelect = (e: CustomEvent<ResizableLayerEventDetails>, boxId: string) => {
     if (this.#tool !== Tools.CONNECT) return;
+
     const currentConnection = get(this.currentConnection);
     const rect = geometryManager.getRectDimensionFromBounds(e.detail?.bounds);
 
-    if (!rect) return;
+    if (boxId === currentConnection?.source?.id || !rect) {
+      this.resetCurrentConnection();
+      return;
+    }
 
     if (currentConnection?.source) {
       const connectionId = uuid();

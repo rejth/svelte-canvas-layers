@@ -11,29 +11,32 @@
   import { Button } from '$lib/components/ui/button/index.js';
   import { Separator } from '$lib/components/ui/separator';
 
-  import type { Color, DoubleClickData, FontSize } from 'client/shared/interfaces';
+  import type { Point } from 'core/interfaces';
+
+  import type { Color, FontSize } from 'client/shared/interfaces';
   import type { RectDrawOptions } from 'client/ui/Canvas/CanvasRect';
   import type { BaseCanvasEntity } from 'client/ui/Canvas/BaseCanvasEntity';
   import { canvasStore } from 'client/ui/Canvas/store';
   import { COLORS } from 'client/shared/constants';
   import * as constants from 'client/shared/constants';
 
-  export let anchorData: DoubleClickData;
+  export let anchor: BaseCanvasEntity<RectDrawOptions>;
+  export let position: Point | undefined;
   export let textareaRef: HTMLTextAreaElement | null;
   export let calculateFontSize: (value: number) => void;
 
-  const { entityId, x, y, layerWidth } = anchorData;
-  const { shapes, textEditor } = canvasStore;
+  const { textEditor } = canvasStore;
+  const { x = 0, y = 0 } = position || {};
 
-  $: shape = $shapes.get(entityId) as BaseCanvasEntity<RectDrawOptions>;
+  $: width = anchor?.getOptions()?.width || 0;
+  $: color = anchor?.getOptions()?.color || constants.COLORS.STICKER_YELLOW;
+  $: scale = anchor?.getScale() || 1;
 
   $: bold = $textEditor?.bold || false;
   $: italic = $textEditor?.italic || false;
   $: fontStyle = [bold ? 'bold' : '', italic ? 'italic' : ''];
   $: fontSize = `${$textEditor?.fontSize || constants.DEFAULT_FONT_SIZE}`;
   $: textAlign = $textEditor?.textAlign || constants.TEXT_ALIGN[0];
-  $: color = shape?.getOptions()?.color || constants.COLORS.STICKER_YELLOW;
-  $: scale = shape?.getScale() || 1;
 
   const FONT_STYLE_LIST = [
     {
@@ -78,7 +81,7 @@
   };
 
   const handleColorChange = (value: Color['value']) => {
-    canvasStore.updateShape(entityId, { color: value as COLORS });
+    canvasStore.updateShape(anchor.id, { color: value as COLORS });
   };
 
   const handleBold = () => {
@@ -108,7 +111,7 @@
   class="menu"
   id="text-editor-menu"
   style:top={`${y - 15 * scale}px`}
-  style:left={`${x + (layerWidth * scale) / 2}px`}
+  style:left={`${x + (width * scale) / 2}px`}
 >
   <Menubar.Root>
     <DropdownMenu.Root>
