@@ -26,6 +26,8 @@
   import { toolbarStore } from 'client/ui/Toolbar/store';
   import { connectionStore } from 'client/ui/Connection/store';
 
+  import Keyboard from 'client/services/Keyboard.svelte';
+
   import 'client/shared/styles/_global.css';
 
   const widgets: Partial<Record<CanvasEntityType, ComponentType>> = {
@@ -130,6 +132,7 @@
 <main>
   <Toolbar />
   <Zoom />
+  <Keyboard />
   <When isVisible={Boolean($textEditor?.isEditable)}>
     <TextEditor anchorId={$textEditor?.anchorId} position={$textEditor?.position} />
   </When>

@@ -80,6 +80,13 @@ class CanvasStore {
     this.resetToolbar();
   }
 
+  addShapes(shapes: Shapes<DrawOptions>) {
+    for (const shape of shapes.values()) {
+      this.shapes.update((shapes) => shapes.set(shape.id, shape));
+    }
+    this.resetToolbar();
+  }
+
   saveAddedShape() {
     this.saveText();
     this.resetTextEditor();
@@ -98,7 +105,7 @@ class CanvasStore {
     });
   }
 
-  deleteShape() {
+  deleteShapes() {
     this.shapes.update((shapes) => this.#removeSelectedShape(shapes));
     this.selectedShapes.update((shapes) => this.#removeSelectedShape(shapes));
     this.resetToolbar();
@@ -113,6 +120,16 @@ class CanvasStore {
     shape.isSelected = true;
     this.selectedShapes.update((selected) => selected.set(entityId, shape));
     this.shapes.update((shapes) => shapes.set(entityId, shape));
+  }
+
+  selectAllShapes() {
+    const shapes = get(this.shapes);
+
+    for (const shape of shapes.values()) {
+      shape.isSelected = true;
+      this.shapes.update((shapes) => shapes.set(shape.id, shape));
+      this.selectedShapes.update((selected) => selected.set(shape.id, shape));
+    }
   }
 
   deselectShape(entityId: string) {

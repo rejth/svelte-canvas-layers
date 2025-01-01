@@ -76,7 +76,7 @@
   ];
 
   const handleDelete = () => {
-    canvasStore.deleteShape();
+    canvasStore.deleteShapes();
     canvasStore.resetTextEditor();
     canvasStore.setIsSelected(false);
     connectionStore.removeConnection();
@@ -175,5 +175,6 @@
     margin: 0;
     margin-top: 0.5em;
     text-align: center;
+    user-select: none;
   }
 </style>

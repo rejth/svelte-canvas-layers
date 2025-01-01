@@ -43,6 +43,7 @@
     justify-content: center;
     margin-right: 5px;
     min-width: 2em;
+    user-select: none;
   }
 
   .icon-button {
@@ -54,6 +55,7 @@
     height: 2.5em;
     justify-content: center;
     outline: none;
+    user-select: none;
   }
 
   .icon-button-medium {
