@@ -170,9 +170,7 @@
 
     <ToggleGroup.Root bind:value={textAlign}>
       <ToggleGroup.Item value={align.value} aria-label={align.ariaLabel} on:click={align.onClick}>
-        {#key textAlign}
-          <TextAlignIcon class="h-4 w-4" />
-        {/key}
+        <svelte:component this={TextAlignIcon} class="h-4 w-4" />
       </ToggleGroup.Item>
     </ToggleGroup.Root>
 
