@@ -14,31 +14,26 @@
   const { shapes, textEditor } = canvasStore;
 
   $: render = ({ renderer }: RenderProps) => {
-    const rectEntity = $shapes.get(entityId) as BaseCanvasEntity<RectDrawOptions>;
-    if (!rectEntity) return;
+    const rect = $shapes.get(entityId) as BaseCanvasEntity<RectDrawOptions>;
+    if (!rect) return;
 
-    renderer.fillRect({
-      ...rectEntity.getOptions(),
-      ...geometryManager.getRectDimensionFromBounds(bounds),
-    });
+    const dimension = geometryManager.getRectDimensionFromBounds(bounds);
+    renderer.fillRect({ ...rect.getOptions(), ...dimension });
 
     if ($textEditor?.isEditable && $textEditor.anchorId === entityId) return;
 
-    const textEntity = rectEntity.getOptions().editor;
-    if (!textEntity || !(textEntity instanceof CanvasText)) return;
+    const text = rect.getOptions().editor;
+    if (!text || !(text instanceof CanvasText)) return;
 
-    const snapshot = textEntity.getSnapshot();
-    const textOptions = {
-      ...textEntity.getOptions(),
-      ...geometryManager.getRectDimensionFromBounds(bounds),
-    };
+    const snapshot = text.getSnapshot();
+    const drawOptions = { ...text.getOptions(), ...dimension };
 
     if (snapshot) {
-      renderer.drawImage({ image: snapshot, ...textOptions });
+      renderer.drawImage({ image: snapshot, ...drawOptions });
     } else {
-      const textToRender = textEntity.getPreparedText();
-      const snapshot = renderer.renderTextSnapshot(textToRender, textOptions);
-      textEntity.setSnapshot(snapshot || null);
+      const textToRender = text.getPreparedText();
+      const snapshot = renderer.renderTextSnapshot(textToRender, drawOptions);
+      text.setSnapshot(snapshot || null);
     }
   };
 </script>

@@ -18,7 +18,7 @@ import type {
 } from 'core/interfaces';
 import { geometryManager as geometry } from 'core/services';
 
-import { SMALL_PADDING } from 'client/shared/constants';
+import { FontStyle, SMALL_PADDING } from 'client/shared/constants';
 
 export class Renderer {
   ctx: CanvasContextType | null;
@@ -286,25 +286,68 @@ export class Renderer {
     this.ctx.restore();
   }
 
+  drawTextUnderline(
+    ctx: OffscreenCanvasRenderingContext2D,
+    text: string,
+    x: number,
+    y: number,
+    fontSize: number,
+    textAlign: string,
+  ) {
+    const textWidth = ctx.measureText(text).width;
+    const startY = y + fontSize / 15;
+    const endY = startY;
+
+    let startX = 0;
+    let endX = 0;
+    let underlineHeight = fontSize / 15;
+
+    if (underlineHeight < 1) {
+      underlineHeight = 1;
+    }
+
+    ctx.beginPath();
+
+    if (textAlign === 'center') {
+      startX = x - textWidth / 2;
+      endX = x + textWidth / 2;
+    } else if (textAlign === 'right') {
+      startX = x - textWidth;
+      endX = x;
+    } else {
+      startX = x;
+      endX = x + textWidth;
+    }
+
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = underlineHeight;
+    ctx.moveTo(startX, startY);
+    ctx.lineTo(endX, endY);
+    ctx.strokeStyle = '#000000';
+    ctx.stroke();
+  }
+
   renderTextSnapshot(fragments: string[], textOptions: TextDrawOptions) {
     if (!this.ctx) return;
 
-    const { fontSize, fontStyle, textAlign, x, y, width, height, scale = 1 } = textOptions;
+    const { x, y, width, height, scale = 1 } = textOptions;
+    const { text, font, fontSize, fontStyle, textAlign, textDecoration } = textOptions;
+
     const { initialPixelRatio, pixelRatio } = this.getCanvasOptions();
 
     const offscreenCanvas = new OffscreenCanvas(width, height);
     offscreenCanvas.width = Math.floor(width * pixelRatio);
     offscreenCanvas.height = Math.floor(height * pixelRatio);
 
-    const offscreenContext = offscreenCanvas.getContext('2d') as OffscreenCanvasRenderingContext2D;
+    const ctx = offscreenCanvas.getContext('2d') as OffscreenCanvasRenderingContext2D;
 
-    offscreenContext.textAlign = textAlign;
-    offscreenContext.textBaseline = 'alphabetic';
-    offscreenContext.font = `${fontStyle ? fontStyle : 400} ${fontSize}px monospace`;
-    offscreenContext.scale(scale * pixelRatio, scale * pixelRatio);
+    ctx.textAlign = textAlign;
+    ctx.textBaseline = 'alphabetic';
+    ctx.font = `${fontStyle ? fontStyle : 400} ${fontSize}px monospace`;
+    ctx.scale(scale * pixelRatio, scale * pixelRatio);
 
-    const textMetrics = offscreenContext.measureText('text');
-    const transform = offscreenContext.getTransform();
+    const textMetrics = ctx.measureText(text);
+    const transform = ctx.getTransform();
     const lineHeight = textMetrics.fontBoundingBoxDescent + textMetrics.fontBoundingBoxAscent;
 
     let newX = SMALL_PADDING;
@@ -320,7 +363,10 @@ export class Renderer {
       if (fragment === '') {
         newY += lineHeight;
       } else {
-        offscreenContext.fillText(fragment, newX, newY);
+        ctx.fillText(fragment, newX, newY);
+        if (textDecoration === 'underline') {
+          this.drawTextUnderline(ctx, text, newX, newY, fontSize, textAlign);
+        }
         newY += lineHeight;
       }
     }
@@ -340,10 +386,10 @@ export class Renderer {
     offscreenCanvas.width = Math.floor(width * pixelRatio);
     offscreenCanvas.height = Math.floor(height * pixelRatio);
 
-    const offscreenContext = offscreenCanvas.getContext('2d') as OffscreenCanvasRenderingContext2D;
-    offscreenContext.scale(pixelRatio, pixelRatio);
+    const ctx = offscreenCanvas.getContext('2d') as OffscreenCanvasRenderingContext2D;
+    ctx.scale(pixelRatio, pixelRatio);
 
-    render({ ctx: offscreenContext });
+    render({ ctx });
 
     const pattern = this.ctx.createPattern(offscreenCanvas, 'repeat');
     if (!pattern) return;

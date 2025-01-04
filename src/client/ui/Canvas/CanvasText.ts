@@ -1,4 +1,4 @@
-import type { TextAlign } from 'client/shared/constants';
+import type { FontStyle, TextAlign, TextDecoration } from 'client/shared/constants';
 import {
   BaseCanvasEntity,
   CanvasEntityType,
@@ -11,6 +11,7 @@ export interface TextDrawOptions extends BaseCanvasEntityDrawOptions {
   fontSize: number;
   fontStyle: string;
   textAlign: TextAlign;
+  textDecoration: TextDecoration;
 }
 
 export class CanvasText extends BaseCanvasEntity<TextDrawOptions> {
@@ -23,7 +24,14 @@ export class CanvasText extends BaseCanvasEntity<TextDrawOptions> {
     this.prepareText(options.text, options.font, options.fontSize, options.fontStyle);
   }
 
-  setText(text: string, font: string, fontSize: number, fontStyle: string, textAlign: TextAlign) {
+  setText(
+    text: string,
+    font: string,
+    fontSize: number,
+    fontStyle: string,
+    textAlign: TextAlign,
+    textDecoration: TextDecoration,
+  ) {
     const options = this.getOptions();
     this.prepareText(text, font, fontSize, fontStyle);
 
@@ -32,12 +40,13 @@ export class CanvasText extends BaseCanvasEntity<TextDrawOptions> {
       font !== options.font ||
       fontSize !== options.fontSize ||
       fontStyle !== options.fontStyle ||
-      textAlign !== options.textAlign
+      textAlign !== options.textAlign ||
+      textDecoration !== options.textDecoration
     ) {
       this.setSnapshot(null);
     }
 
-    this.setOptions({ text, font, fontSize, fontStyle, textAlign });
+    this.setOptions({ text, font, fontSize, fontStyle, textAlign, textDecoration });
   }
 
   prepareText(text: string, font: string, fontSize: number, fontStyle = '') {
@@ -47,9 +56,9 @@ export class CanvasText extends BaseCanvasEntity<TextDrawOptions> {
     offscreenCanvas.width = Math.floor(width * canvasScale);
     offscreenCanvas.height = Math.floor(height * canvasScale);
 
-    const context = offscreenCanvas.getContext('2d') as OffscreenCanvasRenderingContext2D;
-    context.scale(canvasScale, canvasScale);
-    context.font = `${fontStyle ? fontStyle : 400} ${fontSize}px monospace`;
+    const ctx = offscreenCanvas.getContext('2d') as OffscreenCanvasRenderingContext2D;
+    ctx.scale(canvasScale, canvasScale);
+    ctx.font = `${fontStyle ? fontStyle : 400} ${fontSize}px monospace`;
 
     const fragments = text.split(/[\r\n]/);
     const preparedText: string[] = [];
@@ -60,7 +69,7 @@ export class CanvasText extends BaseCanvasEntity<TextDrawOptions> {
         preparedText.push('');
       } else {
         for (const substring of fragment) {
-          const textMetrics = context.measureText(textToRender + substring);
+          const textMetrics = ctx.measureText(textToRender + substring);
           const rectWidth = width - 10 * scale;
 
           if (textMetrics.width * scale >= rectWidth) {

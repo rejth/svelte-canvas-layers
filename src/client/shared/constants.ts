@@ -84,6 +84,16 @@ export const enum TextAlign {
   RIGHT = 'right',
 }
 
+export const enum TextDecoration {
+  UNDERLINE = 'underline',
+  NONE = '',
+}
+
+export const enum FontStyle {
+  BOLD = 'bold',
+  ITALIC = 'italic',
+}
+
 const handCursor = new Image();
 
 handCursor.src =

@@ -221,24 +221,27 @@ class CanvasStore {
     const textEditor = get(this.textEditor);
     if (!textEditor) return;
 
-    const { anchorId, text, font, fontSize, textAlign, bold, italic, isEditable } = textEditor;
-    const anchorEntity = get(this.shapes).get(anchorId);
-    if (!anchorEntity || !isEditable) return;
-
-    let fontStyle = '';
-    if (italic) fontStyle = `${fontStyle} italic`;
-    if (bold) fontStyle = `${fontStyle} bold`;
+    const anchorEntity = get(this.shapes).get(textEditor.anchorId);
+    if (!anchorEntity || !textEditor.isEditable) return;
 
     const textEntity = (anchorEntity.getOptions() as RectDrawOptions)?.editor;
     if (textEntity && !(textEntity instanceof CanvasText)) return;
 
+    const { text, font, fontSize, textAlign, bold, italic, underline } = textEditor;
     const options = textEntity?.getOptions();
 
     if (text && !textEntity) {
       const [x, y] = anchorEntity.getXY();
       this.createText({ x, y });
     } else if (textEntity && (text || text !== options?.text)) {
-      textEntity.setText(text, font, fontSize, fontStyle, textAlign);
+      const { TextDecoration } = constants;
+      const textDecoration = underline ? TextDecoration.UNDERLINE : TextDecoration.NONE;
+      let fontStyle = '';
+
+      if (italic) fontStyle = `${fontStyle} italic`;
+      if (bold) fontStyle = `${fontStyle} bold`;
+
+      textEntity.setText(text, font, fontSize, fontStyle, textAlign, textDecoration);
     }
 
     this.resetTextEditor();
@@ -248,9 +251,11 @@ class CanvasStore {
     const textEditor = get(this.textEditor);
     if (!textEditor) return null;
 
-    const { anchorId, text, font, fontSize, textAlign, bold, italic, isEditable } = textEditor;
-    const anchorEntity = get(this.shapes).get(anchorId);
-    if (!anchorEntity || !isEditable) return null;
+    const anchorEntity = get(this.shapes).get(textEditor.anchorId);
+    if (!anchorEntity || !textEditor.isEditable) return null;
+
+    const { TextDecoration } = constants;
+    const { text, font, fontSize, textAlign, bold, italic, underline } = textEditor;
 
     let fontStyle = '';
     if (italic) fontStyle = `${fontStyle} italic`;
@@ -266,6 +271,7 @@ class CanvasStore {
       fontSize,
       fontStyle,
       textAlign,
+      textDecoration: underline ? TextDecoration.UNDERLINE : TextDecoration.NONE,
       scale: anchorEntity.getScale(),
       canvasScale: window.devicePixelRatio,
     });
@@ -292,6 +298,7 @@ class CanvasStore {
       textAlign: editorData?.textAlign || constants.TextAlign.LEFT,
       bold: Boolean(/bold/.test(editorData?.fontStyle || '')),
       italic: Boolean(/italic/.test(editorData?.fontStyle || '')),
+      underline: Boolean(/underline/.test(editorData?.textDecoration || '')),
       isEditable: true,
       position,
     });

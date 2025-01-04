@@ -16,6 +16,7 @@
         canvasStore.resetTextEditor();
         toolbarStore.changeTool(Tools.NOTE);
       }
+      return;
     }
 
     if (event.key === 'Escape') {
@@ -24,10 +25,12 @@
         canvasStore.resetSelection();
         canvasStore.resetTextEditor();
       }
+      return;
     }
 
     if (event.key === 'Meta') {
       commandPressed = true;
+      return;
     }
 
     if (event.key === 'a') {
@@ -35,6 +38,7 @@
         canvasStore.selectAllShapes();
         clipboard = [];
       }
+      return;
     }
 
     if (event.key === 'c' && (commandPressed || event.ctrlKey)) {
@@ -50,10 +54,12 @@
           );
         }
       }
+      return;
     }
 
     if (event.key === 'v' && (commandPressed || event.ctrlKey) && clipboard.length > 0) {
       canvasStore.addShapes(new Map(clipboard.map((shape) => [shape.id, shape])));
+      return;
     }
   };
 

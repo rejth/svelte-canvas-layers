@@ -19,6 +19,7 @@ export interface TextEditorData {
   position: Point;
   text: string;
   bold: boolean;
+  underline: boolean;
   italic: boolean;
   font: string;
   fontSize: number;

@@ -160,9 +160,12 @@ export interface ImageDrawOptions {
 }
 
 export interface TextDrawOptions {
+  text: string;
+  font: string;
   fontSize: number;
   fontStyle: string;
   textAlign: CanvasTextAlign;
+  textDecoration: string;
   x: number;
   y: number;
   width: number;

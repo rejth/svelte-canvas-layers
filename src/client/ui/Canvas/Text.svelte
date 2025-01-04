@@ -1,10 +1,12 @@
 <script lang="ts">
   import type { Bounds, RenderProps } from 'core/interfaces';
-  import { geometryManager } from 'core/services/GeometryManager';
+  import { geometryManager } from 'core/services';
   import { Layer } from 'core/ui';
 
-  import { canvasStore } from 'client/ui/Canvas/store';
+  import type { TextDrawOptions } from 'client/ui/Canvas/CanvasText';
+  import type { BaseCanvasEntity } from 'client/ui/Canvas/BaseCanvasEntity';
   import { CanvasText } from 'client/ui/Canvas/CanvasText';
+  import { canvasStore } from 'client/ui/Canvas/store';
 
   export let entityId: string;
   export let bounds: Bounds;
@@ -12,21 +14,21 @@
   const { shapes } = canvasStore;
 
   $: render = ({ renderer }: RenderProps) => {
-    const textEntity = $shapes.get(entityId);
-    if (!textEntity || !(textEntity instanceof CanvasText)) return;
+    const text = $shapes.get(entityId) as BaseCanvasEntity<TextDrawOptions>;
+    if (!text || !(text instanceof CanvasText)) return;
 
-    const snapshot = textEntity.getSnapshot();
-    const textOptions = {
-      ...textEntity.getOptions(),
+    const snapshot = text.getSnapshot();
+    const drawOptions = {
+      ...text.getOptions(),
       ...geometryManager.getRectDimensionFromBounds(bounds),
     };
 
     if (snapshot) {
-      renderer.drawImage({ image: snapshot, ...textOptions });
+      renderer.drawImage({ image: snapshot, ...drawOptions });
     } else {
-      const textToRender = textEntity.getPreparedText();
-      const snapshot = renderer.renderTextSnapshot(textToRender, textOptions);
-      textEntity.setSnapshot(snapshot || null);
+      const textToRender = text.getPreparedText();
+      const snapshot = renderer.renderTextSnapshot(textToRender, drawOptions);
+      text.setSnapshot(snapshot || null);
     }
   };
 </script>

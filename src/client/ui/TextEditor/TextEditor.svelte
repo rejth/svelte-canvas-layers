@@ -1,11 +1,9 @@
 <script lang="ts">
-  import { cn } from '$lib/utils.js';
-
   import type { Point } from 'core/interfaces';
 
-  import { DEFAULT_FONT_SIZE, SMALL_PADDING } from 'client/shared/constants';
   import type { BaseCanvasEntity } from 'client/ui/Canvas/BaseCanvasEntity';
   import type { RectDrawOptions } from 'client/ui/Canvas/CanvasRect';
+  import { DEFAULT_FONT_SIZE, SMALL_PADDING } from 'client/shared/constants';
   import { canvasStore } from 'client/ui/Canvas/store';
 
   import TextEditorMenu from './TextEditorMenu.svelte';
@@ -27,6 +25,7 @@
 
   $: bold = $textEditor?.bold || false;
   $: italic = $textEditor?.italic || false;
+  $: underline = $textEditor?.underline || false;
   $: fontSize = $textEditor?.fontSize || DEFAULT_FONT_SIZE;
   $: textAlign = $textEditor?.textAlign || 'left';
 
@@ -73,10 +72,8 @@
 <textarea
   autofocus
   id="text-editor"
-  class={cn(
-    'flex min-h-[80px] w-full bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
-    'text-editor',
-  )}
+  class="text-editor"
+  placeholder="Enter text"
   bind:this={textareaRef}
   bind:value={textValue}
   style:left={`${x + SMALL_PADDING * scale}px`}
@@ -87,18 +84,32 @@
   style:font-size={`${fontSize}px`}
   style:font-style={italic ? 'italic' : ''}
   style:font-weight={bold ? 800 : 400}
+  style:text-decoration={underline ? 'underline' : ''}
   style:text-align={textAlign}
   on:input={handleTextChange}
 />
 
 <style>
   .text-editor {
-    background: transparent;
     position: absolute;
     padding: 0;
     line-break: anywhere;
+    background: transparent;
     overflow: hidden;
     resize: none;
     z-index: 10;
+  }
+
+  .text-editor::placeholder {
+    color: var(--muted-foreground);
+  }
+
+  .text-editor:focus-visible {
+    outline: none;
+  }
+
+  .text-editor:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
   }
 </style>

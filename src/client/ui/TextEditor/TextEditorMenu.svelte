@@ -18,10 +18,17 @@
 
   import type { RectDrawOptions } from 'client/ui/Canvas/CanvasRect';
   import type { BaseCanvasEntity } from 'client/ui/Canvas/BaseCanvasEntity';
-  import { TextAlign, COLORS, DEFAULT_FONT_SIZE, FONTS } from 'client/shared/constants';
   import { canvasStore } from 'client/ui/Canvas/store';
 
   import ColorTile from './ColorTile.svelte';
+  import {
+    COLORS,
+    DEFAULT_FONT_SIZE,
+    FONTS,
+    FontStyle,
+    TextAlign,
+    TextDecoration,
+  } from 'client/shared/constants';
 
   export let anchor: BaseCanvasEntity<RectDrawOptions>;
   export let position: Point | undefined;
@@ -36,29 +43,34 @@
 
   $: bold = $textEditor?.bold || false;
   $: italic = $textEditor?.italic || false;
-  $: fontStyle = [bold ? 'bold' : '', italic ? 'italic' : ''];
+  $: underline = $textEditor?.underline || false;
+  $: fontStyle = [
+    bold ? FontStyle.BOLD : '',
+    italic ? FontStyle.ITALIC : '',
+    underline ? TextDecoration.UNDERLINE : '',
+  ];
   $: fontSize = `${$textEditor?.fontSize || DEFAULT_FONT_SIZE}`;
   $: font = $textEditor?.font || FONTS[0].value;
   $: textAlign = $textEditor?.textAlign || TextAlign.LEFT;
 
   const FONT_STYLE_LIST = [
     {
-      value: 'bold',
+      value: FontStyle.BOLD,
       ariaLabel: 'Toggle bold',
       Icon: Bold,
       onClick: () => handleBold(),
     },
     {
-      value: 'italic',
+      value: FontStyle.ITALIC,
       ariaLabel: 'Toggle italic',
       Icon: Italic,
       onClick: () => handleItalic(),
     },
     {
-      value: 'underline',
+      value: TextDecoration.UNDERLINE,
       ariaLabel: 'Toggle underline',
       Icon: Underline,
-      onClick: () => {},
+      onClick: () => handleUnderline(),
     },
   ];
 
@@ -99,7 +111,6 @@
   ];
 
   $: align = TEXT_ALIGN_OPTIONS[textAlign];
-  $: TextAlignIcon = align.Icon;
 
   const handleFontSizeChange = (value: number) => {
     const newFontSize = Number(fontSize) + value;
@@ -114,6 +125,11 @@
 
   const handleItalic = () => {
     canvasStore.updateTextEditor({ italic: !italic });
+    textareaRef?.focus();
+  };
+
+  const handleUnderline = () => {
+    canvasStore.updateTextEditor({ underline: !underline });
     textareaRef?.focus();
   };
 
@@ -170,7 +186,7 @@
 
     <ToggleGroup.Root bind:value={textAlign}>
       <ToggleGroup.Item value={align.value} aria-label={align.ariaLabel} on:click={align.onClick}>
-        <svelte:component this={TextAlignIcon} class="h-4 w-4" />
+        <svelte:component this={align.Icon} class="h-4 w-4" />
       </ToggleGroup.Item>
     </ToggleGroup.Root>
 
