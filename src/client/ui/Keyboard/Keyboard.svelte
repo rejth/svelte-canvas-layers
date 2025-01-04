@@ -10,37 +10,45 @@
   let clipboard: CanvasRect[] = [];
 
   const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === 'Backspace' && $selectedShapes.size > 0) {
-      canvasStore.deleteShapes();
-      canvasStore.resetTextEditor();
-      toolbarStore.changeTool(Tools.NOTE);
+    if (event.key === 'Backspace') {
+      if ($selectedShapes.size > 0 && !$textEditor) {
+        canvasStore.deleteShapes();
+        canvasStore.resetTextEditor();
+        toolbarStore.changeTool(Tools.NOTE);
+      }
     }
 
-    if (event.key === 'Escape' && $selectedShapes.size > 0) {
-      canvasStore.resetSelectedShapes();
-      canvasStore.resetSelection();
-      canvasStore.resetTextEditor();
+    if (event.key === 'Escape') {
+      if ($selectedShapes.size > 0) {
+        canvasStore.resetSelectedShapes();
+        canvasStore.resetSelection();
+        canvasStore.resetTextEditor();
+      }
     }
 
     if (event.key === 'Meta') {
       commandPressed = true;
     }
 
-    if (event.key === 'a' && $shapes.size > 0 && !$textEditor) {
-      canvasStore.selectAllShapes();
-      clipboard = [];
+    if (event.key === 'a') {
+      if ($shapes.size > 0 && !$textEditor) {
+        canvasStore.selectAllShapes();
+        clipboard = [];
+      }
     }
 
-    if (event.key === 'c' && $selectedShapes.size > 0 && (commandPressed || event.ctrlKey)) {
-      for (const shape of $selectedShapes.values()) {
-        const drawOptions = shape.getOptions() as RectDrawOptions;
-        clipboard.push(
-          new CanvasRect({
-            ...drawOptions,
-            x: drawOptions.x + 100,
-            y: drawOptions.y + 100,
-          }),
-        );
+    if (event.key === 'c' && (commandPressed || event.ctrlKey)) {
+      if ($selectedShapes.size > 0 && !$textEditor) {
+        for (const shape of $selectedShapes.values()) {
+          const drawOptions = shape.getOptions() as RectDrawOptions;
+          clipboard.push(
+            new CanvasRect({
+              ...drawOptions,
+              x: drawOptions.x + 100,
+              y: drawOptions.y + 100,
+            }),
+          );
+        }
       }
     }
 
