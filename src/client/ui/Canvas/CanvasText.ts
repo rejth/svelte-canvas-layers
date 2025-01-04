@@ -1,3 +1,4 @@
+import type { TextAlign } from 'client/shared/constants';
 import {
   BaseCanvasEntity,
   CanvasEntityType,
@@ -6,9 +7,10 @@ import {
 
 export interface TextDrawOptions extends BaseCanvasEntityDrawOptions {
   text: string;
+  font: string;
   fontSize: number;
   fontStyle: string;
-  textAlign: CanvasTextAlign;
+  textAlign: TextAlign;
 }
 
 export class CanvasText extends BaseCanvasEntity<TextDrawOptions> {
@@ -18,15 +20,16 @@ export class CanvasText extends BaseCanvasEntity<TextDrawOptions> {
   constructor(options: TextDrawOptions) {
     super(options);
     this.setType(CanvasEntityType.TEXT);
-    this.prepareText(options.text, options.fontSize);
+    this.prepareText(options.text, options.font, options.fontSize, options.fontStyle);
   }
 
-  setText(text: string, fontSize: number, fontStyle: string, textAlign: CanvasTextAlign) {
+  setText(text: string, font: string, fontSize: number, fontStyle: string, textAlign: TextAlign) {
     const options = this.getOptions();
-    this.prepareText(text, fontSize, fontStyle);
+    this.prepareText(text, font, fontSize, fontStyle);
 
     if (
       text !== options.text ||
+      font !== options.font ||
       fontSize !== options.fontSize ||
       fontStyle !== options.fontStyle ||
       textAlign !== options.textAlign
@@ -34,10 +37,10 @@ export class CanvasText extends BaseCanvasEntity<TextDrawOptions> {
       this.setSnapshot(null);
     }
 
-    this.setOptions({ text, fontSize, fontStyle, textAlign });
+    this.setOptions({ text, font, fontSize, fontStyle, textAlign });
   }
 
-  prepareText(text: string, fontSize: number, fontStyle = '') {
+  prepareText(text: string, font: string, fontSize: number, fontStyle = '') {
     const { width, height, scale = 1, canvasScale = 2 } = this.getOptions();
 
     const offscreenCanvas = new OffscreenCanvas(width, height);

@@ -1,4 +1,6 @@
-import type { Color, FontSize } from './interfaces';
+import type { Color, Font } from './interfaces';
+
+export const DEFAULT_FONT = 'Times New Roman';
 
 export const SMALL_PADDING = 5;
 export const LARGE_PADDING = 10;
@@ -32,8 +34,20 @@ export const COLOR_LIST: Color[] = [
     label: '#70d6ff',
   },
   {
+    value: '#f62a5c',
+    label: '#f62a5c',
+  },
+  {
     value: '#ff70a6',
     label: '#ff70a6',
+  },
+  {
+    value: '#e0bdfa',
+    label: '#e0bdfa',
+  },
+  {
+    value: '#fdc4e7',
+    label: '#fdc4e7',
   },
   {
     value: '#ff9770',
@@ -47,32 +61,28 @@ export const COLOR_LIST: Color[] = [
     value: '#e9ff70',
     label: '#e9ff70',
   },
-];
-
-export const FONT_SIZES: FontSize[] = [
   {
-    value: '8',
-    label: 'Tiny',
-  },
-  {
-    value: '12',
-    label: 'Small',
-  },
-  {
-    value: '16',
-    label: 'Medium',
-  },
-  {
-    value: '20',
-    label: 'Big',
-  },
-  {
-    value: '24',
-    label: 'Large',
+    value: '#6ac5ab',
+    label: '#6ac5ab',
   },
 ];
 
-export const TEXT_ALIGN: CanvasTextAlign[] = ['left', 'center', 'right'];
+export const FONTS: Font[] = [
+  {
+    value: 'Times New Roman',
+    label: 'Times New Roman',
+  },
+  {
+    value: 'Arial',
+    label: 'Arial',
+  },
+];
+
+export const enum TextAlign {
+  LEFT = 'left',
+  CENTER = 'center',
+  RIGHT = 'right',
+}
 
 const handCursor = new Image();
 

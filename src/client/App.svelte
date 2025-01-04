@@ -14,6 +14,7 @@
   import Rect from 'client/ui/Canvas/Rect.svelte';
   import Text from 'client/ui/Canvas/Text.svelte';
   import Zoom from 'client/ui/Zoom/Zoom.svelte';
+  import Keyboard from 'client/ui/Keyboard/Keyboard.svelte';
   import Background from 'client/ui/Background/Background.svelte';
   import Selection from 'client/ui/Selection/Selection.svelte';
   import Toolbar from 'client/ui/Toolbar/Toolbar.svelte';
@@ -25,8 +26,6 @@
   import { canvasStore } from 'client/ui/Canvas/store';
   import { toolbarStore } from 'client/ui/Toolbar/store';
   import { connectionStore } from 'client/ui/Connection/store';
-
-  import Keyboard from 'client/services/Keyboard.svelte';
 
   import 'client/shared/styles/_global.css';
 

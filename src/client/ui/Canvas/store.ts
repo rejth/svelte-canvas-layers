@@ -221,7 +221,7 @@ class CanvasStore {
     const textEditor = get(this.textEditor);
     if (!textEditor) return;
 
-    const { anchorId, text, fontSize, textAlign, bold, italic, isEditable } = textEditor;
+    const { anchorId, text, font, fontSize, textAlign, bold, italic, isEditable } = textEditor;
     const anchorEntity = get(this.shapes).get(anchorId);
     if (!anchorEntity || !isEditable) return;
 
@@ -238,7 +238,7 @@ class CanvasStore {
       const [x, y] = anchorEntity.getXY();
       this.createText({ x, y });
     } else if (textEntity && (text || text !== options?.text)) {
-      textEntity.setText(text, fontSize, fontStyle, textAlign);
+      textEntity.setText(text, font, fontSize, fontStyle, textAlign);
     }
 
     this.resetTextEditor();
@@ -248,7 +248,7 @@ class CanvasStore {
     const textEditor = get(this.textEditor);
     if (!textEditor) return null;
 
-    const { anchorId, text, fontSize, textAlign, bold, italic, isEditable } = textEditor;
+    const { anchorId, text, font, fontSize, textAlign, bold, italic, isEditable } = textEditor;
     const anchorEntity = get(this.shapes).get(anchorId);
     if (!anchorEntity || !isEditable) return null;
 
@@ -262,6 +262,7 @@ class CanvasStore {
       width: constants.DEFAULT_RECT_SIZE,
       height: constants.DEFAULT_RECT_SIZE,
       text,
+      font,
       fontSize,
       fontStyle,
       textAlign,
@@ -286,8 +287,9 @@ class CanvasStore {
     this.textEditor.set({
       anchorId: entityId,
       text: editorData?.text || '',
+      font: editorData?.font || constants.DEFAULT_FONT,
       fontSize: editorData?.fontSize || constants.DEFAULT_FONT_SIZE,
-      textAlign: editorData?.textAlign || constants.TEXT_ALIGN[0],
+      textAlign: editorData?.textAlign || constants.TextAlign.LEFT,
       bold: Boolean(/bold/.test(editorData?.fontStyle || '')),
       italic: Boolean(/italic/.test(editorData?.fontStyle || '')),
       isEditable: true,

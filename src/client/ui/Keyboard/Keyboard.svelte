@@ -4,7 +4,7 @@
   import { Tools } from 'client/shared/interfaces';
   import { CanvasRect, type RectDrawOptions } from 'client/ui/Canvas/CanvasRect';
 
-  const { shapes, selectedShapes } = canvasStore;
+  const { shapes, selectedShapes, textEditor } = canvasStore;
 
   let commandPressed = false;
   let clipboard: CanvasRect[] = [];
@@ -26,7 +26,7 @@
       commandPressed = true;
     }
 
-    if (event.key === 'a' && $shapes.size > 0) {
+    if (event.key === 'a' && $shapes.size > 0 && !$textEditor) {
       canvasStore.selectAllShapes();
       clipboard = [];
     }

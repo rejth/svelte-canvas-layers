@@ -58,10 +58,6 @@
     return nextFontSize;
   };
 
-  const handleFontSizeChange = (value: number) => {
-    adaptiveFontSize = calculateFontSize(value);
-  };
-
   // TODO: Scale the text area according to the active layer scale value
 
   // const square = activeLayer.getChildByType(['rect', 'rounded-rect']);
@@ -71,7 +67,7 @@
   // const textEditorScale = scale / inverseScale;
 </script>
 
-<TextEditorMenu {textareaRef} anchor={shape} {position} calculateFontSize={handleFontSizeChange} />
+<TextEditorMenu {textareaRef} anchor={shape} {position} />
 
 <!-- svelte-ignore a11y-autofocus -->
 <textarea
