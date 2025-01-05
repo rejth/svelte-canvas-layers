@@ -3,7 +3,7 @@
 
   import type { BaseCanvasEntity } from 'client/ui/Canvas/BaseCanvasEntity';
   import type { RectDrawOptions } from 'client/ui/Canvas/CanvasRect';
-  import { DEFAULT_FONT_SIZE, SMALL_PADDING } from 'client/shared/constants';
+  import { DEFAULT_FONT_SIZE, SMALL_PADDING, TextAlign } from 'client/shared/constants';
   import { canvasStore } from 'client/ui/Canvas/store';
 
   import TextEditorMenu from './TextEditorMenu.svelte';
@@ -27,7 +27,7 @@
   $: italic = $textEditor?.italic || false;
   $: underline = $textEditor?.underline || false;
   $: fontSize = $textEditor?.fontSize || DEFAULT_FONT_SIZE;
-  $: textAlign = $textEditor?.textAlign || 'left';
+  $: textAlign = $textEditor?.textAlign || TextAlign.LEFT;
 
   const handleTextChange = (e: Event) => {
     textValue = (e.target as HTMLTextAreaElement).value;

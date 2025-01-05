@@ -1,9 +1,12 @@
-import type { Bounds } from 'core/interfaces';
 import { v4 as uuid } from 'uuid';
+import type { Bounds } from 'core/interfaces';
+import { ShapeType } from 'client/shared/interfaces';
 
 export interface BaseCanvasEntityInterface<O> {
   getType(): CanvasEntityType | null;
   setType(type: CanvasEntityType): void;
+  getShapeType(): ShapeType;
+  setShapeType(shapeType: ShapeType): void;
   getScale(): number;
   setScale(scale: number): void;
   getXY(): number[];
@@ -37,12 +40,14 @@ export class BaseCanvasEntity<O extends BaseCanvasEntityDrawOptions>
   #id: string;
   #isSelected: boolean;
   #type: CanvasEntityType;
+  #shapeType: ShapeType;
   #options: O;
   #minDimension: number;
 
   constructor(options: O, minDimension = 150) {
     this.#id = uuid();
     this.#type = CanvasEntityType.BASE;
+    this.#shapeType = ShapeType.NOTE;
     this.#isSelected = false;
     const alignedWidth = options.width * options.scale;
     const alignedHeight = options.height * options.scale;
@@ -84,6 +89,14 @@ export class BaseCanvasEntity<O extends BaseCanvasEntityDrawOptions>
 
   setType(type: CanvasEntityType) {
     this.#type = type;
+  }
+
+  getShapeType(): ShapeType {
+    return this.#shapeType;
+  }
+
+  setShapeType(shapeType: ShapeType) {
+    this.#shapeType = shapeType;
   }
 
   getScale(): number {

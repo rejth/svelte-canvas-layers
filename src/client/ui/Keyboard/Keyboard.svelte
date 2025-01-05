@@ -46,7 +46,7 @@
         for (const shape of $selectedShapes.values()) {
           const drawOptions = shape.getOptions() as RectDrawOptions;
           clipboard.push(
-            new CanvasRect({
+            new CanvasRect(shape.getShapeType(), {
               ...drawOptions,
               x: drawOptions.x + 100,
               y: drawOptions.y + 100,

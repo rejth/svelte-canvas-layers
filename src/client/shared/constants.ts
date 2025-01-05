@@ -12,7 +12,7 @@ export const DEFAULT_TEXT_AREA_WIDTH = 500;
 export const DEFAULT_TEXT_AREA_HEIGHT = 300;
 
 export const DEFAULT_TEXT_BLOCK_WIDTH = 200;
-export const DEFAULT_TEXT_BLOCK_HEIGHT = 50;
+export const DEFAULT_TEXT_BLOCK_HEIGHT = 35;
 
 export const enum COLORS {
   STICKER_YELLOW = '#ffd670',
@@ -26,6 +26,7 @@ export const enum COLORS {
   SELECTION = '#3a86ff',
   GRID = '#d2d6db',
   TEXT_AREA = '#f6f2ff',
+  TRANSPARENT = 'transparent',
 }
 
 export const COLOR_LIST: Color[] = [

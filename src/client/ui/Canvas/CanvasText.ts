@@ -1,9 +1,6 @@
-import type { FontStyle, TextAlign, TextDecoration } from 'client/shared/constants';
-import {
-  BaseCanvasEntity,
-  CanvasEntityType,
-  type BaseCanvasEntityDrawOptions,
-} from 'client/ui/Canvas/BaseCanvasEntity';
+import type { TextAlign, TextDecoration } from 'client/shared/constants';
+import type { BaseCanvasEntityDrawOptions } from 'client/ui/Canvas/BaseCanvasEntity';
+import { BaseCanvasEntity, CanvasEntityType } from 'client/ui/Canvas/BaseCanvasEntity';
 
 export interface TextDrawOptions extends BaseCanvasEntityDrawOptions {
   text: string;

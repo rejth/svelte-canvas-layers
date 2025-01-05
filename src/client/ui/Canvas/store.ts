@@ -3,7 +3,7 @@ import { type Writable, get, writable } from 'svelte/store';
 import type { Point } from 'core/interfaces';
 import { geometryManager } from 'core/services';
 
-import { Tools, type ShapeType, type TextEditorData, type Tool } from 'client/shared/interfaces';
+import { Tools, ShapeType, type TextEditorData, type Tool } from 'client/shared/interfaces';
 import { toolbarStore } from 'client/ui/Toolbar/store';
 import { connectionStore } from 'client/ui/Connection/store';
 import * as constants from 'client/shared/constants';
@@ -38,11 +38,14 @@ class CanvasStore {
   }
 
   #createShape(type: ShapeType, { x, y }: Point): BaseCanvasEntity<DrawOptions> | null {
-    if (type === Tools.NOTE) {
+    if (type === ShapeType.NOTE) {
       return this.createSticker({ x, y });
     }
-    if (type === Tools.AREA) {
+    if (type === ShapeType.AREA) {
       return this.createTextArea({ x, y });
+    }
+    if (type === ShapeType.TEXT) {
+      return this.createTextBlock({ x, y });
     }
     return null;
   }
@@ -186,7 +189,7 @@ class CanvasStore {
   }
 
   createSticker({ x, y }: Point): CanvasRect {
-    return new CanvasRect({
+    return new CanvasRect(ShapeType.NOTE, {
       x,
       y,
       width: constants.DEFAULT_RECT_SIZE,
@@ -200,8 +203,8 @@ class CanvasStore {
     });
   }
 
-  createTextArea({ x, y }: Point) {
-    return new CanvasRect({
+  createTextArea({ x, y }: Point): CanvasRect {
+    return new CanvasRect(ShapeType.AREA, {
       x,
       y,
       width: constants.DEFAULT_TEXT_AREA_WIDTH,
@@ -215,7 +218,16 @@ class CanvasStore {
     });
   }
 
-  createTextBlock({ x, y }: Point) {}
+  createTextBlock({ x, y }: Point): CanvasRect {
+    return new CanvasRect(ShapeType.TEXT, {
+      x,
+      y,
+      width: constants.DEFAULT_TEXT_BLOCK_WIDTH,
+      height: constants.DEFAULT_TEXT_BLOCK_HEIGHT,
+      color: constants.COLORS.TRANSPARENT,
+      scale: 1,
+    });
+  }
 
   saveText() {
     const textEditor = get(this.textEditor);
@@ -255,6 +267,7 @@ class CanvasStore {
     if (!anchorEntity || !textEditor.isEditable) return null;
 
     const { TextDecoration } = constants;
+    const { width, height } = anchorEntity.getOptions();
     const { text, font, fontSize, textAlign, bold, italic, underline } = textEditor;
 
     let fontStyle = '';
@@ -264,8 +277,8 @@ class CanvasStore {
     const canvasText = new CanvasText({
       x,
       y,
-      width: constants.DEFAULT_RECT_SIZE,
-      height: constants.DEFAULT_RECT_SIZE,
+      width,
+      height,
       text,
       font,
       fontSize,

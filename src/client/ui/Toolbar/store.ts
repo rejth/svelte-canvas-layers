@@ -1,9 +1,9 @@
 import { type Writable, writable } from 'svelte/store';
-import { Tools, type ShapeType, type Tool } from 'client/shared/interfaces';
+import { Tools, ShapeType, type Tool } from 'client/shared/interfaces';
 
 class ToolbarStore {
   tool: Writable<Tool | null> = writable(Tools.NOTE);
-  shapeType: Writable<ShapeType | null> = writable(Tools.NOTE);
+  shapeType: Writable<ShapeType | null> = writable(ShapeType.NOTE);
 
   changeTool(tool: Tool | null): void {
     this.tool.set(tool);

@@ -11,8 +11,13 @@ export const enum Tools {
   DELETE = 'DELETE',
 }
 
+export const enum ShapeType {
+  NOTE = 'NOTE',
+  AREA = 'AREA',
+  TEXT = 'TEXT',
+}
+
 export type Tool = keyof typeof Tools;
-export type ShapeType = 'NOTE' | 'AREA' | 'TEXT';
 
 export interface TextEditorData {
   anchorId: string;

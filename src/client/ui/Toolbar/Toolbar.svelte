@@ -39,7 +39,7 @@
       type: Tools.TEXT,
       icon: TextIcon,
       hoverText: 'Drag to add a new text',
-      disabled: true,
+      disabled: false,
     },
     {
       id: 'pan',
