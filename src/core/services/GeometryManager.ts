@@ -65,8 +65,7 @@ class GeometryManager {
     };
   }
 
-  getRectDimensionFromBounds(bounds: Bounds | undefined): RectDimension | null {
-    if (!bounds) return null;
+  getRectDimensionFromBounds(bounds: Bounds): RectDimension {
     const { x0, y0, x1, y1 } = bounds;
     return {
       x: Math.min(x0, x1),

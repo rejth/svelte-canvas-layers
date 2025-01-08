@@ -9,6 +9,13 @@ export const enum ResizableLayerEvent {
   DOUBLE_CLICK = 'layer.dblclick',
 }
 
+export const enum ResizableLayerAction {
+  RESIZE = 'resize',
+  MOVE = 'move',
+  ROTATE = 'rotate',
+  SCALE = 'scale',
+}
+
 interface EventDetails {
   entityId: string;
   bounds: Bounds;

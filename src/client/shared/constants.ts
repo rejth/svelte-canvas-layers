@@ -1,11 +1,14 @@
 import type { Color, Font } from './interfaces';
 
 export const DEFAULT_FONT = 'Times New Roman';
+export const DEFAULT_FONT_SIZE = 16;
 
 export const SMALL_PADDING = 5;
 export const LARGE_PADDING = 10;
 
-export const DEFAULT_FONT_SIZE = 16;
+export const DEFAULT_SCALE = 1;
+export const DEFAULT_CANVAS_SCALE = window.devicePixelRatio;
+
 export const DEFAULT_RECT_SIZE = 200;
 
 export const DEFAULT_TEXT_AREA_WIDTH = 500;

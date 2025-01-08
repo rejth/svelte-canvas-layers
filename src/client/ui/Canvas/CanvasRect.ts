@@ -3,6 +3,7 @@ import type { CanvasText } from 'client/ui/Canvas/CanvasText';
 import type { ShapeType } from 'client/shared/interfaces';
 import type { BaseCanvasEntityDrawOptions } from 'client/ui/Canvas/BaseCanvasEntity';
 import { BaseCanvasEntity, CanvasEntityType } from 'client/ui/Canvas/BaseCanvasEntity';
+
 export interface RectDrawOptions extends BaseCanvasEntityDrawOptions {
   color: COLORS;
   shadowColor?: string;

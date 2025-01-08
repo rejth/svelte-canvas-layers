@@ -42,12 +42,12 @@ class ConnectionStore {
   }
 
   handleBoxEnter(e: CustomEvent<ResizableLayerEventDetails>, boxId: string) {
-    const currentConnection = get(this.currentConnection);
+    if (!e.detail?.bounds) return;
 
+    const currentConnection = get(this.currentConnection);
     if (this.#tool !== Tools.CONNECT || !currentConnection?.source) return;
 
-    const rect = geometryManager.getRectDimensionFromBounds(e.detail?.bounds);
-    if (!rect) return;
+    const rect = geometryManager.getRectDimensionFromBounds(e.detail.bounds);
 
     this.currentConnection.set({
       source: currentConnection.source,
@@ -56,12 +56,13 @@ class ConnectionStore {
   }
 
   handleBoxSelect = (e: CustomEvent<ResizableLayerEventDetails>, boxId: string) => {
+    if (!e.detail?.bounds) return;
     if (this.#tool !== Tools.CONNECT) return;
 
     const currentConnection = get(this.currentConnection);
     const rect = geometryManager.getRectDimensionFromBounds(e.detail?.bounds);
 
-    if (boxId === currentConnection?.source?.id || !rect) {
+    if (boxId === currentConnection?.source?.id) {
       this.resetCurrentConnection();
       return;
     }
@@ -90,12 +91,13 @@ class ConnectionStore {
   };
 
   handleBoxMove = (e: CustomEvent<ResizableLayerEventDetails>, boxId: string) => {
+    if (!e.detail?.bounds) return;
+
     const connectionIds = this.connectionIdsByBoxId.get(boxId);
     if (!connectionIds) return;
 
     const connections = get(this.connections);
-    const rect = geometryManager.getRectDimensionFromBounds(e.detail?.bounds);
-    if (!rect) return;
+    const rect = geometryManager.getRectDimensionFromBounds(e.detail.bounds);
 
     for (const connectionId of connectionIds) {
       const connection = connections.get(connectionId);

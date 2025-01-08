@@ -1,6 +1,8 @@
 import { v4 as uuid } from 'uuid';
+
 import type { Bounds } from 'core/interfaces';
 import { ShapeType } from 'client/shared/interfaces';
+import { DEFAULT_SCALE } from 'client/shared/constants';
 
 export interface BaseCanvasEntityInterface<O> {
   getType(): CanvasEntityType | null;
@@ -14,7 +16,7 @@ export interface BaseCanvasEntityInterface<O> {
   getOptions(): O;
   setOptions(options: Partial<O>): void;
   getWidthHeight(): number[];
-  setWidthHeight(width: number, height: number): void;
+  getCalculatedScale(width: number, height: number): number;
 }
 
 export interface BaseCanvasEntityDrawOptions {
@@ -44,23 +46,23 @@ export class BaseCanvasEntity<O extends BaseCanvasEntityDrawOptions>
   #options: O;
   #minDimension: number;
 
-  constructor(options: O, minDimension = 150) {
+  constructor(options: O, minDimension = 200) {
     this.#id = uuid();
     this.#type = CanvasEntityType.BASE;
     this.#shapeType = ShapeType.NOTE;
     this.#isSelected = false;
-    const alignedWidth = options.width * options.scale;
-    const alignedHeight = options.height * options.scale;
+
+    const { initialWidth, initialHeight, width, height, scale } = options;
 
     this.#options = {
       ...options,
-      width: alignedWidth,
-      height: alignedHeight,
-      initialWidth: options?.initialWidth || options.width,
-      initialHeight: options?.initialHeight || options.height,
+      width: width * scale,
+      height: height * scale,
+      initialWidth: initialWidth || width,
+      initialHeight: initialHeight || height,
     };
 
-    this.#minDimension = minDimension;
+    this.#minDimension = Math.min(minDimension, initialWidth || width, initialHeight || height);
   }
 
   get id(): string {
@@ -129,19 +131,14 @@ export class BaseCanvasEntity<O extends BaseCanvasEntityDrawOptions>
     return [this.#options.width, this.#options.height];
   }
 
-  setWidthHeight(width: number, height: number) {
+  getCalculatedScale(width: number, height: number): number {
     if (width >= this.#minDimension && height >= this.#minDimension) {
+      const { initialWidth = width, initialHeight = height } = this.#options;
       const newValue = Math.min(width, height);
-      const prevValue = Math.min(
-        this.#options?.initialWidth || width,
-        this.#options?.initialHeight || height,
-      );
-
-      const scale = newValue / prevValue;
-
-      this.#options.width = width;
-      this.#options.height = height;
-      this.#options.scale = scale;
+      const prevValue = Math.min(initialWidth, initialHeight);
+      return newValue / prevValue;
     }
+
+    return DEFAULT_SCALE;
   }
 }

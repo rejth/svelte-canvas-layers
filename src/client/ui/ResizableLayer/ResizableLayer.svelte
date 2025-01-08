@@ -4,12 +4,19 @@
   import type { Point, Bounds, LayerEventDetails } from 'core/interfaces';
   import { geometryManager } from 'core/services';
 
-  import When from 'client/ui/When/When.svelte';
+  import type { BaseCanvasEntity } from 'client/ui/Canvas/BaseCanvasEntity';
+  import type { RectDrawOptions } from 'client/ui/Canvas/CanvasRect';
   import { canvasStore } from 'client/ui/Canvas/store';
+  import When from 'client/ui/When/When.svelte';
+  import { DEFAULT_SCALE } from 'client/shared/constants';
 
   import Surface from './ResizableLayerSurface.svelte';
   import Handler from './ResizableLayerHandler.svelte';
-  import { ResizableLayerEvent, type ResizableLayerEventDispatcher } from './interfaces';
+  import {
+    ResizableLayerEvent,
+    ResizableLayerAction,
+    type ResizableLayerEventDispatcher,
+  } from './interfaces';
 
   // TODO: Get rid of the bounds, use { x, y, width, height } instead
   export let entityId: string;
@@ -20,6 +27,7 @@
   export let isMovingBlocked: boolean = false;
 
   const dispatcher = createEventDispatcher<ResizableLayerEventDispatcher>();
+  const { shapes } = canvasStore;
 
   const [N, S, W, E] = [1, 2, 4, 8];
   const HANDLERS = [N, S, W, E, N | W, N | E, S | W, S | E];
@@ -28,11 +36,18 @@
   let { x0, y0, x1, y1 } = initialBounds;
   let draggedHandler: number | null = null;
   let hoveredHandler: number | null = null;
+  let currentAction: ResizableLayerAction | null = null;
   let previousTouch: Touch;
+  let scale = DEFAULT_SCALE;
 
   onMount(() => {
     dispatcher(ResizableLayerEvent.ACTIVE, { entityId, bounds });
   });
+
+  $: shape = $shapes.get(entityId) as BaseCanvasEntity<RectDrawOptions>;
+  $: options = shape?.getOptions();
+  $: initialWidth = options?.initialWidth ?? options?.width;
+  $: initialHeight = options?.initialHeight ?? options?.height;
 
   $: bounds = { x0, y0, x1, y1 };
   $: active = Boolean(draggedHandler || hoveredHandler) || isOverlapped(selectionPath);
@@ -71,11 +86,34 @@
 
   const onMouseMove = (e: MouseEvent) => {
     if (!draggedHandler || isMovingBlocked) return;
+
     const { movementX, movementY } = e;
-    x0 += draggedHandler & W && movementX;
-    y0 += draggedHandler & N && movementY;
-    x1 += draggedHandler & E && movementX;
-    y1 += draggedHandler & S && movementY;
+    let x0t = bounds.x0 + (draggedHandler & W ? movementX : 0);
+    let y0t = bounds.y0 + (draggedHandler & N ? movementY : 0);
+    let x1t = bounds.x1 + (draggedHandler & E ? movementX : 0);
+    let y1t = bounds.y1 + (draggedHandler & S ? movementY : 0);
+
+    const { width, height } = geometryManager.getRectDimensionFromBounds({
+      x0: x0t,
+      y0: y0t,
+      x1: x1t,
+      y1: y1t,
+    });
+
+    if (width < initialWidth || height < initialHeight) return;
+
+    x0 = x0t;
+    y0 = y0t;
+    x1 = x1t;
+    y1 = y1t;
+
+    if (draggedHandler === SURFACE) {
+      currentAction = ResizableLayerAction.MOVE;
+    } else {
+      currentAction = ResizableLayerAction.RESIZE;
+      scale = shape.getCalculatedScale(width, height);
+    }
+
     dispatcher(ResizableLayerEvent.MOVE, { entityId, bounds });
   };
 
@@ -134,7 +172,7 @@
 
   const updateEntityData = () => {
     const rect = geometryManager.getRectDimensionFromBounds(bounds);
-    canvasStore.updateShape(entityId, rect || {});
+    canvasStore.updateShape(entityId, { ...rect, scale });
   };
 
   const cursor = (node: HTMLElement, _: unknown) => ({
@@ -151,7 +189,7 @@
   on:pointerdown={onMouseUp}
 />
 
-<slot {bounds} />
+<slot {bounds} {scale} {currentAction} />
 
 <Surface
   {bounds}

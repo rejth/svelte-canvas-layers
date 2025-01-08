@@ -15,11 +15,9 @@
 
   $: render = ({ renderer }: RenderProps) => {
     const rect = geometryManager.getRectDimensionFromBounds(bounds);
-    if (!rect) return;
-
-    const { x, y } = rect;
     const color = active ? COLORS.STICKER_BLUE : COLORS.SELECTION;
-    renderer.fillCircle({ x, y, radius, color });
+
+    renderer.fillCircle({ x: rect.x, y: rect.y, radius, color });
   };
 </script>
 

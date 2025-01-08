@@ -1,15 +1,21 @@
 <script lang="ts">
-  import type { Point } from 'core/interfaces';
+  import type { Point, TransformationMatrix } from 'core/interfaces';
 
   import type { BaseCanvasEntity } from 'client/ui/Canvas/BaseCanvasEntity';
   import type { RectDrawOptions } from 'client/ui/Canvas/CanvasRect';
-  import { DEFAULT_FONT_SIZE, SMALL_PADDING, TextAlign } from 'client/shared/constants';
+  import {
+    DEFAULT_FONT_SIZE,
+    SMALL_PADDING,
+    TextAlign,
+    DEFAULT_SCALE,
+  } from 'client/shared/constants';
   import { canvasStore } from 'client/ui/Canvas/store';
 
   import TextEditorMenu from './TextEditorMenu.svelte';
 
   export let anchorId: string | undefined;
   export let position: Point | undefined;
+  export let transform: TransformationMatrix | null | undefined;
 
   const { shapes, textEditor } = canvasStore;
   const { x = 0, y = 0 } = position || {};
@@ -19,32 +25,35 @@
   let textValue = $textEditor?.text || '';
 
   $: shape = $shapes.get(anchorId || '') as BaseCanvasEntity<RectDrawOptions>;
-  $: width = shape?.getOptions().width;
-  $: height = shape?.getOptions().height;
-  $: scale = shape?.getScale() || 1;
+  $: options = shape?.getOptions();
+  $: initialWidth = options?.initialWidth ?? options?.width;
+  $: initialHeight = options?.initialHeight ?? options?.height;
+  $: height = options?.height || initialHeight;
+  $: scale = options?.scale || DEFAULT_SCALE;
 
   $: bold = $textEditor?.bold || false;
   $: italic = $textEditor?.italic || false;
   $: underline = $textEditor?.underline || false;
   $: fontSize = $textEditor?.fontSize || DEFAULT_FONT_SIZE;
   $: textAlign = $textEditor?.textAlign || TextAlign.LEFT;
+  $: textEditorScale = getTextEditorScale(scale);
 
   const handleTextChange = (e: Event) => {
     textValue = (e.target as HTMLTextAreaElement).value;
     canvasStore.updateTextEditor({ text: textValue, fontSize: calculateFontSize(fontSize) });
   };
 
-  // TODO: Update font size on active layer scale or layerHeight value change
   const calculateFontSize = (fontSize: number) => {
     if (!textareaRef) return fontSize;
 
+    const textAreaValue = textareaRef.value;
     let nextFontSize = fontSize;
 
     if (textareaRef.scrollHeight * scale > height - SMALL_PADDING) {
       nextFontSize = nextFontSize - 2;
     }
 
-    if (textareaRef.value.length < textValue.length && nextFontSize < adaptiveFontSize) {
+    if (textAreaValue.length < textValue.length && nextFontSize < adaptiveFontSize) {
       textareaRef.style.fontSize = `${nextFontSize + 2}px`;
 
       if (textareaRef.scrollHeight * scale <= height - SMALL_PADDING) {
@@ -57,16 +66,18 @@
     return nextFontSize;
   };
 
-  // TODO: Scale the text area according to the active layer scale value
+  const onFontSizeChange = (fontSize: number) => {
+    adaptiveFontSize = calculateFontSize(fontSize);
+  };
 
-  // const square = activeLayer.getChildByType(['rect', 'rounded-rect']);
-  // const squareOptions = square?.getOptions();
-  // const transform = viewport.renderer?.getTransform();
-  // const inverseScale = 1 / (transform.scaleX / transform.initialScale);
-  // const textEditorScale = scale / inverseScale;
+  const getTextEditorScale = (scale: number) => {
+    if (!transform) return DEFAULT_SCALE;
+    const inverseScale = DEFAULT_SCALE / (transform.scaleX / transform.initialScale);
+    return scale / inverseScale;
+  };
 </script>
 
-<TextEditorMenu {textareaRef} anchor={shape} {position} />
+<TextEditorMenu {textareaRef} anchor={shape} {position} {transform} {onFontSizeChange} />
 
 <!-- svelte-ignore a11y-autofocus -->
 <textarea
@@ -76,11 +87,11 @@
   placeholder="Enter text"
   bind:this={textareaRef}
   bind:value={textValue}
-  style:left={`${x + SMALL_PADDING * scale}px`}
-  style:top={`${y + SMALL_PADDING * scale}px`}
-  style:width={`${width - SMALL_PADDING * 2}px`}
-  style:height={`${height - SMALL_PADDING * 2}px`}
-  style:transform={`scale(${scale})`}
+  style:left={`${x + SMALL_PADDING * textEditorScale}px`}
+  style:top={`${y + SMALL_PADDING * textEditorScale}px`}
+  style:width={`${initialWidth - SMALL_PADDING * 2}px`}
+  style:height={`${initialHeight - SMALL_PADDING * 2}px`}
+  style:transform={`scale(${textEditorScale})`}
   style:font-size={`${fontSize}px`}
   style:font-style={italic ? 'italic' : ''}
   style:font-weight={bold ? 800 : 400}
@@ -91,13 +102,18 @@
 
 <style>
   .text-editor {
+    box-sizing: border-box;
+    background: transparent;
     position: absolute;
     padding: 0;
+    z-index: 10;
     line-break: anywhere;
-    background: transparent;
     overflow: hidden;
     resize: none;
-    z-index: 10;
+    border: none;
+    outline: none;
+    transform-origin: top left;
+    text-align: center;
   }
 
   .text-editor::placeholder {

@@ -14,7 +14,7 @@
   import { Button } from '$lib/components/ui/button/index.js';
   import { Separator } from '$lib/components/ui/separator';
 
-  import type { Point } from 'core/interfaces';
+  import type { Point, TransformationMatrix } from 'core/interfaces';
 
   import type { RectDrawOptions } from 'client/ui/Canvas/CanvasRect';
   import type { BaseCanvasEntity } from 'client/ui/Canvas/BaseCanvasEntity';
@@ -24,6 +24,7 @@
   import {
     COLORS,
     DEFAULT_FONT_SIZE,
+    DEFAULT_SCALE,
     FONTS,
     FontStyle,
     TextAlign,
@@ -34,14 +35,17 @@
 
   export let anchor: BaseCanvasEntity<RectDrawOptions>;
   export let position: Point | undefined;
+  export let transform: TransformationMatrix | null | undefined;
   export let textareaRef: HTMLTextAreaElement | null;
+  export let onFontSizeChange: (fontSize: number) => void;
 
   const { textEditor } = canvasStore;
   const { x = 0, y = 0 } = position || {};
 
-  $: width = anchor?.getOptions()?.width || 0;
-  $: color = anchor?.getOptions()?.color || COLORS.TRANSPARENT;
-  $: scale = anchor?.getScale() || 1;
+  $: options = anchor?.getOptions();
+  $: width = options?.width || 0;
+  $: color = options?.color || COLORS.TRANSPARENT;
+  $: scale = options?.scale || DEFAULT_SCALE;
 
   $: bold = $textEditor?.bold || false;
   $: italic = $textEditor?.italic || false;
@@ -114,10 +118,20 @@
   ];
 
   $: align = TEXT_ALIGN_OPTIONS[textAlign];
+  $: menuScale = getMenuScale(scale);
+
+  const getMenuScale = (scale: number) => {
+    if (!transform) return DEFAULT_SCALE;
+    const inverseScale = DEFAULT_SCALE / (transform.scaleX / transform.initialScale);
+    return scale === DEFAULT_SCALE
+      ? scale / inverseScale
+      : transform.scaleX / transform.initialScale;
+  };
 
   const handleFontSizeChange = (value: number) => {
     const newFontSize = Number(fontSize) + value;
     canvasStore.updateTextEditor({ fontSize: newFontSize });
+    onFontSizeChange(newFontSize);
     textareaRef?.focus();
   };
 
@@ -150,20 +164,13 @@
     canvasStore.updateTextEditor({ textAlign: align });
     textareaRef?.focus();
   };
-
-  // TODO: Scale the menu according to the active layer scale value
-
-  // const options = activeLayer.getOptions();
-  // const transform = viewport.renderer?.getTransform();
-  // const inverseScale = 1 / (transform.scaleX / transform.initialScale);
-  // const menuScale = scale === 1 ? scale / inverseScale : transform.scaleX / transform.initialScale;
 </script>
 
 <div
   class="menu"
   id="text-editor-menu"
-  style:top={`${y - 15 * scale}px`}
-  style:left={`${x + (width * scale) / 2}px`}
+  style:top={`${y - 15 * menuScale}px`}
+  style:left={`${x + (width * menuScale) / 2}px`}
 >
   <Menubar.Root>
     <When isVisible={anchor.getShapeType() !== ShapeType.TEXT}>

@@ -12,7 +12,6 @@
 
   import When from 'client/ui/When/When.svelte';
   import Rect from 'client/ui/Canvas/Rect.svelte';
-  import Text from 'client/ui/Canvas/Text.svelte';
   import Zoom from 'client/ui/Zoom/Zoom.svelte';
   import Keyboard from 'client/ui/Keyboard/Keyboard.svelte';
   import Background from 'client/ui/Background/Background.svelte';
@@ -31,7 +30,6 @@
 
   const widgets: Partial<Record<CanvasEntityType, ComponentType>> = {
     [CanvasEntityType.RECT]: Rect,
-    [CanvasEntityType.TEXT]: Text,
   };
 
   let canvas: Canvas;
@@ -78,12 +76,14 @@
   };
 
   const handleCanvasMouseMove = (e: MouseEvent) => {
+    if ($textEditor) return;
     viewport.handleMouseMove(e);
     if (isLayerEntered) return;
     connectionStore.handleCanvasMouseMove(e);
   };
 
   const handleCanvasWheel = (e: WheelEvent) => {
+    if ($textEditor) return;
     viewport.handleWheelChange(e);
   };
 
@@ -133,7 +133,11 @@
   <Zoom />
   <Keyboard />
   <When isVisible={Boolean($textEditor?.isEditable)}>
-    <TextEditor anchorId={$textEditor?.anchorId} position={$textEditor?.position} />
+    <TextEditor
+      anchorId={$textEditor?.anchorId}
+      position={$textEditor?.position}
+      transform={viewport?.renderer?.getTransform()}
+    />
   </When>
   <Canvas
     useLayerEvents={!panning}
@@ -178,9 +182,11 @@
         on:layer.active={handleLayerActive}
         on:layer.leave={handleLayerLeave}
         on:layer.move={handleLayerMove}
+        let:currentAction
         let:bounds
+        let:scale
       >
-        <svelte:component this={widget} {entityId} {bounds} />
+        <svelte:component this={widget} {entityId} {bounds} {scale} {currentAction} />
       </ResizableLayer>
     {/each}
   </Canvas>

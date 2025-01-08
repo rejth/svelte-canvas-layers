@@ -1,4 +1,9 @@
-import type { TextAlign, TextDecoration } from 'client/shared/constants';
+import {
+  DEFAULT_CANVAS_SCALE,
+  DEFAULT_SCALE,
+  type TextAlign,
+  type TextDecoration,
+} from 'client/shared/constants';
 import type { BaseCanvasEntityDrawOptions } from 'client/ui/Canvas/BaseCanvasEntity';
 import { BaseCanvasEntity, CanvasEntityType } from 'client/ui/Canvas/BaseCanvasEntity';
 
@@ -47,7 +52,12 @@ export class CanvasText extends BaseCanvasEntity<TextDrawOptions> {
   }
 
   prepareText(text: string, font: string, fontSize: number, fontStyle = '') {
-    const { width, height, scale = 1, canvasScale = 2 } = this.getOptions();
+    const {
+      width,
+      height,
+      scale = DEFAULT_SCALE,
+      canvasScale = DEFAULT_CANVAS_SCALE,
+    } = this.getOptions();
 
     const offscreenCanvas = new OffscreenCanvas(width, height);
     offscreenCanvas.width = Math.floor(width * canvasScale);
@@ -85,11 +95,6 @@ export class CanvasText extends BaseCanvasEntity<TextDrawOptions> {
     }
 
     this.#preparedText = preparedText;
-  }
-
-  setWidthHeight(width: number, height: number) {
-    super.setWidthHeight(width, height);
-    this.setSnapshot(null);
   }
 
   getPreparedText(): string[] {

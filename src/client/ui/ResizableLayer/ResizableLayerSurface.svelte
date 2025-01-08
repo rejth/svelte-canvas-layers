@@ -11,8 +11,6 @@
 
   $: render = ({ ctx, renderer }: RenderProps) => {
     const rect = geometryManager.getRectDimensionFromBounds(bounds);
-    if (!rect) return;
-
     const { x, y, width, height } = rect;
 
     ctx.globalAlpha = 0;
