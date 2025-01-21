@@ -27,8 +27,8 @@ class GeometryManager {
 
   #getMousePosition(e: MouseEvent, pixelRatio: PixelRatio = 1): Point {
     return {
-      x: e.offsetX * pixelRatio,
-      y: e.offsetY * pixelRatio,
+      x: e.pageX * pixelRatio,
+      y: e.pageY * pixelRatio,
     };
   }
 

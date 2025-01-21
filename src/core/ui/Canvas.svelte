@@ -10,13 +10,7 @@
     ResizeEvent,
     PixelRatio,
   } from 'core/interfaces';
-  import {
-    Viewport,
-    Renderer,
-    LayerManager,
-    createHitCanvas,
-    getMaxPixelRatio,
-  } from 'core/services';
+  import { Camera, Renderer, LayerManager, createHitCanvas, getMaxPixelRatio } from 'core/services';
 
   /**
    * When unset, the canvas will use its clientWidth property.
@@ -52,7 +46,7 @@
   export let style = '';
 
   export const getRenderManager = () => layerManager;
-  export const getViewport = () => viewport;
+  export const getCamera = () => camera;
   export const getCanvasElement = (): HTMLCanvasElement => canvas;
   export const getCanvasContext = (): CanvasContextType | null => renderer.ctx;
 
@@ -65,7 +59,7 @@
 
   const renderer = new Renderer();
   const layerManager = new LayerManager(renderer);
-  const viewport = new Viewport(layerManager);
+  const camera = new Camera(layerManager);
   const dispatch = createEventDispatcher<ResizeEvent>();
 
   setContext<AppContext>(KEY, { layerManager });
@@ -83,7 +77,7 @@
     canvas.width = Math.floor(_width * initialScale);
     canvas.height = Math.floor(_height * initialScale);
 
-    viewport.init(context);
+    camera.init(context);
     renderer.init(context, initialScale);
     context.scale(initialScale, initialScale);
 
@@ -188,6 +182,8 @@
   bind:clientWidth={canvasWidth}
   bind:clientHeight={canvasHeight}
   class={className}
+  width={_width * _pixelRatio}
+  height={_height * _pixelRatio}
   style:width={width ? `${width}px` : '100%'}
   style:height={height ? `${height}px` : '100%'}
   {style}

@@ -18,7 +18,7 @@ import type {
 } from 'core/interfaces';
 import { geometryManager as geometry } from 'core/services';
 
-import { FontStyle, SMALL_PADDING } from 'client/shared/constants';
+import { SMALL_PADDING } from 'client/shared/constants';
 
 export class Renderer {
   ctx: CanvasContextType | null;
@@ -108,11 +108,10 @@ export class Renderer {
   }
 
   scale(scaleX: number, scaleY: number) {
-    const transform = this.getTransform();
-    if (!this.ctx || !transform) return;
+    this.ctx?.scale(scaleX, scaleY);
 
-    this.ctx.scale(scaleX, scaleY);
-    this.pixelRatio = transform.scaleX;
+    const transform = this.getTransform();
+    this.pixelRatio = transform?.scaleX ?? 1;
   }
 
   /**

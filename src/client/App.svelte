@@ -2,7 +2,7 @@
   import { onMount, type ComponentType } from 'svelte';
 
   import type { Point } from 'core/interfaces';
-  import { type Viewport } from 'core/services';
+  import { type Camera } from 'core/services';
   import { dndWatcher } from 'core/lib';
   import { Canvas } from 'core/ui';
 
@@ -33,7 +33,7 @@
   };
 
   let canvas: Canvas;
-  let viewport: Viewport;
+  let camera: Camera;
   let selection: Point[] = [];
   let isLayerEntered = false;
 
@@ -47,44 +47,48 @@
   $: selection = $selectionPath.length > 0 ? $selectionPath : selection;
 
   onMount(async () => {
-    viewport = canvas.getViewport();
+    camera = canvas.getCamera();
 
     const ref = canvas.getCanvasElement();
     const rect = ref.getBoundingClientRect();
     const selectionWatcher = dndWatcher(ref);
 
     for await (const e of selectionWatcher) {
-      canvasStore.dragSelection(<MouseEvent>e, rect);
+      const transformedPoint = camera.handleCanvasClick(<MouseEvent>e);
+      canvasStore.dragSelection(<MouseEvent>e, rect, transformedPoint);
     }
   });
 
   const handleCanvasClick = (e: MouseEvent) => {
     if ($isSelected) return;
-    canvasStore.addShape(e);
+    const transformedPoint = camera.handleCanvasClick(e);
+
+    canvasStore.addShape(e, transformedPoint);
     selection = $selectionPath;
     canvasStore.resetSelection();
   };
 
   const handleCanvasMouseDown = (e: MouseEvent) => {
     if (!panning) return;
-    viewport.handleMouseDown(e);
+    camera.handleMouseDown(e);
   };
 
   const handleCanvasMouseUp = (e: MouseEvent) => {
     if (!panning) return;
-    viewport.handleMouseUp(e);
+    camera.handleMouseUp(e);
   };
 
   const handleCanvasMouseMove = (e: MouseEvent) => {
     if ($textEditor) return;
-    viewport.handleMouseMove(e);
+    camera.handleMouseMove(e);
     if (isLayerEntered) return;
-    connectionStore.handleCanvasMouseMove(e);
+    const transformedPoint = camera.handleCanvasClick(e);
+    connectionStore.handleCanvasMouseMove(transformedPoint);
   };
 
   const handleCanvasWheel = (e: WheelEvent) => {
     if ($textEditor) return;
-    viewport.handleWheelChange(e);
+    camera.handleWheelChange(e);
   };
 
   const handleLayerMouseDown = () => {
@@ -123,8 +127,8 @@
   const handleLayerDoubleClick = (e: CustomEvent<ResizableLayerEventDetails>) => {
     if (connection || !e.detail?.data) return;
     const { entityId, data, bounds } = e.detail;
-    const position = viewport.handleLayerDoubleClick(data, bounds);
-    canvasStore.initTextEditor(entityId, position);
+    const transformedPoint = camera.handleLayerDoubleClick(data, bounds);
+    canvasStore.initTextEditor(entityId, transformedPoint);
   };
 </script>
 
@@ -136,7 +140,7 @@
     <TextEditor
       anchorId={$textEditor?.anchorId}
       position={$textEditor?.position}
-      transform={viewport?.renderer?.getTransform()}
+      transform={camera?.renderer?.getTransform()}
     />
   </When>
   <Canvas

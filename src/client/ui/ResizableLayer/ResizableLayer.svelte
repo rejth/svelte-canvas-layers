@@ -100,7 +100,10 @@
       y1: y1t,
     });
 
-    if (width < initialWidth || height < initialHeight) return;
+    const ceilWidth = Math.ceil(width);
+    const ceilHeight = Math.ceil(height);
+
+    if (ceilWidth < initialWidth || ceilHeight < initialHeight) return;
 
     x0 = x0t;
     y0 = y0t;
@@ -111,7 +114,7 @@
       currentAction = ResizableLayerAction.MOVE;
     } else {
       currentAction = ResizableLayerAction.RESIZE;
-      scale = shape.getCalculatedScale(width, height);
+      scale = shape.getCalculatedScale(ceilWidth, ceilHeight);
     }
 
     dispatcher(ResizableLayerEvent.MOVE, { entityId, bounds });

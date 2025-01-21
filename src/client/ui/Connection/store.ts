@@ -1,7 +1,7 @@
 import { get, type Writable, writable } from 'svelte/store';
 import { v4 as uuid } from 'uuid';
 
-import type { RectDimension } from 'core/interfaces';
+import type { Point, RectDimension } from 'core/interfaces';
 import { geometryManager } from 'core/services';
 
 import type { ResizableLayerEventDetails } from 'client/ui/ResizableLayer/interfaces';
@@ -30,14 +30,14 @@ class ConnectionStore {
     toolbarStore.tool.subscribe((value) => (this.#tool = value));
   }
 
-  handleCanvasMouseMove(e: MouseEvent) {
+  handleCanvasMouseMove(transformedPoint: Point) {
     const currentConnection = get(this.currentConnection);
 
     if (this.#tool !== Tools.CONNECT || !currentConnection?.source) return;
 
     this.currentConnection.set({
       source: currentConnection.source,
-      target: { box: { ...geometryManager.calculatePosition(e), width: 0, height: 0 } },
+      target: { box: { ...transformedPoint, width: 0, height: 0 } },
     });
   }
 

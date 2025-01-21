@@ -1,7 +1,7 @@
 import type { Bounds, CanvasContextType, LayerEventDetails, Point } from 'core/interfaces';
-import { type LayerManager, type Renderer } from 'core/services';
+import { geometryManager, type LayerManager, type Renderer } from 'core/services';
 
-export class Viewport {
+export class Camera {
   ctx: CanvasContextType | null;
   renderer: Renderer | null;
   layerManager: LayerManager | null;
@@ -53,11 +53,18 @@ export class Viewport {
     this.layerManager?.redraw();
   }
 
+  handleCanvasClick(e: MouseEvent): Point {
+    if (!this.renderer) return { x: e.pageX, y: e.pageY };
+    const point = geometryManager.calculatePosition(e);
+    return this.renderer.getTransformedPoint(point.x, point.y);
+  }
+
   handleLayerDoubleClick(e: LayerEventDetails, layerBounds: Bounds): Point {
     if (!this.renderer) return { x: e.x, y: e.y };
 
     const { pageX, pageY } = e.originalEvent as MouseEvent;
-    const transformedPoint = this.renderer.getTransformedPoint(pageX, pageY);
+    const point = geometryManager.calculatePosition(e.originalEvent);
+    const transformedPoint = this.renderer.getTransformedPoint(point.x, point.y);
     const transform = this.renderer.getTransform();
 
     if (!transform) return { x: e.x, y: e.y };

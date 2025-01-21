@@ -68,14 +68,14 @@ class CanvasStore {
     return shapes;
   }
 
-  addShape(e: MouseEvent) {
+  addShape(e: MouseEvent, transformedPoint: Point) {
     if (!this.#shapeType) {
       this.saveAddedShape();
       return;
     }
 
+    const shape = this.#createShape(this.#shapeType, transformedPoint);
     const position = geometryManager.calculatePosition(e);
-    const shape = this.#createShape(this.#shapeType, position);
     if (!shape) return;
 
     this.initTextEditor(shape.id, position);
@@ -154,15 +154,14 @@ class CanvasStore {
     this.isSelected.set(value);
   }
 
-  dragSelection(e: MouseEvent, rect: DOMRect) {
+  dragSelection(e: MouseEvent, rect: DOMRect, transformedPoint: Point) {
     if (this.#tool !== Tools.SELECT) return;
     if (get(this.isSelected)) return;
 
     const isPointInsideCanvas = geometryManager.isPointInsideRect(e, rect);
 
     if (isPointInsideCanvas) {
-      const point = geometryManager.calculatePosition(e);
-      this.selectionPath.update((path) => [...path, point]);
+      this.selectionPath.update((path) => [...path, transformedPoint]);
     }
   }
 
