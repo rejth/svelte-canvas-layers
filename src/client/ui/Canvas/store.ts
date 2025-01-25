@@ -1,6 +1,6 @@
 import { type Writable, get, writable } from 'svelte/store';
 
-import type { Point } from 'core/interfaces';
+import type { Point, RectDimension } from 'core/interfaces';
 import { geometryManager } from 'core/services';
 
 import { Tools, ShapeType, type TextEditorData, type Tool } from 'client/shared/interfaces';
@@ -11,6 +11,7 @@ import * as constants from 'client/shared/constants';
 import { type BaseCanvasEntity, type BaseCanvasEntityDrawOptions } from './BaseCanvasEntity';
 import { CanvasText, type TextDrawOptions } from './CanvasText';
 import { CanvasRect, type RectDrawOptions } from './CanvasRect';
+import { COLOR_LIST, COLORS } from 'client/shared/constants';
 
 export type Shapes<T extends BaseCanvasEntityDrawOptions> = Map<string, BaseCanvasEntity<T>>;
 export type DrawOptions = RectDrawOptions | TextDrawOptions;
@@ -35,6 +36,20 @@ class CanvasStore {
   constructor() {
     toolbarStore.tool.subscribe((value) => (this.#tool = value));
     toolbarStore.shapeType.subscribe((value) => (this.#shapeType = value));
+  }
+
+  generateTestShapes() {
+    const random = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+    const colors = COLOR_LIST.map((color) => color.value);
+
+    for (let i = 0; i < 2500; i++) {
+      const position = (i + 1) * 85;
+      const initialBounds = { x0: position, y0: position, x1: position + 200, y1: position + 200 };
+      const dimensions = geometryManager.getRectDimensionFromBounds(initialBounds);
+      const color = colors[random(0, 10)] || COLORS.STICKER_YELLOW;
+      const shape = this.#createTestSticker(dimensions, color as COLORS);
+      this.shapes.update((shapes) => shapes.set(shape.id, shape));
+    }
   }
 
   #createShape(type: ShapeType, { x, y }: Point): BaseCanvasEntity<DrawOptions> | null {
@@ -185,6 +200,21 @@ class CanvasStore {
 
   resetSelection() {
     this.selectionPath.set([]);
+  }
+
+  #createTestSticker(dimensions: RectDimension, color: COLORS): CanvasRect {
+    return new CanvasRect(ShapeType.NOTE, {
+      x: dimensions.x,
+      y: dimensions.y,
+      width: dimensions.width,
+      height: dimensions.height,
+      color,
+      shadowColor: 'rgba(0, 0, 0, 0.3)',
+      shadowOffsetY: 10,
+      shadowOffsetX: 3,
+      shadowBlur: 5,
+      scale: 1,
+    });
   }
 
   createSticker({ x, y }: Point): CanvasRect {
