@@ -45,10 +45,9 @@
   export let className = '';
   export let style = '';
 
-  export const getRenderManager = () => layerManager;
-  export const getCamera = () => camera;
   export const getCanvasElement = (): HTMLCanvasElement => canvas;
   export const getCanvasContext = (): CanvasContextType | null => renderer.ctx;
+  export const getCamera = () => camera;
 
   let canvas: HTMLCanvasElement;
   let layerContainer: HTMLDivElement;

@@ -23,6 +23,8 @@ export class LayerManager {
   drawers: Map<LayerId, { render: Render }>;
   dispatchers: Map<LayerId, LayerEventDispatcher>;
   needsRedraw: boolean;
+  lastFrameTime: number;
+  fps: number;
 
   animationFrame?: number;
   layerChangeCallback?: (layerId: LayerId) => void;
@@ -39,6 +41,8 @@ export class LayerManager {
     this.drawers = new Map();
     this.dispatchers = new Map();
     this.needsRedraw = true;
+    this.lastFrameTime = 0;
+    this.fps = 0;
 
     this.redraw = this.redraw.bind(this);
   }
@@ -58,6 +62,19 @@ export class LayerManager {
   }
 
   #startRenderLoop() {
+    const currentFrameTime = performance.now();
+
+    if (this.lastFrameTime) {
+      const delta = currentFrameTime - this.lastFrameTime;
+      this.fps = 1000 / delta;
+      /**
+       * The FPS can fluctuate significantly. To get a smoother reading, use a moving average or weighted average:
+       */
+      this.fps = this.fps * 0.9 + this.fps * 0.1; // weighted average
+    }
+
+    this.lastFrameTime = currentFrameTime;
+
     this.#render();
     this.animationFrame = requestAnimationFrame(() => this.#startRenderLoop());
   }
@@ -131,6 +148,7 @@ export class LayerManager {
       render?.({ ctx, renderer: this.renderer });
     }
 
+    console.log(`FPS: ${this.fps?.toFixed(1)}`);
     this.needsRedraw = false;
   }
 

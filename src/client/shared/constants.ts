@@ -14,8 +14,8 @@ export const DEFAULT_RECT_SIZE = 200;
 export const DEFAULT_TEXT_AREA_WIDTH = 500;
 export const DEFAULT_TEXT_AREA_HEIGHT = 300;
 
-export const DEFAULT_TEXT_BLOCK_WIDTH = 200;
-export const DEFAULT_TEXT_BLOCK_HEIGHT = 35;
+export const DEFAULT_TEXT_BLOCK_WIDTH = 300;
+export const DEFAULT_TEXT_BLOCK_HEIGHT = 60;
 
 export const enum COLORS {
   STICKER_YELLOW = '#ffd670',
