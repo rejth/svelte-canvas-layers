@@ -13,11 +13,9 @@
     const rect = geometryManager.getRectDimensionFromPath(path);
     if (!rect) return;
 
-    const { x, y, width, height } = rect;
-
     ctx.globalAlpha = 0.9;
-    renderer.strokeRect({ x, y, width, height, color: COLORS.SELECTION, lineWidth: 2 });
-    renderer.fillRect({ x, y, width, height, color: '#35b2dc33' });
+    renderer.strokeRect({ ...rect, color: COLORS.SELECTION, lineWidth: 2 });
+    renderer.fillRect({ ...rect, color: '#35b2dc33' });
     ctx.globalAlpha = 1;
   };
 </script>

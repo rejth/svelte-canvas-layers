@@ -42,7 +42,7 @@ class CanvasStore {
     const random = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
     const colors = COLOR_LIST.map((color) => color.value);
 
-    for (let i = 0; i < 2500; i++) {
+    for (let i = 0; i < 3000; i++) {
       const position = (i + 1) * 85;
       const initialBounds = { x0: position, y0: position, x1: position + 200, y1: position + 200 };
       const dimensions = geometryManager.getRectDimensionFromBounds(initialBounds);

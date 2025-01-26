@@ -11,8 +11,14 @@
   export let active: boolean = false;
 
   $: render = ({ renderer }: RenderProps) => {
-    const color = active ? COLORS.SELECTION : '#000';
-    renderer.strokeBezierCurve({ start, cp1, cp2, end, color, lineWidth: 3 });
+    renderer.strokeBezierCurve({
+      start,
+      cp1,
+      cp2,
+      end,
+      lineWidth: 3,
+      color: active ? COLORS.SELECTION : '#000',
+    });
   };
 </script>
 

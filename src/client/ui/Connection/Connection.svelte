@@ -4,8 +4,8 @@
   import type { RectDimension } from 'core/interfaces';
   import { Layer } from 'core/ui';
 
-  import { COLORS } from 'client/shared/constants';
   import { type CurveLayerEventDetails } from 'client/ui/Curve/interfaces';
+  import { COLORS } from 'client/shared/constants';
   import QuadraticCurve from 'client/ui/Curve/QuadraticCurve.svelte';
   import ControlPoints from 'client/ui/Curve/ControlPoints.svelte';
   import { toolbarStore } from 'client/ui/Toolbar/store';
@@ -94,8 +94,12 @@
 
 <Layer
   render={({ renderer }) => {
-    const color = active && !selectOnMakingConnection ? COLORS.SELECTION : '#000';
-    renderer.fillCircle({ x: sx, y: sy, radius: 5, color });
+    renderer.fillCircle({
+      x: sx,
+      y: sy,
+      radius: 5,
+      color: active && !selectOnMakingConnection ? COLORS.SELECTION : '#000',
+    });
   }}
 />
 

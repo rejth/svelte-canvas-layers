@@ -10,8 +10,12 @@
   const radius = 5;
 
   $: render = ({ renderer }: RenderProps) => {
-    const color = active ? COLORS.SELECTION : '#000';
-    renderer.fillCircle({ x: point.x, y: point.y, radius, color });
+    renderer.fillCircle({
+      x: point.x,
+      y: point.y,
+      radius,
+      color: active ? COLORS.SELECTION : '#000',
+    });
   };
 </script>
 

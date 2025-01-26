@@ -8,10 +8,8 @@
 
   import { Tools } from 'client/shared/interfaces';
   import { CURSORS } from 'client/shared/constants';
-  import { CanvasEntityType } from 'client/ui/Canvas/BaseCanvasEntity';
 
   import When from 'client/ui/When/When.svelte';
-  import Rect from 'client/ui/Canvas/Rect.svelte';
   import Zoom from 'client/ui/Zoom/Zoom.svelte';
   import Keyboard from 'client/ui/Keyboard/Keyboard.svelte';
   import Background from 'client/ui/Background/Background.svelte';
@@ -27,10 +25,6 @@
   import { connectionStore } from 'client/ui/Connection/store';
 
   import 'client/shared/styles/_global.css';
-
-  const widgets: Partial<Record<CanvasEntityType, ComponentType>> = {
-    [CanvasEntityType.RECT]: Rect,
-  };
 
   let canvas: Canvas;
   let camera: Camera;
@@ -169,12 +163,9 @@
       <Connection {connectionId} {source} {target} selectOnMakingConnection={connection} />
     {/each}
     {#each $shapes.values() as shape (shape.id)}
-      {@const entityId = shape.id}
-      {@const initialBounds = shape.getBounds()}
-      {@const widget = widgets[shape.getType()]}
       <ResizableLayer
-        {entityId}
-        {initialBounds}
+        entityId={shape.id}
+        initialBounds={shape.getBounds()}
         isSelected={shape.isSelected}
         selectionPath={selection}
         selectOnMakingConnection={connection}
@@ -186,12 +177,7 @@
         on:layer.active={handleLayerActive}
         on:layer.leave={handleLayerLeave}
         on:layer.move={handleLayerMove}
-        let:currentAction
-        let:bounds
-        let:scale
-      >
-        <svelte:component this={widget} {entityId} {bounds} {scale} {currentAction} />
-      </ResizableLayer>
+      />
     {/each}
   </Canvas>
 </main>

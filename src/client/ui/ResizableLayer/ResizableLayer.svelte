@@ -6,9 +6,9 @@
 
   import type { BaseCanvasEntity } from 'client/ui/Canvas/BaseCanvasEntity';
   import type { RectDrawOptions } from 'client/ui/Canvas/CanvasRect';
+  import { DEFAULT_SCALE } from 'client/shared/constants';
   import { canvasStore } from 'client/ui/Canvas/store';
   import When from 'client/ui/When/When.svelte';
-  import { DEFAULT_SCALE } from 'client/shared/constants';
 
   import Surface from './ResizableLayerSurface.svelte';
   import Handler from './ResizableLayerHandler.svelte';
@@ -30,7 +30,7 @@
   const { shapes } = canvasStore;
 
   const [N, S, W, E] = [1, 2, 4, 8];
-  const HANDLERS = [N, S, W, E, N | W, N | E, S | W, S | E];
+  const HANDLERS = [N | W, N | E, S | W, S | E];
   const SURFACE = N | S | W | E;
 
   let { x0, y0, x1, y1 } = initialBounds;
@@ -56,14 +56,10 @@
   $: active && dispatcher(ResizableLayerEvent.ACTIVE, { entityId, bounds });
   $: !active && dispatcher(ResizableLayerEvent.LEAVE, { entityId, bounds });
 
-  $: sortedHandlers = HANDLERS.sort((a, b) =>
-    a === hoveredHandler ? 1 : b === hoveredHandler ? -1 : 0,
-  );
-
   $: getHandlerPosition = (handler: number): Point => {
     return {
-      x: handler & W ? x0 - 5 : handler & E ? x1 + 5 : geometryManager.getMiddlePoint(x0, x1),
-      y: handler & N ? y0 - 5 : handler & S ? y1 + 5 : geometryManager.getMiddlePoint(y0, y1),
+      x: handler & W ? x0 - 5 : handler & E ? x1 + 5 : 0,
+      y: handler & N ? y0 - 5 : handler & S ? y1 + 5 : 0,
     };
   };
 
@@ -75,10 +71,6 @@
       return 'nwse-resize';
     } else if (handler === (N | E) || handler === (S | W)) {
       return 'nesw-resize';
-    } else if (handler === N || handler === S) {
-      return 'ns-resize';
-    } else if (handler === W || handler === E) {
-      return 'ew-resize';
     }
 
     return 'auto';
@@ -192,12 +184,13 @@
   on:pointerdown={onMouseUp}
 />
 
-<slot {bounds} {scale} {currentAction} />
-
 <Surface
+  {entityId}
   {bounds}
-  active={selected}
+  {scale}
+  {currentAction}
   {selectOnMakingConnection}
+  active={selected}
   on:click={updateEntityData}
   on:dblclick={onDoubleClick}
   on:mouseleave={onMouseLeave}
@@ -212,12 +205,10 @@
 />
 
 <When isVisible={selected && !selectOnMakingConnection}>
-  {#each sortedHandlers as handler (handler)}
-    {@const active = hoveredHandler === handler || draggedHandler === handler}
-    {@const position = getHandlerPosition(handler)}
+  {#each HANDLERS as handler (handler)}
     <Handler
-      {active}
-      {...position}
+      {...getHandlerPosition(handler)}
+      active={hoveredHandler === handler || draggedHandler === handler}
       on:click={updateEntityData}
       on:mouseleave={onMouseLeave}
       on:mouseenter={() => onHandlerMouseEnter(handler)}
