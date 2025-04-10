@@ -36,6 +36,7 @@ class CanvasStore {
   constructor() {
     toolbarStore.tool.subscribe((value) => (this.#tool = value));
     toolbarStore.shapeType.subscribe((value) => (this.#shapeType = value));
+    this.generateTestShapes();
   }
 
   generateTestShapes() {
