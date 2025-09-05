@@ -1,14 +1,21 @@
-# Canvas API experiments
+# 🎨 Virtual Whiteboard
 
-[Demo](https://canvas-experiments-phi.vercel.app/) \
-[Sandbox](https://stackblitz.com/~/github.com/rejth/canvas-experiments)
+> I'm very interested in the rendering technologies of graphic editors, design tools, geo maps, and virtual whiteboards. This is my humble attempt to understand and recreate the core ideas behind tldraw, excalidraw, kittl, and other tools that use technologies like Canvas2D/SVG for rendering 2D graphics in browser.
 
-## Recommended IDE Setup
+### ✨ **Features**
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+- 🎨&nbsp;Infinite, canvas-based whiteboard.
+- 🔍&nbsp;Zoom and panning support.
+- ⚒️&nbsp;Movable and resizable stickers with in-place text editing and formatting.
+- ➡️&nbsp;Arrow-binding
+- ⚒️&nbsp;Multiple selection.
+- ⚒️&nbsp;Copy-paste support.
 
-## Possible improvements
+### 🛠️ **Engineering**
 
-## Current technical issues
+- **Layer System**: Declarative layer management with hit detection
+- **Hit Detection**: Uses `getImageData()` to read pixel data from an offscreen canvas and convert it to unique layer ID.
 
-## Examples
+### 🚀 **Next steps**
+- Text-on-curve rendering with interactive Bézier curve manipulation.
+- Support for custom fonts with OpenType.js integration.
