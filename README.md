@@ -7,13 +7,13 @@ I'm very interested in the rendering technologies of graphic editors, design too
 - 🎨&nbsp;Infinite, canvas-based whiteboard.
 - 🔍&nbsp;Zoom and panning support.
 - ⚒️&nbsp;Movable and resizable stickers with in-place text editing and formatting.
-- ➡️&nbsp;Arrow-binding
+- ➡️&nbsp;Arrow-binding.
 - ⚒️&nbsp;Multiple selection.
 - ⚒️&nbsp;Copy-paste support.
 
 ### 🛠️ **Engineering**
 
-- **Layer System**: Declarative layer management with hit detection
+- **Layer System**: Declarative layer management with hit detection.
 - **Hit Detection**: Uses `getImageData()` to read pixel data from an offscreen canvas and convert it to unique layer ID.
 
 ### 🚀 **Next steps**
