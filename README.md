@@ -8,8 +8,8 @@ I'm very interested in the rendering technologies of graphic editors, design too
 - 🔍&nbsp;Zoom and panning support.
 - ⚒️&nbsp;Movable and resizable stickers with in-place text editing and formatting.
 - ➡️&nbsp;Arrow-binding.
-- ⚒️&nbsp;Multiple selection.
-- ⚒️&nbsp;Copy-paste support.
+- ☑️&nbsp;Multiple selection.
+- 📋&nbsp;Copy-paste support.
 
 ### 🛠️ **Engineering**
 
