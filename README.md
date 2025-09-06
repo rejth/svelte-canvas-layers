@@ -1,6 +1,6 @@
 # 🎨 Virtual Whiteboard
 
-I'm very interested in the rendering technologies of graphic editors, design tools, geo maps, and virtual whiteboards. This is my humble attempt to understand and recreate the core ideas behind tldraw, excalidraw, kittl, and other tools that use technologies like Canvas2D/SVG for rendering 2D graphics in browser.
+I'm very interested in the rendering technologies of graphic editors, design tools, geo maps, and virtual whiteboards. This is my humble attempt to understand and recreate the core ideas behind these tools, which use technologies like Canvas2D/SVG to render 2D graphics in browsers.
 
 ### ✨ **Features**
 
