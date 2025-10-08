@@ -2,7 +2,7 @@
 
 I'm very interested in the rendering technologies of graphic editors, design tools, geo maps, and virtual whiteboards. This is my humble attempt to understand and recreate the core ideas behind these tools, which use technologies like Canvas2D/SVG to render 2D graphics in browsers.
 
-<img width="1637" height="928" alt="image" src="https://github.com/user-attachments/assets/5dbf9127-62e6-455f-806b-8dca497e88e2" />
+<img width="1639" height="920" alt="image" src="https://github.com/user-attachments/assets/a8facfe3-6212-4c15-a92f-6f7adf8e3d7d" />
 
 ### ✨ **Features**
 
