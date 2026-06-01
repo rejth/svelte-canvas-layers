@@ -19,12 +19,17 @@
   import TextEditor from 'client/ui/TextEditor/TextEditor.svelte';
   import ResizableLayer from 'client/ui/ResizableLayer/ResizableLayer.svelte';
   import type { ResizableLayerEventDetails } from 'client/ui/ResizableLayer/interfaces';
+  import Typography from 'client/ui/Typorgraphy/SingleBezierCurve/Typography.svelte';
+  import TextOnCurve from 'client/ui/Typorgraphy/TextOnCurve/TextOnCurve.svelte';
+  import Spline from 'client/ui/Curve/Spline.svelte';
 
   import { canvasStore } from 'client/ui/Canvas/store';
   import { toolbarStore } from 'client/ui/Toolbar/store';
   import { connectionStore } from 'client/ui/Connection/store';
 
   import 'client/shared/styles/_global.css';
+  import LettersOnCurve from './ui/Typorgraphy/LettersOnCurve.svelte';
+  import MeshDistortion from './ui/Typorgraphy/MeshDistortion.svelte';
 
   let canvas: Canvas;
   let camera: Camera;
@@ -127,8 +132,8 @@
 </script>
 
 <main>
-  <Toolbar />
-  <Zoom />
+  <!-- <Toolbar /> -->
+  <!-- <Zoom />
   <Keyboard />
   <When isVisible={Boolean($textEditor?.isEditable)}>
     <TextEditor
@@ -136,7 +141,7 @@
       position={$textEditor?.position}
       transform={camera?.renderer?.getTransform()}
     />
-  </When>
+  </When> -->
   <Canvas
     useLayerEvents={!panning}
     handleEventsOnLayerMove={connection}
@@ -153,16 +158,22 @@
     on:wheel={handleCanvasWheel}
   >
     <Background />
-    <When isVisible={$tool === Tools.SELECT}>
+    <Spline />
+    <!-- <Typography /> -->
+    <!-- <LettersOnCurve /> -->
+    <!-- <MeshDistortion /> -->
+    <!-- <ClosedSplineText /> -->
+    <!-- <TextOnCurve /> -->
+    <!-- <When isVisible={$tool === Tools.SELECT}>
       <Selection path={$selectionPath} />
-    </When>
-    <When isVisible={connection && Boolean($currentConnection)}>
+    </When> -->
+    <!-- <When isVisible={connection && Boolean($currentConnection)}>
       <Connection source={$currentConnection?.source} target={$currentConnection?.target} />
     </When>
     {#each $connections.entries() as [connectionId, { source, target }] (connectionId)}
       <Connection {connectionId} {source} {target} selectOnMakingConnection={connection} />
-    {/each}
-    {#each $shapes.values() as shape (shape.id)}
+    {/each} -->
+    <!-- {#each $shapes.values() as shape (shape.id)}
       <ResizableLayer
         entityId={shape.id}
         initialBounds={shape.getBounds()}
@@ -178,6 +189,6 @@
         on:layer.leave={handleLayerLeave}
         on:layer.move={handleLayerMove}
       />
-    {/each}
+    {/each} -->
   </Canvas>
 </main>

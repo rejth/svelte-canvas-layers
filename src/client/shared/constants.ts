@@ -27,7 +27,9 @@ export const enum COLORS {
   STICKER_BLUE = '#70d6ff',
   STICKER_PINK = '#ff70a6',
   SELECTION = '#3a86ff',
+  CURVE = '#3af',
   GRID = '#d2d6db',
+  WHITE = '#fff',
   TEXT_AREA = '#f6f2ff',
   TRANSPARENT = 'transparent',
 }

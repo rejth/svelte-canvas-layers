@@ -9,6 +9,10 @@
 
   export let controlPoints: Point[];
   export let selectOnMakingConnection: boolean = false;
+  export let stroke: boolean = false;
+  export let lineWidth: number = 2;
+  export let color: string = '#000';
+  export let strokeColor: string = '#000';
 
   const dispatcher = createEventDispatcher<Record<CurveLayerEvent, CurveLayerEventDetails>>();
 
@@ -63,7 +67,10 @@
 {#each controlPoints as point, index}
   <ControlPoint
     {point}
-    active={!selectOnMakingConnection && (hoveredHandler === index || draggedHandler === index)}
+    {color}
+    {stroke}
+    {lineWidth}
+    {strokeColor}
     on:mouseleave={handleMouseLeave}
     on:mouseenter={() => handleMouseEnter(index)}
     on:mousedown={() => handleMouseDown(index)}

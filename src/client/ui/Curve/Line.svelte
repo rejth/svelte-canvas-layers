@@ -5,17 +5,15 @@
   import { COLORS } from 'client/shared/constants';
 
   export let start: Point;
-  export let cp1: Point;
-  export let cp2: Point;
   export let end: Point;
-  export let lineWidth: number = 2;
+  export let lineWidth: number = 1;
 
   $: render = ({ renderer }: RenderProps) => {
-    renderer.strokeBezierCurve({
-      start,
-      cp1,
-      cp2,
-      end,
+    renderer.strokeLine({
+      x1: start.x,
+      y1: start.y,
+      x2: end.x,
+      y2: end.y,
       lineWidth,
       color: COLORS.CURVE,
     });

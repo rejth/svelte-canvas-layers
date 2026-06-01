@@ -15,6 +15,7 @@ import type {
   TransformationMatrix,
   ClearRectOptions,
   BackgroundPatternRenderer,
+  StrokeLineDrawOptions,
 } from 'core/interfaces';
 import { geometryManager as geometry } from 'core/services';
 
@@ -239,15 +240,48 @@ export class Renderer {
     this.ctx.restore();
   }
 
+  strokeLine(options: StrokeLineDrawOptions) {
+    if (!this.ctx) return;
+
+    const { x1, y1, x2, y2, lineWidth, color } = options;
+
+    this.ctx.lineWidth = lineWidth;
+    this.ctx.strokeStyle = color;
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(x1, y1);
+    this.ctx.lineTo(x2, y2);
+    this.ctx.stroke();
+  }
+
   fillCircle(options: CircleDrawOptions) {
     if (!this.ctx) return;
-    const { x, y, radius, color } = options;
+    const { x, y, radius, color, stroke, strokeColor, lineWidth } = options;
 
     this.ctx.save();
     this.ctx.beginPath();
     this.ctx.fillStyle = color;
+
+    if (stroke) {
+      this.ctx.strokeStyle = strokeColor ?? color;
+      this.ctx.lineWidth = lineWidth ?? 1;
+    }
+
     this.ctx.arc(x, y, radius, 0, Math.PI * 2);
+    this.ctx.globalCompositeOperation = 'destination-out';
     this.ctx.fill();
+    this.ctx.globalCompositeOperation = 'source-over';
+    this.ctx.stroke();
+    this.ctx.restore();
+  }
+
+  strokeCircle(options: CircleDrawOptions) {
+    if (!this.ctx) return;
+    const { x, y, radius, color, stroke, strokeColor, lineWidth } = options;
+
+    this.ctx.save();
+    this.ctx.arc(x, y, radius, 0, Math.PI * 2);
+    this.ctx.stroke();
     this.ctx.restore();
   }
 

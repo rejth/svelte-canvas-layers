@@ -127,11 +127,23 @@ export interface StrokeDrawOptions {
   color: string;
 }
 
+export interface StrokeLineDrawOptions {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  lineWidth: number;
+  color: string;
+}
+
 export interface CircleDrawOptions {
   x: number;
   y: number;
   radius: number;
   color: string;
+  stroke?: boolean;
+  lineWidth?: number;
+  strokeColor?: string;
 }
 
 export interface QuadraticCurveDrawOptions {
