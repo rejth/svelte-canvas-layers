@@ -9,8 +9,9 @@ import type {
   RegisteredLayerMetadata,
   Render,
 } from '../interfaces'
-import type { Renderer } from './Renderer'
+
 import { calculatePosition } from './geometry'
+import type { Renderer } from './Renderer'
 
 export class LayerManager {
   renderer: Renderer
@@ -20,7 +21,6 @@ export class LayerManager {
   layerContainer: HTMLDivElement | null
   layerObserver: MutationObserver | null
 
-  // TODO: Implement a class for layer to handle layer's events and rendering
   drawers: Map<LayerId, { render: Render }>
   dispatchers: Map<LayerId, LayerEventDispatcher>
   needsRedraw: boolean

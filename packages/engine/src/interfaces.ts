@@ -1,4 +1,5 @@
 import type { createEventDispatcher } from 'svelte'
+
 import type { LayerManager, Renderer } from './services'
 
 export type AppContext = {

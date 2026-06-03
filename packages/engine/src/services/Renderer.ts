@@ -17,6 +17,7 @@ import type {
   TextDrawOptions,
   TransformationMatrix,
 } from '../interfaces'
+
 import { getRectCorners } from './geometry'
 
 export class Renderer {
@@ -182,12 +183,7 @@ export class Renderer {
       shadowBlur,
     } = options
 
-    const { topLeft, topRight, bottomLeft, bottomRight } = getRectCorners(
-      x,
-      y,
-      width,
-      height,
-    )
+    const { topLeft, topRight, bottomLeft, bottomRight } = getRectCorners(x, y, width, height)
 
     this.ctx.save()
     this.ctx.fillStyle = color
