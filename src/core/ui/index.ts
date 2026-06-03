@@ -1,5 +1,5 @@
-import Canvas from './Canvas.svelte';
-import Layer from './Layer.svelte';
-import BackgroundLayer from './BackgroundLayer.svelte';
+import BackgroundLayer from './BackgroundLayer.svelte'
+import Canvas from './Canvas.svelte'
+import Layer from './Layer.svelte'
 
-export { Canvas, Layer, BackgroundLayer };
+export { BackgroundLayer, Canvas, Layer }

@@ -1,169 +1,165 @@
 <script lang="ts">
-  import Bold from 'lucide-svelte/icons/bold';
-  import Italic from 'lucide-svelte/icons/italic';
-  import Underline from 'lucide-svelte/icons/underline';
-  import AlignLeft from 'lucide-svelte/icons/align-left';
-  import AlignCenter from 'lucide-svelte/icons/align-center';
-  import AlignRight from 'lucide-svelte/icons/align-right';
-  import AArrowUp from 'lucide-svelte/icons/a-arrow-up';
-  import AArrowDown from 'lucide-svelte/icons/a-arrow-down';
+import {
+  COLORS,
+  DEFAULT_FONT_SIZE,
+  DEFAULT_SCALE,
+  FONTS,
+  FontStyle,
+  TextAlign,
+  TextDecoration,
+} from 'client/shared/constants'
+import { ShapeType } from 'client/shared/interfaces'
+import type { BaseCanvasEntity } from 'client/ui/Canvas/BaseCanvasEntity'
+import type { RectDrawOptions } from 'client/ui/Canvas/CanvasRect'
+import { canvasStore } from 'client/ui/Canvas/store'
+import When from 'client/ui/When/When.svelte'
+import type { Point, TransformationMatrix } from 'core/interfaces'
+import AArrowDown from 'lucide-svelte/icons/a-arrow-down'
+import AArrowUp from 'lucide-svelte/icons/a-arrow-up'
+import AlignCenter from 'lucide-svelte/icons/align-center'
+import AlignLeft from 'lucide-svelte/icons/align-left'
+import AlignRight from 'lucide-svelte/icons/align-right'
+import Bold from 'lucide-svelte/icons/bold'
+import Italic from 'lucide-svelte/icons/italic'
+import Underline from 'lucide-svelte/icons/underline'
 
-  import * as Menubar from '$lib/components/ui/menubar/index.js';
-  import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js';
-  import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-  import { Button } from '$lib/components/ui/button/index.js';
-  import { Separator } from '$lib/components/ui/separator';
+import ColorTile from './ColorTile.svelte'
 
-  import type { Point, TransformationMatrix } from 'core/interfaces';
+import { Button } from '$lib/components/ui/button/index.js'
+import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js'
+import * as Menubar from '$lib/components/ui/menubar/index.js'
+import { Separator } from '$lib/components/ui/separator'
+import * as ToggleGroup from '$lib/components/ui/toggle-group/index.js'
 
-  import type { RectDrawOptions } from 'client/ui/Canvas/CanvasRect';
-  import type { BaseCanvasEntity } from 'client/ui/Canvas/BaseCanvasEntity';
-  import { ShapeType } from 'client/shared/interfaces';
-  import { canvasStore } from 'client/ui/Canvas/store';
-  import When from 'client/ui/When/When.svelte';
-  import {
-    COLORS,
-    DEFAULT_FONT_SIZE,
-    DEFAULT_SCALE,
-    FONTS,
-    FontStyle,
-    TextAlign,
-    TextDecoration,
-  } from 'client/shared/constants';
+export let anchor: BaseCanvasEntity<RectDrawOptions>
+export let position: Point | undefined
+export let transform: TransformationMatrix | null | undefined
+export let textareaRef: HTMLTextAreaElement | null
+export let onFontSizeChange: (fontSize: number) => void
 
-  import ColorTile from './ColorTile.svelte';
+const { textEditor } = canvasStore
+const { x = 0, y = 0 } = position || {}
 
-  export let anchor: BaseCanvasEntity<RectDrawOptions>;
-  export let position: Point | undefined;
-  export let transform: TransformationMatrix | null | undefined;
-  export let textareaRef: HTMLTextAreaElement | null;
-  export let onFontSizeChange: (fontSize: number) => void;
+$: options = anchor?.getOptions()
+$: width = options?.width || 0
+$: color = options?.color || COLORS.TRANSPARENT
+$: scale = options?.scale || DEFAULT_SCALE
 
-  const { textEditor } = canvasStore;
-  const { x = 0, y = 0 } = position || {};
+$: bold = $textEditor?.bold || false
+$: italic = $textEditor?.italic || false
+$: underline = $textEditor?.underline || false
+$: font = $textEditor?.font || FONTS[0].value
+$: fontSize = `${$textEditor?.fontSize || DEFAULT_FONT_SIZE}`
+$: textAlign = $textEditor?.textAlign || TextAlign.LEFT
 
-  $: options = anchor?.getOptions();
-  $: width = options?.width || 0;
-  $: color = options?.color || COLORS.TRANSPARENT;
-  $: scale = options?.scale || DEFAULT_SCALE;
+$: fontStyle = [
+  bold ? FontStyle.BOLD : '',
+  italic ? FontStyle.ITALIC : '',
+  underline ? TextDecoration.UNDERLINE : '',
+]
 
-  $: bold = $textEditor?.bold || false;
-  $: italic = $textEditor?.italic || false;
-  $: underline = $textEditor?.underline || false;
-  $: font = $textEditor?.font || FONTS[0].value;
-  $: fontSize = `${$textEditor?.fontSize || DEFAULT_FONT_SIZE}`;
-  $: textAlign = $textEditor?.textAlign || TextAlign.LEFT;
+const FONT_STYLE_LIST = [
+  {
+    value: FontStyle.BOLD,
+    ariaLabel: 'Toggle bold',
+    Icon: Bold,
+    onClick: () => handleBold(),
+  },
+  {
+    value: FontStyle.ITALIC,
+    ariaLabel: 'Toggle italic',
+    Icon: Italic,
+    onClick: () => handleItalic(),
+  },
+  {
+    value: TextDecoration.UNDERLINE,
+    ariaLabel: 'Toggle underline',
+    Icon: Underline,
+    onClick: () => handleUnderline(),
+  },
+]
 
-  $: fontStyle = [
-    bold ? FontStyle.BOLD : '',
-    italic ? FontStyle.ITALIC : '',
-    underline ? TextDecoration.UNDERLINE : '',
-  ];
+const TEXT_ALIGN_OPTIONS = {
+  [TextAlign.LEFT]: {
+    value: TextAlign.LEFT,
+    ariaLabel: 'Toggle left alignment',
+    Icon: AlignLeft,
+    onClick: () => handleTextAlignChange(TextAlign.LEFT),
+  },
+  [TextAlign.CENTER]: {
+    value: TextAlign.CENTER,
+    ariaLabel: 'Toggle center alignment',
+    Icon: AlignCenter,
+    onClick: () => handleTextAlignChange(TextAlign.CENTER),
+  },
+  [TextAlign.RIGHT]: {
+    value: TextAlign.RIGHT,
+    ariaLabel: 'Toggle right alignment',
+    Icon: AlignRight,
+    onClick: () => handleTextAlignChange(TextAlign.RIGHT),
+  },
+}
 
-  const FONT_STYLE_LIST = [
-    {
-      value: FontStyle.BOLD,
-      ariaLabel: 'Toggle bold',
-      Icon: Bold,
-      onClick: () => handleBold(),
-    },
-    {
-      value: FontStyle.ITALIC,
-      ariaLabel: 'Toggle italic',
-      Icon: Italic,
-      onClick: () => handleItalic(),
-    },
-    {
-      value: TextDecoration.UNDERLINE,
-      ariaLabel: 'Toggle underline',
-      Icon: Underline,
-      onClick: () => handleUnderline(),
-    },
-  ];
+const FONT_SIZE_OPTIONS = [
+  {
+    value: 'decrease',
+    ariaLabel: 'Decrease font size',
+    Icon: AArrowDown,
+    onClick: () => handleFontSizeChange(-2),
+  },
+  {
+    value: 'increase',
+    ariaLabel: 'Increase font size',
+    Icon: AArrowUp,
+    onClick: () => handleFontSizeChange(2),
+  },
+]
 
-  const TEXT_ALIGN_OPTIONS = {
-    [TextAlign.LEFT]: {
-      value: TextAlign.LEFT,
-      ariaLabel: 'Toggle left alignment',
-      Icon: AlignLeft,
-      onClick: () => handleTextAlignChange(TextAlign.LEFT),
-    },
-    [TextAlign.CENTER]: {
-      value: TextAlign.CENTER,
-      ariaLabel: 'Toggle center alignment',
-      Icon: AlignCenter,
-      onClick: () => handleTextAlignChange(TextAlign.CENTER),
-    },
-    [TextAlign.RIGHT]: {
-      value: TextAlign.RIGHT,
-      ariaLabel: 'Toggle right alignment',
-      Icon: AlignRight,
-      onClick: () => handleTextAlignChange(TextAlign.RIGHT),
-    },
-  };
+$: align = TEXT_ALIGN_OPTIONS[textAlign]
+$: menuScale = getMenuScale(scale)
 
-  const FONT_SIZE_OPTIONS = [
-    {
-      value: 'decrease',
-      ariaLabel: 'Decrease font size',
-      Icon: AArrowDown,
-      onClick: () => handleFontSizeChange(-2),
-    },
-    {
-      value: 'increase',
-      ariaLabel: 'Increase font size',
-      Icon: AArrowUp,
-      onClick: () => handleFontSizeChange(2),
-    },
-  ];
+const getMenuScale = (scale: number) => {
+  if (!transform) return DEFAULT_SCALE
+  const inverseScale = DEFAULT_SCALE / (transform.scaleX / transform.initialScale)
+  return scale === DEFAULT_SCALE ? scale / inverseScale : transform.scaleX / transform.initialScale
+}
 
-  $: align = TEXT_ALIGN_OPTIONS[textAlign];
-  $: menuScale = getMenuScale(scale);
+const handleFontSizeChange = (value: number) => {
+  const newFontSize = Number(fontSize) + value
+  canvasStore.updateTextEditor({ fontSize: newFontSize })
+  onFontSizeChange(newFontSize)
+  textareaRef?.focus()
+}
 
-  const getMenuScale = (scale: number) => {
-    if (!transform) return DEFAULT_SCALE;
-    const inverseScale = DEFAULT_SCALE / (transform.scaleX / transform.initialScale);
-    return scale === DEFAULT_SCALE
-      ? scale / inverseScale
-      : transform.scaleX / transform.initialScale;
-  };
+const handleBold = () => {
+  canvasStore.updateTextEditor({ bold: !bold })
+  textareaRef?.focus()
+}
 
-  const handleFontSizeChange = (value: number) => {
-    const newFontSize = Number(fontSize) + value;
-    canvasStore.updateTextEditor({ fontSize: newFontSize });
-    onFontSizeChange(newFontSize);
-    textareaRef?.focus();
-  };
+const handleItalic = () => {
+  canvasStore.updateTextEditor({ italic: !italic })
+  textareaRef?.focus()
+}
 
-  const handleBold = () => {
-    canvasStore.updateTextEditor({ bold: !bold });
-    textareaRef?.focus();
-  };
+const handleUnderline = () => {
+  canvasStore.updateTextEditor({ underline: !underline })
+  textareaRef?.focus()
+}
 
-  const handleItalic = () => {
-    canvasStore.updateTextEditor({ italic: !italic });
-    textareaRef?.focus();
-  };
+const handleTextAlignChange = (value: TextAlign) => {
+  let align = value
 
-  const handleUnderline = () => {
-    canvasStore.updateTextEditor({ underline: !underline });
-    textareaRef?.focus();
-  };
+  if (value === TextAlign.LEFT) {
+    align = TextAlign.CENTER
+  } else if (value === TextAlign.CENTER) {
+    align = TextAlign.RIGHT
+  } else if (value === TextAlign.RIGHT) {
+    align = TextAlign.LEFT
+  }
 
-  const handleTextAlignChange = (value: TextAlign) => {
-    let align = value;
-
-    if (value === TextAlign.LEFT) {
-      align = TextAlign.CENTER;
-    } else if (value === TextAlign.CENTER) {
-      align = TextAlign.RIGHT;
-    } else if (value === TextAlign.RIGHT) {
-      align = TextAlign.LEFT;
-    }
-
-    canvasStore.updateTextEditor({ textAlign: align });
-    textareaRef?.focus();
-  };
+  canvasStore.updateTextEditor({ textAlign: align })
+  textareaRef?.focus()
+}
 </script>
 
 <div

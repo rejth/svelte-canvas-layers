@@ -1,15 +1,15 @@
 <script lang="ts">
-  import type { Color } from 'client/shared/interfaces';
-  import type { RectDrawOptions } from 'client/ui/Canvas/CanvasRect';
-  import type { BaseCanvasEntity } from 'client/ui/Canvas/BaseCanvasEntity';
-  import { COLORS, COLOR_LIST } from 'client/shared/constants';
-  import { canvasStore } from 'client/ui/Canvas/store';
+import { COLOR_LIST, COLORS } from 'client/shared/constants'
+import type { Color } from 'client/shared/interfaces'
+import type { BaseCanvasEntity } from 'client/ui/Canvas/BaseCanvasEntity'
+import type { RectDrawOptions } from 'client/ui/Canvas/CanvasRect'
+import { canvasStore } from 'client/ui/Canvas/store'
 
-  export let anchor: BaseCanvasEntity<RectDrawOptions>;
+export let anchor: BaseCanvasEntity<RectDrawOptions>
 
-  const handleColorChange = (value: Color['value']) => {
-    canvasStore.updateShape(anchor.id, { color: value as COLORS });
-  };
+const handleColorChange = (value: Color['value']) => {
+  canvasStore.updateShape(anchor.id, { color: value as COLORS })
+}
 </script>
 
 <div class="colors icon-group">

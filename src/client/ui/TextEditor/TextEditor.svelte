@@ -1,80 +1,74 @@
 <script lang="ts">
-  import type { Point, TransformationMatrix } from 'core/interfaces';
+import { DEFAULT_FONT_SIZE, DEFAULT_SCALE, SMALL_PADDING, TextAlign } from 'client/shared/constants'
+import type { BaseCanvasEntity } from 'client/ui/Canvas/BaseCanvasEntity'
+import type { RectDrawOptions } from 'client/ui/Canvas/CanvasRect'
+import { canvasStore } from 'client/ui/Canvas/store'
+import type { Point, TransformationMatrix } from 'core/interfaces'
 
-  import type { BaseCanvasEntity } from 'client/ui/Canvas/BaseCanvasEntity';
-  import type { RectDrawOptions } from 'client/ui/Canvas/CanvasRect';
-  import {
-    DEFAULT_FONT_SIZE,
-    SMALL_PADDING,
-    TextAlign,
-    DEFAULT_SCALE,
-  } from 'client/shared/constants';
-  import { canvasStore } from 'client/ui/Canvas/store';
+import TextEditorMenu from './TextEditorMenu.svelte'
 
-  import TextEditorMenu from './TextEditorMenu.svelte';
+export let anchorId: string | undefined
+export let position: Point | undefined
+export let transform: TransformationMatrix | null | undefined
 
-  export let anchorId: string | undefined;
-  export let position: Point | undefined;
-  export let transform: TransformationMatrix | null | undefined;
+const { shapes, textEditor } = canvasStore
+const { x = 0, y = 0 } = position || {}
 
-  const { shapes, textEditor } = canvasStore;
-  const { x = 0, y = 0 } = position || {};
+let textareaRef: HTMLTextAreaElement
+let adaptiveFontSize = $textEditor?.fontSize || DEFAULT_FONT_SIZE
+let textValue = $textEditor?.text || ''
 
-  let textareaRef: HTMLTextAreaElement;
-  let adaptiveFontSize = $textEditor?.fontSize || DEFAULT_FONT_SIZE;
-  let textValue = $textEditor?.text || '';
+$: shape = $shapes.get(anchorId || '') as BaseCanvasEntity<RectDrawOptions>
+$: options = shape?.getOptions()
+$: initialWidth = options?.initialWidth ?? options?.width
+$: initialHeight = options?.initialHeight ?? options?.height
+$: height = options?.height || initialHeight
+$: scale = options?.scale || DEFAULT_SCALE
 
-  $: shape = $shapes.get(anchorId || '') as BaseCanvasEntity<RectDrawOptions>;
-  $: options = shape?.getOptions();
-  $: initialWidth = options?.initialWidth ?? options?.width;
-  $: initialHeight = options?.initialHeight ?? options?.height;
-  $: height = options?.height || initialHeight;
-  $: scale = options?.scale || DEFAULT_SCALE;
+$: bold = $textEditor?.bold || false
+$: italic = $textEditor?.italic || false
+$: underline = $textEditor?.underline || false
+$: fontSize = $textEditor?.fontSize || DEFAULT_FONT_SIZE
+$: textAlign = $textEditor?.textAlign || TextAlign.LEFT
+$: textEditorScale = getTextEditorScale(scale)
 
-  $: bold = $textEditor?.bold || false;
-  $: italic = $textEditor?.italic || false;
-  $: underline = $textEditor?.underline || false;
-  $: fontSize = $textEditor?.fontSize || DEFAULT_FONT_SIZE;
-  $: textAlign = $textEditor?.textAlign || TextAlign.LEFT;
-  $: textEditorScale = getTextEditorScale(scale);
+const handleTextChange = (e: Event) => {
+  textValue = (e.target as HTMLTextAreaElement).value
+  canvasStore.updateTextEditor({ text: textValue, fontSize: calculateFontSize(fontSize) })
+}
 
-  const handleTextChange = (e: Event) => {
-    textValue = (e.target as HTMLTextAreaElement).value;
-    canvasStore.updateTextEditor({ text: textValue, fontSize: calculateFontSize(fontSize) });
-  };
+const calculateFontSize = (fontSize: number) => {
+  if (!textareaRef) return fontSize
 
-  const calculateFontSize = (fontSize: number) => {
-    if (!textareaRef) return fontSize;
+  const textAreaValue = textareaRef.value
+  let nextFontSize = fontSize
 
-    const textAreaValue = textareaRef.value;
-    let nextFontSize = fontSize;
+  if (textareaRef.scrollHeight * scale > height - SMALL_PADDING) {
+    nextFontSize = nextFontSize - 2
+  }
 
-    if (textareaRef.scrollHeight * scale > height - SMALL_PADDING) {
-      nextFontSize = nextFontSize - 2;
+  if (textAreaValue.length < textValue.length && nextFontSize < adaptiveFontSize) {
+    textareaRef.style.fontSize = `${nextFontSize + 2}px`
+
+    if (textareaRef.scrollHeight * scale <= height - SMALL_PADDING) {
+      nextFontSize = nextFontSize + 2
+    } else {
+      textareaRef.style.fontSize = `${nextFontSize}px`
     }
+  }
 
-    if (textAreaValue.length < textValue.length && nextFontSize < adaptiveFontSize) {
-      textareaRef.style.fontSize = `${nextFontSize + 2}px`;
+  return nextFontSize
+}
 
-      if (textareaRef.scrollHeight * scale <= height - SMALL_PADDING) {
-        nextFontSize = nextFontSize + 2;
-      } else {
-        textareaRef.style.fontSize = `${nextFontSize}px`;
-      }
-    }
+const onFontSizeChange = (fontSize: number) => {
+  adaptiveFontSize = calculateFontSize(fontSize)
+}
 
-    return nextFontSize;
-  };
-
-  const onFontSizeChange = (fontSize: number) => {
-    adaptiveFontSize = calculateFontSize(fontSize);
-  };
-
-  const getTextEditorScale = (scale: number) => {
-    if (!transform) return DEFAULT_SCALE;
-    const inverseScale = DEFAULT_SCALE / (transform.scaleX / transform.initialScale);
-    return scale / inverseScale;
-  };
+const getTextEditorScale = (scale: number) => {
+  if (!transform) return DEFAULT_SCALE
+  const inverseScale = DEFAULT_SCALE / (transform.scaleX / transform.initialScale)
+  return scale / inverseScale
+}
 </script>
 
 <TextEditorMenu {textareaRef} anchor={shape} {position} {transform} {onFontSizeChange} />

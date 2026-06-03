@@ -1,178 +1,176 @@
 <script lang="ts">
-  import { createEventDispatcher, onMount } from 'svelte';
+import { createEventDispatcher, onMount } from 'svelte'
+import { DEFAULT_SCALE } from 'client/shared/constants'
+import type { BaseCanvasEntity } from 'client/ui/Canvas/BaseCanvasEntity'
+import type { RectDrawOptions } from 'client/ui/Canvas/CanvasRect'
+import { canvasStore } from 'client/ui/Canvas/store'
+import When from 'client/ui/When/When.svelte'
+import type { Bounds, LayerEventDetails, Point } from 'core/interfaces'
+import { geometryManager } from 'core/services'
 
-  import type { Point, Bounds, LayerEventDetails } from 'core/interfaces';
-  import { geometryManager } from 'core/services';
+import {
+  ResizableLayerAction,
+  ResizableLayerEvent,
+  type ResizableLayerEventDispatcher,
+} from './interfaces'
+import Handler from './ResizableLayerHandler.svelte'
+import Surface from './ResizableLayerSurface.svelte'
 
-  import type { BaseCanvasEntity } from 'client/ui/Canvas/BaseCanvasEntity';
-  import type { RectDrawOptions } from 'client/ui/Canvas/CanvasRect';
-  import { DEFAULT_SCALE } from 'client/shared/constants';
-  import { canvasStore } from 'client/ui/Canvas/store';
-  import When from 'client/ui/When/When.svelte';
+// TODO: Get rid of the bounds, use { x, y, width, height } instead
+export let entityId: string
+export let initialBounds: Bounds = { x0: 0, y0: 0, x1: 0, y1: 0 }
+export let selectionPath: Point[] = []
+export let isSelected: boolean = false
+export let selectOnMakingConnection: boolean = false
+export let isMovingBlocked: boolean = false
 
-  import Surface from './ResizableLayerSurface.svelte';
-  import Handler from './ResizableLayerHandler.svelte';
-  import {
-    ResizableLayerEvent,
-    ResizableLayerAction,
-    type ResizableLayerEventDispatcher,
-  } from './interfaces';
+const dispatcher = createEventDispatcher<ResizableLayerEventDispatcher>()
+const { shapes } = canvasStore
 
-  // TODO: Get rid of the bounds, use { x, y, width, height } instead
-  export let entityId: string;
-  export let initialBounds: Bounds = { x0: 0, y0: 0, x1: 0, y1: 0 };
-  export let selectionPath: Point[] = [];
-  export let isSelected: boolean = false;
-  export let selectOnMakingConnection: boolean = false;
-  export let isMovingBlocked: boolean = false;
+const [N, S, W, E] = [1, 2, 4, 8]
+const HANDLERS = [N | W, N | E, S | W, S | E]
+const SURFACE = N | S | W | E
 
-  const dispatcher = createEventDispatcher<ResizableLayerEventDispatcher>();
-  const { shapes } = canvasStore;
+let { x0, y0, x1, y1 } = initialBounds
+let draggedHandler: number | null = null
+let hoveredHandler: number | null = null
+let currentAction: ResizableLayerAction | null = null
+let previousTouch: Touch
+let scale = DEFAULT_SCALE
 
-  const [N, S, W, E] = [1, 2, 4, 8];
-  const HANDLERS = [N | W, N | E, S | W, S | E];
-  const SURFACE = N | S | W | E;
+onMount(() => {
+  dispatcher(ResizableLayerEvent.ACTIVE, { entityId, bounds })
+})
 
-  let { x0, y0, x1, y1 } = initialBounds;
-  let draggedHandler: number | null = null;
-  let hoveredHandler: number | null = null;
-  let currentAction: ResizableLayerAction | null = null;
-  let previousTouch: Touch;
-  let scale = DEFAULT_SCALE;
+$: shape = $shapes.get(entityId) as BaseCanvasEntity<RectDrawOptions>
+$: options = shape?.getOptions()
+$: initialWidth = options?.initialWidth ?? options?.width
+$: initialHeight = options?.initialHeight ?? options?.height
 
-  onMount(() => {
-    dispatcher(ResizableLayerEvent.ACTIVE, { entityId, bounds });
-  });
+$: bounds = { x0, y0, x1, y1 }
+$: active = Boolean(draggedHandler || hoveredHandler) || isOverlapped(selectionPath)
+$: selected = active || isSelected
 
-  $: shape = $shapes.get(entityId) as BaseCanvasEntity<RectDrawOptions>;
-  $: options = shape?.getOptions();
-  $: initialWidth = options?.initialWidth ?? options?.width;
-  $: initialHeight = options?.initialHeight ?? options?.height;
+$: active && dispatcher(ResizableLayerEvent.ACTIVE, { entityId, bounds })
+$: !active && dispatcher(ResizableLayerEvent.LEAVE, { entityId, bounds })
 
-  $: bounds = { x0, y0, x1, y1 };
-  $: active = Boolean(draggedHandler || hoveredHandler) || isOverlapped(selectionPath);
-  $: selected = active || isSelected;
+$: getHandlerPosition = (handler: number): Point => {
+  return {
+    x: handler & W ? x0 - 5 : handler & E ? x1 + 5 : 0,
+    y: handler & N ? y0 - 5 : handler & S ? y1 + 5 : 0,
+  }
+}
 
-  $: active && dispatcher(ResizableLayerEvent.ACTIVE, { entityId, bounds });
-  $: !active && dispatcher(ResizableLayerEvent.LEAVE, { entityId, bounds });
+// TODO: Handle cursor type change on "mouseover" event
+$: handlerCursor = (handler: number | null): string => {
+  if (handler === SURFACE) return 'pointer'
 
-  $: getHandlerPosition = (handler: number): Point => {
-    return {
-      x: handler & W ? x0 - 5 : handler & E ? x1 + 5 : 0,
-      y: handler & N ? y0 - 5 : handler & S ? y1 + 5 : 0,
-    };
-  };
+  if (handler === (N | W) || handler === (S | E)) {
+    return 'nwse-resize'
+  } else if (handler === (N | E) || handler === (S | W)) {
+    return 'nesw-resize'
+  }
 
-  // TODO: Handle cursor type change on "mouseover" event
-  $: handlerCursor = (handler: number | null): string => {
-    if (handler === SURFACE) return 'pointer';
+  return 'auto'
+}
 
-    if (handler === (N | W) || handler === (S | E)) {
-      return 'nwse-resize';
-    } else if (handler === (N | E) || handler === (S | W)) {
-      return 'nesw-resize';
-    }
+const onMouseMove = (e: MouseEvent) => {
+  if (!draggedHandler || isMovingBlocked) return
 
-    return 'auto';
-  };
+  const { movementX, movementY } = e
+  let x0t = bounds.x0 + (draggedHandler & W ? movementX : 0)
+  let y0t = bounds.y0 + (draggedHandler & N ? movementY : 0)
+  let x1t = bounds.x1 + (draggedHandler & E ? movementX : 0)
+  let y1t = bounds.y1 + (draggedHandler & S ? movementY : 0)
 
-  const onMouseMove = (e: MouseEvent) => {
-    if (!draggedHandler || isMovingBlocked) return;
+  const { width, height } = geometryManager.getRectDimensionFromBounds({
+    x0: x0t,
+    y0: y0t,
+    x1: x1t,
+    y1: y1t,
+  })
 
-    const { movementX, movementY } = e;
-    let x0t = bounds.x0 + (draggedHandler & W ? movementX : 0);
-    let y0t = bounds.y0 + (draggedHandler & N ? movementY : 0);
-    let x1t = bounds.x1 + (draggedHandler & E ? movementX : 0);
-    let y1t = bounds.y1 + (draggedHandler & S ? movementY : 0);
+  const ceilWidth = Math.ceil(width)
+  const ceilHeight = Math.ceil(height)
 
-    const { width, height } = geometryManager.getRectDimensionFromBounds({
-      x0: x0t,
-      y0: y0t,
-      x1: x1t,
-      y1: y1t,
-    });
+  if (ceilWidth < initialWidth || ceilHeight < initialHeight) return
 
-    const ceilWidth = Math.ceil(width);
-    const ceilHeight = Math.ceil(height);
+  x0 = x0t
+  y0 = y0t
+  x1 = x1t
+  y1 = y1t
 
-    if (ceilWidth < initialWidth || ceilHeight < initialHeight) return;
+  if (draggedHandler === SURFACE) {
+    currentAction = ResizableLayerAction.MOVE
+  } else {
+    currentAction = ResizableLayerAction.RESIZE
+    scale = shape.getCalculatedScale(ceilWidth, ceilHeight)
+  }
 
-    x0 = x0t;
-    y0 = y0t;
-    x1 = x1t;
-    y1 = y1t;
+  dispatcher(ResizableLayerEvent.MOVE, { entityId, bounds })
+}
 
-    if (draggedHandler === SURFACE) {
-      currentAction = ResizableLayerAction.MOVE;
-    } else {
-      currentAction = ResizableLayerAction.RESIZE;
-      scale = shape.getCalculatedScale(ceilWidth, ceilHeight);
-    }
+const onTouchMove = (e: TouchEvent) => {
+  if (!draggedHandler || isMovingBlocked) return
+  const { clientX, clientY } = e.touches[0]
+  const movementX = clientX - previousTouch.clientX
+  const movementY = clientY - previousTouch.clientY
+  x0 += draggedHandler & W && movementX
+  y0 += draggedHandler & N && movementY
+  x1 += draggedHandler & E && movementX
+  y1 += draggedHandler & S && movementY
+  previousTouch = e.touches[0]
+  dispatcher(ResizableLayerEvent.MOVE, { entityId, bounds })
+}
 
-    dispatcher(ResizableLayerEvent.MOVE, { entityId, bounds });
-  };
+const onHandlerMouseEnter = (handler: number) => {
+  hoveredHandler = handler
+}
 
-  const onTouchMove = (e: TouchEvent) => {
-    if (!draggedHandler || isMovingBlocked) return;
-    const { clientX, clientY } = e.touches[0];
-    const movementX = clientX - previousTouch.clientX;
-    const movementY = clientY - previousTouch.clientY;
-    x0 += draggedHandler & W && movementX;
-    y0 += draggedHandler & N && movementY;
-    x1 += draggedHandler & E && movementX;
-    y1 += draggedHandler & S && movementY;
-    previousTouch = e.touches[0];
-    dispatcher(ResizableLayerEvent.MOVE, { entityId, bounds });
-  };
+const onHandlerMouseDown = (handler: number) => {
+  draggedHandler = handler
+}
 
-  const onHandlerMouseEnter = (handler: number) => {
-    hoveredHandler = handler;
-  };
+const onSurfaceMouseEnter = () => {
+  hoveredHandler = SURFACE
+  dispatcher(ResizableLayerEvent.ENTER, { entityId, bounds })
+}
 
-  const onHandlerMouseDown = (handler: number) => {
-    draggedHandler = handler;
-  };
+const onSurfaceMouseDown = () => {
+  draggedHandler = SURFACE
+  dispatcher(ResizableLayerEvent.TOUCH, { entityId, bounds })
+}
 
-  const onSurfaceMouseEnter = () => {
-    hoveredHandler = SURFACE;
-    dispatcher(ResizableLayerEvent.ENTER, { entityId, bounds });
-  };
+const onMouseLeave = () => {
+  hoveredHandler = null
+}
 
-  const onSurfaceMouseDown = () => {
-    draggedHandler = SURFACE;
-    dispatcher(ResizableLayerEvent.TOUCH, { entityId, bounds });
-  };
+const onMouseUp = () => {
+  draggedHandler = null
+}
 
-  const onMouseLeave = () => {
-    hoveredHandler = null;
-  };
+const onTouchStart = (e: TouchEvent) => {
+  previousTouch = e.touches[0]
+}
 
-  const onMouseUp = () => {
-    draggedHandler = null;
-  };
+const onDoubleClick = (e: CustomEvent<LayerEventDetails>) => {
+  dispatcher(ResizableLayerEvent.DOUBLE_CLICK, { entityId, data: e.detail, bounds })
+}
 
-  const onTouchStart = (e: TouchEvent) => {
-    previousTouch = e.touches[0];
-  };
+const isOverlapped = (selectionPath: Point[]) => {
+  const selectionBounds = geometryManager.getPathBounds(selectionPath)
+  if (!selectionBounds) return false
+  return geometryManager.isOverlapping(selectionBounds, bounds)
+}
 
-  const onDoubleClick = (e: CustomEvent<LayerEventDetails>) => {
-    dispatcher(ResizableLayerEvent.DOUBLE_CLICK, { entityId, data: e.detail, bounds });
-  };
+const updateEntityData = () => {
+  const rect = geometryManager.getRectDimensionFromBounds(bounds)
+  canvasStore.updateShape(entityId, { ...rect, scale })
+}
 
-  const isOverlapped = (selectionPath: Point[]) => {
-    const selectionBounds = geometryManager.getPathBounds(selectionPath);
-    if (!selectionBounds) return false;
-    return geometryManager.isOverlapping(selectionBounds, bounds);
-  };
-
-  const updateEntityData = () => {
-    const rect = geometryManager.getRectDimensionFromBounds(bounds);
-    canvasStore.updateShape(entityId, { ...rect, scale });
-  };
-
-  const cursor = (node: HTMLElement, _: unknown) => ({
-    update: (cursorType: string) => (node.style.cursor = cursorType),
-  });
+const cursor = (node: HTMLElement, _: unknown) => ({
+  update: (cursorType: string) => (node.style.cursor = cursorType),
+})
 </script>
 
 <svelte:body

@@ -1,4 +1,4 @@
-import type { Point } from 'core/interfaces';
+import type { Point } from 'core/interfaces'
 
 export const enum CurveLayerEvent {
   MOVE = 'point.move',
@@ -9,7 +9,7 @@ export const enum CurveLayerEvent {
 
 export type CurveLayerEventDetails =
   | {
-      index: number;
-      point: Point;
+      index: number
+      point: Point
     }
-  | undefined;
+  | undefined

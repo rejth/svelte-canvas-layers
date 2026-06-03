@@ -1,55 +1,54 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
+import { createEventDispatcher } from 'svelte'
+import type { Point } from 'core/interfaces'
+import { geometryManager } from 'core/services'
 
-  import type { Point } from 'core/interfaces';
-  import { geometryManager } from 'core/services';
+import { CurveLayerEvent, type CurveLayerEventDetails } from './interfaces'
+import ControlPoint from './Point.svelte'
 
-  import ControlPoint from './Point.svelte';
-  import { CurveLayerEvent, type CurveLayerEventDetails } from './interfaces';
+export let controlPoints: Point[]
+export let selectOnMakingConnection: boolean = false
 
-  export let controlPoints: Point[];
-  export let selectOnMakingConnection: boolean = false;
+const dispatcher = createEventDispatcher<Record<CurveLayerEvent, CurveLayerEventDetails>>()
 
-  const dispatcher = createEventDispatcher<Record<CurveLayerEvent, CurveLayerEventDetails>>();
+let selectedPoint: number | null = null
+let draggedHandler: number | null = null
+let hoveredHandler: number | null = null
 
-  let selectedPoint: number | null = null;
-  let draggedHandler: number | null = null;
-  let hoveredHandler: number | null = null;
+$: active = draggedHandler !== null || hoveredHandler !== null
 
-  $: active = draggedHandler !== null || hoveredHandler !== null;
+const handleMouseLeave = () => {
+  hoveredHandler = null
+  dispatcher(CurveLayerEvent.LEAVE)
+}
 
-  const handleMouseLeave = () => {
-    hoveredHandler = null;
-    dispatcher(CurveLayerEvent.LEAVE);
-  };
+const handleMouseUp = () => {
+  draggedHandler = null
+  selectedPoint = null
+}
 
-  const handleMouseUp = () => {
-    draggedHandler = null;
-    selectedPoint = null;
-  };
+const handleMouseMove = (e: MouseEvent) => {
+  if (selectedPoint === null) return
 
-  const handleMouseMove = (e: MouseEvent) => {
-    if (selectedPoint === null) return;
+  dispatcher(CurveLayerEvent.MOVE, {
+    index: selectedPoint,
+    point: geometryManager.calculatePosition(e),
+  })
+}
 
-    dispatcher(CurveLayerEvent.MOVE, {
-      index: selectedPoint,
-      point: geometryManager.calculatePosition(e),
-    });
-  };
+const handleMouseEnter = (handle: number) => {
+  hoveredHandler = handle
+}
 
-  const handleMouseEnter = (handle: number) => {
-    hoveredHandler = handle;
-  };
+const handleMouseDown = (handle: number) => {
+  draggedHandler = handle
+  selectedPoint = handle
+  dispatcher(CurveLayerEvent.TOUCH)
+}
 
-  const handleMouseDown = (handle: number) => {
-    draggedHandler = handle;
-    selectedPoint = handle;
-    dispatcher(CurveLayerEvent.TOUCH);
-  };
-
-  const cursor = (node: HTMLElement, _: unknown) => ({
-    update: (cursorType: string) => (node.style.cursor = cursorType),
-  });
+const cursor = (node: HTMLElement, _: unknown) => ({
+  update: (cursorType: string) => (node.style.cursor = cursorType),
+})
 </script>
 
 <svelte:body

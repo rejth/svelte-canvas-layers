@@ -1,131 +1,131 @@
 import type {
-  HitCanvasRenderingContext2D,
-  OriginalEvent,
-  Render,
-  LayerId,
-  LayerEventDetails,
-  CanvasEvents,
-  LayerEventDispatcher,
-  RegisteredLayerMetadata,
   CanvasContextType,
-} from 'core/interfaces';
-import { geometryManager, type Renderer } from 'core/services';
+  CanvasEvents,
+  HitCanvasRenderingContext2D,
+  LayerEventDetails,
+  LayerEventDispatcher,
+  LayerId,
+  OriginalEvent,
+  RegisteredLayerMetadata,
+  Render,
+} from 'core/interfaces'
+import { geometryManager, type Renderer } from 'core/services'
 
 export class LayerManager {
-  renderer: Renderer;
-  currentLayerId: LayerId;
-  activeLayerId: LayerId;
-  layerSequence: LayerId[];
-  layerContainer: HTMLDivElement | null;
-  layerObserver: MutationObserver | null;
+  renderer: Renderer
+  currentLayerId: LayerId
+  activeLayerId: LayerId
+  layerSequence: LayerId[]
+  layerContainer: HTMLDivElement | null
+  layerObserver: MutationObserver | null
 
   // TODO: Implement a class for layer to handle layer's events and rendering
-  drawers: Map<LayerId, { render: Render }>;
-  dispatchers: Map<LayerId, LayerEventDispatcher>;
-  needsRedraw: boolean;
-  lastFrameTime: number;
-  fps: number;
+  drawers: Map<LayerId, { render: Render }>
+  dispatchers: Map<LayerId, LayerEventDispatcher>
+  needsRedraw: boolean
+  lastFrameTime: number
+  fps: number
 
-  animationFrame?: number;
-  layerChangeCallback?: (layerId: LayerId) => void;
+  animationFrame?: number
+  layerChangeCallback?: (layerId: LayerId) => void
 
   constructor(renderer: Renderer) {
-    this.renderer = renderer;
+    this.renderer = renderer
 
-    this.currentLayerId = 1;
-    this.activeLayerId = 0;
-    this.layerSequence = [];
-    this.layerContainer = null;
-    this.layerObserver = null;
+    this.currentLayerId = 1
+    this.activeLayerId = 0
+    this.layerSequence = []
+    this.layerContainer = null
+    this.layerObserver = null
 
-    this.drawers = new Map();
-    this.dispatchers = new Map();
-    this.needsRedraw = true;
-    this.lastFrameTime = 0;
-    this.fps = 0;
+    this.drawers = new Map()
+    this.dispatchers = new Map()
+    this.needsRedraw = true
+    this.lastFrameTime = 0
+    this.fps = 0
 
-    this.redraw = this.redraw.bind(this);
+    this.redraw = this.redraw.bind(this)
   }
 
   getContext(): CanvasContextType | null {
-    return this.renderer.getContext();
+    return this.renderer.getContext()
   }
 
   getRenderer(): Renderer {
-    return this.renderer;
+    return this.renderer
   }
 
   run(layerContainer: HTMLDivElement) {
-    this.layerContainer = layerContainer;
-    this.#observeLayerSequence();
-    this.#startRenderLoop();
+    this.layerContainer = layerContainer
+    this.#observeLayerSequence()
+    this.#startRenderLoop()
   }
 
   #startRenderLoop() {
-    const currentFrameTime = performance.now();
+    const currentFrameTime = performance.now()
 
     if (this.lastFrameTime) {
-      const delta = currentFrameTime - this.lastFrameTime;
-      this.fps = 1000 / delta;
+      const delta = currentFrameTime - this.lastFrameTime
+      this.fps = 1000 / delta
       /**
        * The FPS can fluctuate significantly. To get a smoother reading, use a moving average or weighted average:
        */
-      this.fps = this.fps * 0.9 + this.fps * 0.1; // weighted average
+      this.fps = this.fps * 0.9 + this.fps * 0.1 // weighted average
     }
 
-    this.lastFrameTime = currentFrameTime;
+    this.lastFrameTime = currentFrameTime
 
-    this.#render();
-    this.animationFrame = requestAnimationFrame(() => this.#startRenderLoop());
+    this.#render()
+    this.animationFrame = requestAnimationFrame(() => this.#startRenderLoop())
   }
 
   #observeLayerSequence() {
-    this.layerObserver = new MutationObserver(() => this.#getLayerSequence());
-    this.layerObserver.observe(this.layerContainer!, { childList: true });
-    this.#getLayerSequence();
+    this.layerObserver = new MutationObserver(() => this.#getLayerSequence())
+    this.layerObserver.observe(this.layerContainer!, { childList: true })
+    this.#getLayerSequence()
   }
 
   #getLayerSequence() {
-    const layers = <HTMLElement[]>[...this.layerContainer!.children];
-    this.layerSequence = layers.map((layer) => +layer.dataset.layerId!);
+    const layers = <HTMLElement[]>[...this.layerContainer!.children]
+    this.layerSequence = layers.map((layer) => +layer.dataset.layerId!)
   }
 
   register({ render, dispatcher }: RegisteredLayerMetadata) {
-    const layerId = this.currentLayerId;
-    this.#addDrawer(layerId, { render });
+    const layerId = this.currentLayerId
+    this.#addDrawer(layerId, { render })
 
     if (dispatcher) {
-      this.#addDispatcher(layerId, dispatcher);
+      this.#addDispatcher(layerId, dispatcher)
     }
 
-    this.redraw();
+    this.redraw()
 
     return {
       unregister: () => this.#unregister(layerId),
       layerId: this.currentLayerId++,
-    };
+    }
   }
 
   #unregister(layerId: LayerId) {
-    this.#removeDrawer(layerId);
-    this.#removeDispatcher(layerId);
-    this.redraw();
+    this.#removeDrawer(layerId)
+    this.#removeDispatcher(layerId)
+    this.redraw()
   }
 
   #addDrawer(layerId: LayerId, layerData: { render: Render }) {
-    this.drawers.set(layerId, layerData);
+    this.drawers.set(layerId, layerData)
   }
 
   #addDispatcher(layerId: LayerId, dispatcher: LayerEventDispatcher) {
-    this.dispatchers.set(layerId, dispatcher);
+    this.dispatchers.set(layerId, dispatcher)
   }
 
   #removeDrawer(layerId: LayerId) {
-    this.drawers.delete(layerId);
+    this.drawers.delete(layerId)
   }
 
   #removeDispatcher(layerId: LayerId) {
-    this.dispatchers.delete(layerId);
+    this.dispatchers.delete(layerId)
   }
 
   /**
@@ -133,30 +133,30 @@ export class LayerManager {
    * Renders the canvas only when width, height or pixelRatio change.
    * */
   #render() {
-    if (!this.needsRedraw) return;
+    if (!this.needsRedraw) return
 
-    const ctx = this.renderer.getContext()!;
-    const transformedArea = this.renderer.getTransformedArea();
+    const ctx = this.renderer.getContext()!
+    const transformedArea = this.renderer.getTransformedArea()
 
     if (transformedArea) {
-      this.renderer.clearRectSync(transformedArea);
+      this.renderer.clearRectSync(transformedArea)
     }
 
     for (const layerId of this.layerSequence) {
-      const { render } = this.drawers.get(layerId) || {};
-      this.layerChangeCallback?.(layerId);
-      render?.({ ctx, renderer: this.renderer });
+      const { render } = this.drawers.get(layerId) || {}
+      this.layerChangeCallback?.(layerId)
+      render?.({ ctx, renderer: this.renderer })
     }
 
-    console.log(`FPS: ${this.fps?.toFixed(1)}`);
-    this.needsRedraw = false;
+    console.log(`FPS: ${this.fps?.toFixed(1)}`)
+    this.needsRedraw = false
   }
 
   /**
    * Forces canvas's transformation matrix adjustment to scale drawings according to the new width, height or device's pixel ratio.
    */
   redraw() {
-    this.needsRedraw = true;
+    this.needsRedraw = true
   }
 
   /**
@@ -165,34 +165,34 @@ export class LayerManager {
    */
 
   findActiveLayer(e: OriginalEvent) {
-    const context = this.renderer.getContext();
-    const point = geometryManager.calculatePosition(e);
-    const layerId = (<HitCanvasRenderingContext2D>context).getLayerIdAt(point.x, point.y);
+    const context = this.renderer.getContext()
+    const point = geometryManager.calculatePosition(e)
+    const layerId = (<HitCanvasRenderingContext2D>context).getLayerIdAt(point.x, point.y)
 
-    if (this.activeLayerId === layerId) return;
+    if (this.activeLayerId === layerId) return
 
     if (e instanceof MouseEvent) {
       this.#dispatchLayerEvent(this.activeLayerId, {
         originalEvent: new PointerEvent('pointerleave', e),
         ...point,
-      });
+      })
       this.#dispatchLayerEvent(this.activeLayerId, {
         originalEvent: new MouseEvent('mouseleave', e),
         ...point,
-      });
+      })
     }
 
-    this.activeLayerId = layerId;
+    this.activeLayerId = layerId
 
     if (e instanceof MouseEvent) {
       this.#dispatchLayerEvent(this.activeLayerId, {
         originalEvent: new PointerEvent('pointerenter', e),
         ...point,
-      });
+      })
       this.#dispatchLayerEvent(this.activeLayerId, {
         originalEvent: new MouseEvent('mouseenter', e),
         ...point,
-      });
+      })
     }
   }
 
@@ -200,37 +200,37 @@ export class LayerManager {
    * Handles events on the canvas and then re-dispatch the events to the corresponding layer
    */
   dispatchEvent(e: OriginalEvent) {
-    if (!this.activeLayerId) return;
-    const point = geometryManager.calculatePosition(e);
-    this.#dispatchLayerEvent(this.activeLayerId, { originalEvent: e, ...point });
+    if (!this.activeLayerId) return
+    const point = geometryManager.calculatePosition(e)
+    this.#dispatchLayerEvent(this.activeLayerId, { originalEvent: e, ...point })
   }
 
   /**
    * Dispatches events to the Layer component.
    */
   #dispatchLayerEvent(layerId: LayerId, details: LayerEventDetails) {
-    const dispatch = this.dispatchers.get(layerId);
-    dispatch?.(<CanvasEvents>details.originalEvent.type, details);
+    const dispatch = this.dispatchers.get(layerId)
+    dispatch?.(<CanvasEvents>details.originalEvent.type, details)
   }
 
   leaveActiveLayer(e: CustomEvent | OriginalEvent) {
     this.#dispatchLayerEvent(this.activeLayerId, {
       originalEvent: new PointerEvent('pointerleave', e),
       ...{ x: 0, y: 0 },
-    });
+    })
     this.#dispatchLayerEvent(this.activeLayerId, {
       originalEvent: new MouseEvent('mouseleave', e),
       ...{ x: 0, y: 0 },
-    });
+    })
   }
 
   onLayerChange(callback: (layerId: LayerId) => void) {
-    this.layerChangeCallback = callback;
+    this.layerChangeCallback = callback
   }
 
   destroy() {
-    if (typeof window === 'undefined') return;
-    this.layerObserver?.disconnect();
-    cancelAnimationFrame(this.animationFrame!);
+    if (typeof window === 'undefined') return
+    this.layerObserver?.disconnect()
+    cancelAnimationFrame(this.animationFrame!)
   }
 }

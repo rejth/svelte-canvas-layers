@@ -1,5 +1,5 @@
-import type { Point } from 'core/interfaces';
-import { TextAlign } from 'client/shared/constants';
+import { TextAlign } from 'client/shared/constants'
+import type { Point } from 'core/interfaces'
 
 export const enum Tools {
   NOTE = 'NOTE',
@@ -17,27 +17,27 @@ export const enum ShapeType {
   TEXT = 'TEXT',
 }
 
-export type Tool = keyof typeof Tools;
+export type Tool = keyof typeof Tools
 
 export interface TextEditorData {
-  anchorId: string;
-  position: Point;
-  text: string;
-  bold: boolean;
-  underline: boolean;
-  italic: boolean;
-  font: string;
-  fontSize: number;
-  textAlign: TextAlign;
-  isEditable: boolean;
+  anchorId: string
+  position: Point
+  text: string
+  bold: boolean
+  underline: boolean
+  italic: boolean
+  font: string
+  fontSize: number
+  textAlign: TextAlign
+  isEditable: boolean
 }
 
 export interface Color {
-  value: string;
-  label: string;
+  value: string
+  label: string
 }
 
 export interface Font {
-  value: string;
-  label: string;
+  value: string
+  label: string
 }

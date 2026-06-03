@@ -1,21 +1,20 @@
 <script lang="ts">
-  import { Canvas } from 'core/ui';
+import When from 'client/ui/When/When.svelte'
+import { Canvas } from 'core/ui'
 
-  import When from 'client/ui/When/When.svelte';
+import Blob from './Blob.svelte'
+import Circle from './Circle.svelte'
+import Rect from './Rect.svelte'
+import { activeLayer, position } from './store'
+import Text from './Text.svelte'
+import Tooltip from './Tooltip.svelte'
 
-  import Rect from './Rect.svelte';
-  import Circle from './Circle.svelte';
-  import Blob from './Blob.svelte';
-  import Text from './Text.svelte';
-  import Tooltip from './Tooltip.svelte';
-  import { position, activeLayer } from './store';
-
-  const touch = (e: TouchEvent) => {
-    e.preventDefault();
-    const { left, top } = (<Element>e.target).getBoundingClientRect();
-    const { clientX, clientY } = e.changedTouches[0];
-    $position = { x: clientX - left, y: clientY - top };
-  };
+const touch = (e: TouchEvent) => {
+  e.preventDefault()
+  const { left, top } = (<Element>e.target).getBoundingClientRect()
+  const { clientX, clientY } = e.changedTouches[0]
+  $position = { x: clientX - left, y: clientY - top }
+}
 </script>
 
 <div>

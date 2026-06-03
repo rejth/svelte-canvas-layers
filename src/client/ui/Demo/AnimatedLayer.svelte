@@ -1,64 +1,63 @@
 <script lang="ts">
-  import { spring, tweened } from 'svelte/motion';
-  import { quadInOut as easing } from 'svelte/easing';
+import { quadInOut as easing } from 'svelte/easing'
+import { spring, tweened } from 'svelte/motion'
+import type { CanvasContextType, RenderProps } from 'core/interfaces'
+import { Layer } from 'core/ui'
 
-  import type { CanvasContextType, RenderProps } from 'core/interfaces';
-  import { Layer } from 'core/ui';
+import { activeLayer, position, type Render } from './store'
 
-  import { position, activeLayer, type Render } from './store';
+export let name: string
+export let render: Render
 
-  export let name: string;
-  export let render: Render;
+const id = Symbol()
 
-  const id = Symbol();
+const styleTween = (initial: number) => {
+  const tween = tweened(initial, { duration: 250, easing })
+  return {
+    subscribe: tween.subscribe,
+    set: (value: number) => tween.set(value, { delay: Math.random() * 50 + 10 }),
+  }
+}
 
-  const styleTween = (initial: number) => {
-    const tween = tweened(initial, { duration: 250, easing });
-    return {
-      subscribe: tween.subscribe,
-      set: (value: number) => tween.set(value, { delay: Math.random() * 50 + 10 }),
-    };
-  };
+const blur = styleTween(0)
+const saturation = styleTween(1)
+const opacity = styleTween(1)
+const scale = spring(1, { stiffness: 0.1, damping: 0.2 })
 
-  const blur = styleTween(0);
-  const saturation = styleTween(1);
-  const opacity = styleTween(1);
-  const scale = spring(1, { stiffness: 0.1, damping: 0.2 });
+$: active = $activeLayer?.id === id
+$: inactive = $activeLayer?.id && !active
 
-  $: active = $activeLayer?.id === id;
-  $: inactive = $activeLayer?.id && !active;
+$: blur.set(inactive ? 0.018 : 0)
+$: saturation.set(inactive ? 0.4 : 1)
+$: opacity.set(inactive ? 0.5 : 1)
+$: scale.set(!$activeLayer?.id ? 1 : (!active ? 0.95 : 1.1) + Math.random() / 10)
 
-  $: blur.set(inactive ? 0.018 : 0);
-  $: saturation.set(inactive ? 0.4 : 1);
-  $: opacity.set(inactive ? 0.5 : 1);
-  $: scale.set(!$activeLayer?.id ? 1 : (!active ? 0.95 : 1.1) + Math.random() / 10);
+$: point = $position
 
-  $: point = $position;
+$: styleActive = (context: CanvasContextType) => () => {
+  if (active) {
+    context.setLineDash([4, 4])
+    context.strokeStyle = '#dcdcdc'
+    context.lineWidth = 2
+  }
 
-  $: styleActive = (context: CanvasContextType) => () => {
-    if (active) {
-      context.setLineDash([4, 4]);
-      context.strokeStyle = '#dcdcdc';
-      context.lineWidth = 2;
-    }
+  return active
+}
 
-    return active;
-  };
+$: _render = ({ ctx, renderer }: RenderProps) => {
+  const { width, height } = renderer.getCanvasOptions()
 
-  $: _render = ({ ctx, renderer }: RenderProps) => {
-    const { width, height } = renderer.getCanvasOptions();
+  ctx.save()
 
-    ctx.save();
+  ctx.translate(point.x, point.y)
+  ctx.scale($scale, $scale)
+  ctx.translate(-point.x, -point.y)
+  ctx.globalAlpha = $opacity
+  ctx.filter = `blur(${width * $blur}px) saturate(${$saturation * 100}%)`
+  render({ ctx, renderer, width, height, active: styleActive(ctx) })
 
-    ctx.translate(point.x, point.y);
-    ctx.scale($scale, $scale);
-    ctx.translate(-point.x, -point.y);
-    ctx.globalAlpha = $opacity;
-    ctx.filter = `blur(${width * $blur}px) saturate(${$saturation * 100}%)`;
-    render({ ctx, renderer, width, height, active: styleActive(ctx) });
-
-    ctx.restore();
-  };
+  ctx.restore()
+}
 </script>
 
 <Layer

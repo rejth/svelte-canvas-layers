@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { Layer } from 'core/ui';
-  import { position, activeLayer } from './store';
+import { Layer } from 'core/ui'
 
-  $: point = $position;
-  $: text = `<${$activeLayer?.name} />`;
+import { activeLayer, position } from './store'
+
+$: point = $position
+$: text = `<${$activeLayer?.name} />`
 </script>
 
 <Layer
