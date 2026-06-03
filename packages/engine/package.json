@@ -1,0 +1,35 @@
+{
+  "name": "@canvas/engine",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "svelte": "./src/index.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "vite build",
+    "check": "svelte-check --tsconfig ./tsconfig.json"
+  },
+  "dependencies": {
+    "canvas-size": "^2.0.0",
+    "json-fn": "^1.1.1"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^3.0.1",
+    "@tsconfig/svelte": "^5.0.4",
+    "@types/canvas-size": "^1.2.2",
+    "svelte": "^4.2.8",
+    "svelte-check": "^3.6.2",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10"
+  },
+  "packageManager": "pnpm@9.15.4"
+}
