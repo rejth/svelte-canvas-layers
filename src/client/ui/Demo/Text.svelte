@@ -1,10 +1,10 @@
 <script lang="ts">
-  import AnimatedLayer from './AnimatedLayer.svelte';
+import AnimatedLayer from './AnimatedLayer.svelte'
 
-  export let text: string;
-  export let scale: number;
-  export let opacity: number = 1;
-  export let yOffset: number = 0;
+export let text: string
+export let scale: number
+export let opacity: number = 1
+export let yOffset: number = 0
 </script>
 
 <AnimatedLayer

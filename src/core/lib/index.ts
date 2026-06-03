@@ -1,2 +1,2 @@
-export { dndWatcher, targetEventWatcher } from './compositions';
-export { clickOutside } from './click-outside';
+export { clickOutside } from './click-outside'
+export { dndWatcher, targetEventWatcher } from './compositions'

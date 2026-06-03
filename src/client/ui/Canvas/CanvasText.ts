@@ -3,27 +3,27 @@ import {
   DEFAULT_SCALE,
   type TextAlign,
   type TextDecoration,
-} from 'client/shared/constants';
-import type { BaseCanvasEntityDrawOptions } from 'client/ui/Canvas/BaseCanvasEntity';
-import { BaseCanvasEntity, CanvasEntityType } from 'client/ui/Canvas/BaseCanvasEntity';
+} from 'client/shared/constants'
+import type { BaseCanvasEntityDrawOptions } from 'client/ui/Canvas/BaseCanvasEntity'
+import { BaseCanvasEntity, CanvasEntityType } from 'client/ui/Canvas/BaseCanvasEntity'
 
 export interface TextDrawOptions extends BaseCanvasEntityDrawOptions {
-  text: string;
-  font: string;
-  fontSize: number;
-  fontStyle: string;
-  textAlign: TextAlign;
-  textDecoration: TextDecoration;
+  text: string
+  font: string
+  fontSize: number
+  fontStyle: string
+  textAlign: TextAlign
+  textDecoration: TextDecoration
 }
 
 export class CanvasText extends BaseCanvasEntity<TextDrawOptions> {
-  #snapshot: CanvasImageSource | null = null;
-  #preparedText: string[] = [];
+  #snapshot: CanvasImageSource | null = null
+  #preparedText: string[] = []
 
   constructor(options: TextDrawOptions) {
-    super(options);
-    this.setType(CanvasEntityType.TEXT);
-    this.prepareText(options.text, options.font, options.fontSize, options.fontStyle);
+    super(options)
+    this.setType(CanvasEntityType.TEXT)
+    this.prepareText(options.text, options.font, options.fontSize, options.fontStyle)
   }
 
   setText(
@@ -34,8 +34,8 @@ export class CanvasText extends BaseCanvasEntity<TextDrawOptions> {
     textAlign: TextAlign,
     textDecoration: TextDecoration,
   ) {
-    const options = this.getOptions();
-    this.prepareText(text, font, fontSize, fontStyle);
+    const options = this.getOptions()
+    this.prepareText(text, font, fontSize, fontStyle)
 
     if (
       text !== options.text ||
@@ -45,10 +45,10 @@ export class CanvasText extends BaseCanvasEntity<TextDrawOptions> {
       textAlign !== options.textAlign ||
       textDecoration !== options.textDecoration
     ) {
-      this.setSnapshot(null);
+      this.setSnapshot(null)
     }
 
-    this.setOptions({ text, font, fontSize, fontStyle, textAlign, textDecoration });
+    this.setOptions({ text, font, fontSize, fontStyle, textAlign, textDecoration })
   }
 
   prepareText(text: string, font: string, fontSize: number, fontStyle = '') {
@@ -57,55 +57,55 @@ export class CanvasText extends BaseCanvasEntity<TextDrawOptions> {
       height,
       scale = DEFAULT_SCALE,
       canvasScale = DEFAULT_CANVAS_SCALE,
-    } = this.getOptions();
+    } = this.getOptions()
 
-    const offscreenCanvas = new OffscreenCanvas(width, height);
-    offscreenCanvas.width = Math.floor(width * canvasScale);
-    offscreenCanvas.height = Math.floor(height * canvasScale);
+    const offscreenCanvas = new OffscreenCanvas(width, height)
+    offscreenCanvas.width = Math.floor(width * canvasScale)
+    offscreenCanvas.height = Math.floor(height * canvasScale)
 
-    const ctx = offscreenCanvas.getContext('2d') as OffscreenCanvasRenderingContext2D;
-    ctx.scale(canvasScale, canvasScale);
-    ctx.font = `${fontStyle ? fontStyle : 400} ${fontSize}px monospace`;
+    const ctx = offscreenCanvas.getContext('2d') as OffscreenCanvasRenderingContext2D
+    ctx.scale(canvasScale, canvasScale)
+    ctx.font = `${fontStyle ? fontStyle : 400} ${fontSize}px monospace`
 
-    const fragments = text.split(/[\r\n]/);
-    const preparedText: string[] = [];
-    let textToRender = '';
+    const fragments = text.split(/[\r\n]/)
+    const preparedText: string[] = []
+    let textToRender = ''
 
     for (const fragment of fragments) {
       if (fragment === '') {
-        preparedText.push('');
+        preparedText.push('')
       } else {
         for (const substring of fragment) {
-          const textMetrics = ctx.measureText(textToRender + substring);
-          const rectWidth = width - 10 * scale;
+          const textMetrics = ctx.measureText(textToRender + substring)
+          const rectWidth = width - 10 * scale
 
           if (textMetrics.width * scale >= rectWidth) {
-            preparedText.push(textToRender);
-            textToRender = '';
+            preparedText.push(textToRender)
+            textToRender = ''
           }
 
-          textToRender += substring;
+          textToRender += substring
         }
 
         if (textToRender !== '') {
-          preparedText.push(textToRender);
-          textToRender = '';
+          preparedText.push(textToRender)
+          textToRender = ''
         }
       }
     }
 
-    this.#preparedText = preparedText;
+    this.#preparedText = preparedText
   }
 
   getPreparedText(): string[] {
-    return this.#preparedText;
+    return this.#preparedText
   }
 
   setSnapshot(snapshot: CanvasImageSource | null) {
-    this.#snapshot = snapshot;
+    this.#snapshot = snapshot
   }
 
   getSnapshot(): CanvasImageSource | null {
-    return this.#snapshot;
+    return this.#snapshot
   }
 }

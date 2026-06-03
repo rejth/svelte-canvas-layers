@@ -1,4 +1,4 @@
-import type { Bounds, LayerEventDetails } from 'core/interfaces';
+import type { Bounds, LayerEventDetails } from 'core/interfaces'
 
 export const enum ResizableLayerEvent {
   ACTIVE = 'layer.active',
@@ -17,11 +17,11 @@ export const enum ResizableLayerAction {
 }
 
 interface EventDetails {
-  entityId: string;
-  bounds: Bounds;
-  data?: LayerEventDetails;
+  entityId: string
+  bounds: Bounds
+  data?: LayerEventDetails
 }
 
-export type ResizableLayerEventDetails = EventDetails | undefined;
+export type ResizableLayerEventDetails = EventDetails | undefined
 
-export type ResizableLayerEventDispatcher = Record<ResizableLayerEvent, ResizableLayerEventDetails>;
+export type ResizableLayerEventDispatcher = Record<ResizableLayerEvent, ResizableLayerEventDetails>

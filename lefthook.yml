@@ -9,8 +9,8 @@ pre-commit:
     svelte-check:
       run: pnpm svelte-check --tsconfig ./tsconfig.json {staged_files}
     format:
-      glob: '*.{ts,js,svelte,css,scss,json,svg,html,md}'
-      run: pnpm prettier --write {staged_files}
+      glob: 'src/**/*.{ts,js,svelte,css,scss,json,svg,html,md}'
+      run: pnpm format {staged_files}
     lint:
-      glob: '*.{ts,js,svelte}'
-      run: pnpm prettier --check {staged_files} && pnpm eslint {staged_files}
+      glob: 'src/**/*.{ts,js,svelte}'
+      run: pnpm lint {staged_files}

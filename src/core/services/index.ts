@@ -1,7 +1,6 @@
-export { LayerManager } from './LayerManager';
-export { Renderer } from './Renderer';
-export { Camera } from './Camera';
-export { geometryManager } from './GeometryManager';
-
-export { createHitCanvas } from './createHitCanvas';
-export * from './helpers';
+export { Camera } from './Camera'
+export { createHitCanvas } from './createHitCanvas'
+export { geometryManager } from './GeometryManager'
+export * from './helpers'
+export { LayerManager } from './LayerManager'
+export { Renderer } from './Renderer'

@@ -1,78 +1,78 @@
 import type {
-  OriginalEvent,
-  Bounds,
-  Point,
-  RectDimension,
-  PixelRatio,
-  RectPosition,
-  RectCorners,
   BBox,
-} from 'core/interfaces';
+  Bounds,
+  OriginalEvent,
+  PixelRatio,
+  Point,
+  RectCorners,
+  RectDimension,
+  RectPosition,
+} from 'core/interfaces'
 
 class GeometryManager {
-  defaultPoint: Point;
+  defaultPoint: Point
 
   constructor() {
-    this.defaultPoint = { x: 0, y: 0 };
+    this.defaultPoint = { x: 0, y: 0 }
   }
 
   calculatePosition(e: OriginalEvent, pixelRatio: PixelRatio = 1): Point {
     if (window.TouchEvent && e instanceof TouchEvent) {
-      return this.#getTouchPosition(e, pixelRatio);
+      return this.#getTouchPosition(e, pixelRatio)
     } else if (e instanceof MouseEvent) {
-      return this.#getMousePosition(e, pixelRatio);
+      return this.#getMousePosition(e, pixelRatio)
     }
-    return this.defaultPoint;
+    return this.defaultPoint
   }
 
   #getMousePosition(e: MouseEvent, pixelRatio: PixelRatio = 1): Point {
     return {
       x: e.pageX * pixelRatio,
       y: e.pageY * pixelRatio,
-    };
+    }
   }
 
   #getTouchPosition(e: TouchEvent, pixelRatio: PixelRatio = 1): Point {
-    const { left, top } = (<Element>e.target).getBoundingClientRect();
-    const { clientX, clientY } = e.changedTouches[0];
+    const { left, top } = (<Element>e.target).getBoundingClientRect()
+    const { clientX, clientY } = e.changedTouches[0]
     return {
       x: (clientX - left) * pixelRatio,
       y: (clientY - top) * pixelRatio,
-    };
+    }
   }
 
   getPathBounds(path: Point[]): Bounds | null {
-    if (!path.length) return null;
-    const from = path[0];
-    const to = path[path.length - 1];
+    if (!path.length) return null
+    const from = path[0]
+    const to = path[path.length - 1]
     return {
       x0: from.x,
       y0: from.y,
       x1: to.x,
       y1: to.y,
-    };
+    }
   }
 
   getRectDimensionFromPath(path: Point[]): RectDimension | null {
-    if (!path.length) return null;
-    const from = path[0];
-    const to = path[path.length - 1];
+    if (!path.length) return null
+    const from = path[0]
+    const to = path[path.length - 1]
     return {
       x: Math.min(from.x, to.x),
       y: Math.min(from.y, to.y),
       width: Math.abs(from.x - to.x),
       height: Math.abs(from.y - to.y),
-    };
+    }
   }
 
   getRectDimensionFromBounds(bounds: Bounds): RectDimension {
-    const { x0, y0, x1, y1 } = bounds;
+    const { x0, y0, x1, y1 } = bounds
     return {
       x: Math.min(x0, x1),
       y: Math.min(y0, y1),
       width: Math.abs(x0 - x1),
       height: Math.abs(y0 - y1),
-    };
+    }
   }
 
   getRectCorners(x: number, y: number, w: number, h: number): RectCorners {
@@ -81,37 +81,37 @@ class GeometryManager {
       topRight: { x: x + w, y },
       bottomLeft: { x, y: y + h },
       bottomRight: { x: x + w, y: y + h },
-    };
+    }
   }
 
   getMiddlePoint(from: number, to: number): number {
-    return (from + to) / 2;
+    return (from + to) / 2
   }
 
   isPointInsideRect(p: Point, rect: DOMRect | RectPosition): boolean {
-    return p.x > rect.left && p.x < rect.right && p.y > rect.top && p.y < rect.bottom;
+    return p.x > rect.left && p.x < rect.right && p.y > rect.top && p.y < rect.bottom
   }
 
   getBBox(bounds: Bounds = { x0: 0, y0: 0, x1: 0, y1: 0 }): BBox {
-    const { x0, y0, x1, y1 } = bounds;
+    const { x0, y0, x1, y1 } = bounds
     return {
       minX: Math.min(x0, x1),
       minY: Math.min(y0, y1),
       maxX: Math.max(x0, x1),
       maxY: Math.max(y0, y1),
-    };
+    }
   }
 
   isOverlapping(rectA: Bounds, rectB: Bounds): boolean {
-    const rect1 = this.getBBox(rectA);
-    const rect2 = this.getBBox(rectB);
+    const rect1 = this.getBBox(rectA)
+    const rect2 = this.getBBox(rectB)
     return !(
       rect1.maxX < rect2.minX ||
       rect1.minX > rect2.maxX ||
       rect1.maxY < rect2.minY ||
       rect1.minY > rect2.maxY
-    );
+    )
   }
 }
 
-export const geometryManager = new GeometryManager();
+export const geometryManager = new GeometryManager()

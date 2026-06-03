@@ -1,5 +1,5 @@
 <script lang="ts">
-  import AnimatedLayer from './AnimatedLayer.svelte';
+import AnimatedLayer from './AnimatedLayer.svelte'
 </script>
 
 <AnimatedLayer

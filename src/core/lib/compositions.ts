@@ -1,7 +1,7 @@
-import { on, once } from './listeners';
-import { filter, any, every, sequence, watch, onlyEvent } from './async-generators';
+import { any, every, filter, onlyEvent, sequence, watch } from './async-generators'
+import { on, once } from './listeners'
 
-type Target = (Window & typeof globalThis) | Document | HTMLElement;
+type Target = (Window & typeof globalThis) | Document | HTMLElement
 
 export function dndWatcher<T>(target: HTMLElement): AsyncGenerator<T> {
   return watch(() =>
@@ -12,14 +12,14 @@ export function dndWatcher<T>(target: HTMLElement): AsyncGenerator<T> {
       ),
       onlyEvent('mousemove'),
     ),
-  );
+  )
 }
 
 export function targetEventWatcher<T, E extends keyof HTMLElementEventMap>(
   target: Target,
   event: E,
 ): AsyncGenerator<T> {
-  const allEvents = () => true;
+  const allEvents = () => true
 
   return watch(() =>
     filter(
@@ -29,5 +29,5 @@ export function targetEventWatcher<T, E extends keyof HTMLElementEventMap>(
       ),
       onlyEvent(event),
     ),
-  );
+  )
 }

@@ -31,3 +31,7 @@ lerna-debug.log*
 *.sln
 *.sw?
 
+/.claude
+/.agents
+/docs/agents
+

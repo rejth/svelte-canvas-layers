@@ -1,96 +1,96 @@
 <script lang="ts">
-  import { Tools, type Tool } from 'client/shared/interfaces';
-  import { canvasStore } from 'client/ui/Canvas/store';
-  import { connectionStore } from 'client/ui/Connection/store';
+import { type Tool, Tools } from 'client/shared/interfaces'
+import { canvasStore } from 'client/ui/Canvas/store'
+import { connectionStore } from 'client/ui/Connection/store'
 
-  import PanIcon from './PanIcon.svelte';
-  import SelectIcon from './SelectIcon.svelte';
-  import NoteIcon from './NoteIcon.svelte';
-  import TextIcon from './TextIcon.svelte';
-  import TrashIcon from './TrashIcon.svelte';
-  import ConnectIcon from './ConnectIcon.svelte';
-  import TextAreaIcon from './TextAreaIcon.svelte';
-  import { toolbarStore } from './store';
+import ConnectIcon from './ConnectIcon.svelte'
+import NoteIcon from './NoteIcon.svelte'
+import PanIcon from './PanIcon.svelte'
+import SelectIcon from './SelectIcon.svelte'
+import { toolbarStore } from './store'
+import TextAreaIcon from './TextAreaIcon.svelte'
+import TextIcon from './TextIcon.svelte'
+import TrashIcon from './TrashIcon.svelte'
 
-  const { tool } = toolbarStore;
-  const { selectedShapes } = canvasStore;
-  const { selectedConnections } = connectionStore;
+const { tool } = toolbarStore
+const { selectedShapes } = canvasStore
+const { selectedConnections } = connectionStore
 
-  $: tools = [
-    {
-      id: 'note',
-      label: 'Note',
-      type: Tools.NOTE,
-      icon: NoteIcon,
-      hoverText: 'Drag to add a new sticker',
-      disabled: false,
-    },
-    {
-      id: 'area',
-      label: 'Area',
-      type: Tools.AREA,
-      icon: TextAreaIcon,
-      hoverText: 'Drag to add a new text area',
-      disabled: false,
-    },
-    {
-      id: 'text',
-      label: 'Text',
-      type: Tools.TEXT,
-      icon: TextIcon,
-      hoverText: 'Drag to add a new text',
-      disabled: false,
-    },
-    {
-      id: 'pan',
-      label: 'Pan',
-      type: Tools.PAN,
-      icon: PanIcon,
-      hoverText: 'Panning',
-      disabled: false,
-    },
-    {
-      id: 'select',
-      label: 'Select',
-      type: Tools.SELECT,
-      icon: SelectIcon,
-      hoverText: 'Selection',
-      disabled: false,
-    },
-    {
-      id: 'connect',
-      label: 'Connect',
-      type: Tools.CONNECT,
-      icon: ConnectIcon,
-      hoverText: 'Connect tool',
-      disabled: false,
-    },
-    {
-      id: 'trash',
-      label: 'Delete',
-      type: Tools.DELETE,
-      icon: TrashIcon,
-      hoverText: 'Delete selected item(s)',
-      disabled: $selectedShapes.size === 0 && $selectedConnections.size === 0,
-    },
-  ];
+$: tools = [
+  {
+    id: 'note',
+    label: 'Note',
+    type: Tools.NOTE,
+    icon: NoteIcon,
+    hoverText: 'Drag to add a new sticker',
+    disabled: false,
+  },
+  {
+    id: 'area',
+    label: 'Area',
+    type: Tools.AREA,
+    icon: TextAreaIcon,
+    hoverText: 'Drag to add a new text area',
+    disabled: false,
+  },
+  {
+    id: 'text',
+    label: 'Text',
+    type: Tools.TEXT,
+    icon: TextIcon,
+    hoverText: 'Drag to add a new text',
+    disabled: false,
+  },
+  {
+    id: 'pan',
+    label: 'Pan',
+    type: Tools.PAN,
+    icon: PanIcon,
+    hoverText: 'Panning',
+    disabled: false,
+  },
+  {
+    id: 'select',
+    label: 'Select',
+    type: Tools.SELECT,
+    icon: SelectIcon,
+    hoverText: 'Selection',
+    disabled: false,
+  },
+  {
+    id: 'connect',
+    label: 'Connect',
+    type: Tools.CONNECT,
+    icon: ConnectIcon,
+    hoverText: 'Connect tool',
+    disabled: false,
+  },
+  {
+    id: 'trash',
+    label: 'Delete',
+    type: Tools.DELETE,
+    icon: TrashIcon,
+    hoverText: 'Delete selected item(s)',
+    disabled: $selectedShapes.size === 0 && $selectedConnections.size === 0,
+  },
+]
 
-  const handleDelete = () => {
-    canvasStore.deleteShapes();
-    canvasStore.resetTextEditor();
-    canvasStore.setIsSelected(false);
-    connectionStore.removeConnection();
-    toolbarStore.changeTool(Tools.SELECT);
-  };
+const handleDelete = () => {
+  canvasStore.deleteShapes()
+  canvasStore.resetTextEditor()
+  canvasStore.setIsSelected(false)
+  connectionStore.removeConnection()
+  toolbarStore.changeTool(Tools.SELECT)
+}
 
-  const onClick = (type: Tool) => {
-    if (type === Tools.DELETE) return handleDelete();
-    canvasStore.saveAddedShape();
-    canvasStore.resetSelectedShapes();
-    canvasStore.resetTextEditor();
-    connectionStore.resetCurrentConnection();
-    toolbarStore.changeTool(type);
-  };
+const onClick = (type: Tool) => {
+  if (type === Tools.DELETE) return handleDelete()
+  canvasStore.saveAddedShape()
+  canvasStore.resetSelectedShapes()
+  canvasStore.resetTextEditor()
+  connectionStore.resetCurrentConnection()
+  toolbarStore.changeTool(type)
+}
 </script>
 
 <ul class="toolbar" id="toolbar">
