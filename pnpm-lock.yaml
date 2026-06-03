@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@canvas/engine':
+        specifier: workspace:*
+        version: link:packages/engine
       canvas-size:
         specifier: ^2.0.0
         version: 2.0.0
