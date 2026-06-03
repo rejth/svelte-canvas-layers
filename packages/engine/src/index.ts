@@ -1,41 +1,43 @@
 // Public API barrel for @canvas/engine.
-export { Canvas, Layer } from './ui'
-export { LayerManager } from './services/LayerManager'
-export { Renderer } from './services/Renderer'
-export { createHitCanvas } from './services/createHitCanvas'
-export { getMaxPixelRatio } from './services/helpers'
+/// <reference path="./types.d.ts" />
 
+export { KEY } from './constants'
 export type {
   AppContext,
-  Bounds,
-  Point,
-  Dimension,
-  RectPosition,
-  RectDimension,
-  RectCorners,
   BBox,
-  PixelRatio,
-  RGB,
+  BezierCurveDrawOptions,
+  Bounds,
   CanvasContextType,
-  HitCanvasRenderingContext2D,
+  CanvasEvents,
   CanvasOptions,
+  CircleDrawOptions,
+  ClearRectOptions,
+  Dimension,
+  HitCanvasRenderingContext2D,
+  ImageDrawOptions,
+  LayerEventDetails,
+  LayerEventDispatcher,
+  LayerEvents,
+  OriginalEvent,
+  PixelRatio,
+  Point,
+  QuadraticCurveDrawOptions,
+  RectCorners,
+  RectDimension,
+  RectDrawOptions,
+  RectPosition,
+  RegisteredLayerMetadata,
   Render,
   RenderProps,
-  RegisteredLayerMetadata,
-  OriginalEvent,
   ResizeEvent,
-  CanvasEvents,
-  LayerEvents,
-  LayerEventDispatcher,
-  LayerEventDetails,
-  TransformationMatrix,
-  RectDrawOptions,
+  RGB,
   RoundedRectDrawOptions,
   StrokeDrawOptions,
-  CircleDrawOptions,
-  QuadraticCurveDrawOptions,
-  BezierCurveDrawOptions,
-  ImageDrawOptions,
   TextDrawOptions,
-  ClearRectOptions,
+  TransformationMatrix,
 } from './interfaces'
+export { createHitCanvas } from './services/createHitCanvas'
+export { getMaxPixelRatio } from './services/helpers'
+export { LayerManager } from './services/LayerManager'
+export { Renderer } from './services/Renderer'
+export { Canvas, Layer } from './ui'

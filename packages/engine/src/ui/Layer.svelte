@@ -1,5 +1,6 @@
 <script lang="ts">
 import { afterUpdate, createEventDispatcher, getContext, onDestroy } from 'svelte'
+
 import { KEY } from '../constants'
 import type { AppContext, Bounds, LayerEvents, Render } from '../interfaces'
 

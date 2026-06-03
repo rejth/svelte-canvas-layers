@@ -1,6 +1,6 @@
 <script lang="ts">
 import { getContext, onDestroy } from 'svelte'
-import { KEY } from 'core/constants'
+import { KEY } from '@canvas/engine'
 import type { AppContext, Render } from 'core/interfaces'
 
 /**
