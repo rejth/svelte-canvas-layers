@@ -13,10 +13,9 @@ $: heightStyle = height == null ? '100%' : `${height}px`
          background:#fff;color:#475569;font-family:ui-sans-serif,system-ui;"
 >
   <div>
-    <div style="font-size:15px;color:#111827;margin-bottom:8px;">{feature} are main-thread only</div>
+    <div style="font-size:15px;color:#111827;margin-bottom:8px;">{feature}: not ported to worker mode yet</div>
     <div style="font-size:13px;line-height:1.5;">
-      <code>&lt;WorkerCanvas&gt;</code> is render-only — hit-testing and layer event targeting
-      in worker mode are deferred.<br />
+      This specific story has not been ported to worker mode yet.<br />
       Switch <code>mode</code> back to <strong>main</strong> to interact.
     </div>
   </div>
