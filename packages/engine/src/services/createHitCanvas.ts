@@ -1,6 +1,6 @@
 import type { HitCanvasRenderingContext2D, LayerId } from '../layerTypes'
 
-import type { RGB } from './colorPicking'
+import { convertLayerIdToRGB, convertRGBtoLayerId } from './hitCanvasColors'
 
 /**
  * Offscreen canvas settings for rendering optimization.
@@ -20,20 +20,6 @@ const EXCLUDED_SETTERS: Array<keyof HitCanvasRenderingContext2D> = [
   'fillStyle',
   'strokeStyle',
 ]
-
-// https://blog.logrocket.com/guide-javascript-bitwise-operators/#sign-propagating-right-shift
-function convertRGBtoLayerId([r, g, b]: RGB): number {
-  const id = ((r << 16) | (g << 8) | b) / 2
-  return id % 1 ? 0 : id
-}
-
-function convertLayerIdToRGB(id: number): RGB {
-  const id2 = id * 2
-  const r = (id2 >> 16) & 0xff
-  const g = (id2 >> 8) & 0xff
-  const b = id2 & 0xff
-  return [r, g, b]
-}
 
 /**
  * Under the hood, we proxy all CanvasRenderingContext2D methods to a second, offscreen canvas.
