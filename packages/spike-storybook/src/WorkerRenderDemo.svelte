@@ -1,26 +1,30 @@
 <script lang="ts">
-// Spike 001 — worker render via OffscreenCanvas, imported ONLY from the public barrel.
-// Ported from packages/engine/src/examples/WorkerExample.svelte to prove the
-// `?worker` + transferControlToOffscreen chain bundles inside a Storybook story iframe.
 import { onDestroy } from 'svelte'
-import { WorkerCanvas, WorkerLayer } from '@canvas/engine'
 import type { WorkerRender } from '@canvas/engine'
+import { WorkerCanvas, WorkerLayer } from '@canvas/engine'
 
 type SquareData = { x: number; y: number; size: number; color: string }
 
 const render: WorkerRender = ({ ctx, width, height, data }) => {
   const square = data as SquareData
-  ctx.fillStyle = '#101418'
+  const size = Math.max(square.size, Math.min(width, height) * 0.24)
+  const margin = 32
+  const maxX = Math.max(margin, width - size - margin)
+  const x = Math.min(square.x, maxX)
+  const y = height / 2 - size / 2
+
+  ctx.fillStyle = '#fff'
   ctx.fillRect(0, 0, width, height)
   ctx.fillStyle = square.color
-  ctx.fillRect(square.x, square.y, square.size, square.size)
+  ctx.fillRect(x, y, size, size)
 }
 
-let data: SquareData = { x: 20, y: 60, size: 80, color: '#4cc2ff' }
+let data: SquareData = { x: 32, y: 0, size: 240, color: '#4cc2ff' }
 let direction = 1
+
 const interval = setInterval(() => {
-  let nextX = data.x + direction * 4
-  if (nextX > 320 || nextX < 20) {
+  let nextX = data.x + direction * 6
+  if (nextX > window.innerWidth - data.size - 32 || nextX < 32) {
     direction *= -1
     nextX = data.x + direction * 4
   }
@@ -30,6 +34,18 @@ const interval = setInterval(() => {
 onDestroy(() => clearInterval(interval))
 </script>
 
-<WorkerCanvas width={420} height={220} style="border: 1px solid #333; border-radius: 8px;">
-  <WorkerLayer {render} {data} />
-</WorkerCanvas>
+<div class="story-viewport">
+  <WorkerCanvas style="display:block;">
+    <WorkerLayer {render} {data} />
+  </WorkerCanvas>
+</div>
+
+<style>
+  .story-viewport {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: #fff;
+  }
+</style>

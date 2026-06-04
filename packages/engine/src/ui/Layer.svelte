@@ -17,8 +17,7 @@ const dispatcher = createEventDispatcher<LayerEvents>()
 
 const { layerId, unregister } = layerManager.register({ render, dispatcher, bounds })
 
-// TODO: Implement redrawLayer method to render only one layer on update, not all the layers
-afterUpdate(layerManager.redraw)
+afterUpdate(() => layerManager.update(layerId, { render, bounds }))
 onDestroy(unregister)
 </script>
 

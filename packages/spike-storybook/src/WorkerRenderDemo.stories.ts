@@ -1,9 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/svelte'
+
 import WorkerRenderDemo from './WorkerRenderDemo.svelte'
 
 const meta = {
-  title: 'Spike/001 Worker Render',
+  title: 'Worker Render',
   component: WorkerRenderDemo,
+  parameters: {
+    layout: 'fullscreen',
+  },
 } satisfies Meta<WorkerRenderDemo>
 
 export default meta

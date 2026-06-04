@@ -6,7 +6,7 @@ import { type ColorPickEventDetail, WorkerActionEnum, type WorkerAppContext } fr
 import { createPickingWiring } from '../services'
 import { WorkerRenderManager } from '../services/WorkerRenderManager'
 
-import { createResizeAction, derivePixelRatio } from './canvasScaffolding'
+import { type CanvasPixelRatio, createResizeAction, derivePixelRatio } from './canvasScaffolding'
 
 /**
  * Worker-mode canvas. It is render-only — no hit-testing / layer events.
@@ -24,7 +24,7 @@ export let height: number | null = null
  * If pixelRatio is unset, the canvas uses the devicePixelRatio binding to match the window's pixel density.
  * If pixelRatio is set to "auto", the canvas-size library is used to automatically calculate the maximum supported pixel ratio based on the browser and canvas size.
  */
-export let pixelRatio: 'auto' | null = 'auto'
+export let pixelRatio: CanvasPixelRatio = 'auto'
 /**
  * Opt-in live color picking (off by default).
  */

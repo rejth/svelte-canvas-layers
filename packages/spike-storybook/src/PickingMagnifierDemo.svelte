@@ -1,14 +1,9 @@
 <script lang="ts">
-// Spike 002 — demo-owned magnifier driven by the engine's public colorpeek/colorpick
-// events (the D-13 split: engine emits HEX + pointer pos, demo renders the UI).
-// Barrel-only import.
-import { onDestroy } from 'svelte'
+import type { ColorPickEventDetail, WorkerRender } from '@canvas/engine'
 import { WorkerCanvas, WorkerLayer } from '@canvas/engine'
-import type { WorkerRender, ColorPickEventDetail } from '@canvas/engine'
 
 type Band = { color: string }
 
-// Self-contained drawer: paints 4 vertical color bands so picked HEX is predictable.
 const render: WorkerRender = ({ ctx, width, height }) => {
   const colors = ['#ff3b30', '#34c759', '#007aff', '#ffcc00']
   const bandW = width / colors.length
@@ -25,43 +20,81 @@ let picked: ColorPickEventDetail | null = null
 
 const onPeek = (e: CustomEvent<ColorPickEventDetail>) => (peek = e.detail)
 const onPick = (e: CustomEvent<ColorPickEventDetail>) => (picked = e.detail)
-
-onDestroy(() => {})
 </script>
 
-<div style="display:flex; gap:16px; align-items:flex-start; font-family: ui-monospace, monospace;">
+<div class="story-viewport">
   <WorkerCanvas
-    width={420}
-    height={220}
     enablePicking
-    style="border: 1px solid #333; border-radius: 8px; cursor: crosshair;"
+    style="display:block;cursor:crosshair;"
     on:colorpeek={onPeek}
     on:colorpick={onPick}
   >
     <WorkerLayer {render} {data} />
   </WorkerCanvas>
 
-  <!-- demo-owned magnifier / readout -->
-  <div style="min-width:180px;">
-    <div style="margin-bottom:12px;">
-      <div style="font-size:11px; opacity:0.6;">PEEK (hover)</div>
-      <div style="display:flex; align-items:center; gap:8px;">
-        <span
-          style="width:28px; height:28px; border-radius:6px; border:1px solid #333; display:inline-block; background:{peek?.hex ?? 'transparent'};"
-        ></span>
+  <div class="readout">
+    <div class="readout-item">
+      <div class="label">PEEK (hover)</div>
+      <div class="value">
+        <span class="swatch" style:background={peek?.hex ?? 'transparent'}></span>
         <code>{peek?.hex ?? '—'}</code>
       </div>
-      <div style="font-size:11px; opacity:0.5;">{peek ? `(${peek.x}, ${peek.y})` : ''}</div>
     </div>
-    <div>
-      <div style="font-size:11px; opacity:0.6;">PICK (click)</div>
-      <div style="display:flex; align-items:center; gap:8px;">
-        <span
-          style="width:28px; height:28px; border-radius:6px; border:1px solid #333; display:inline-block; background:{picked?.hex ?? 'transparent'};"
-        ></span>
+    <div class="readout-item">
+      <div class="label">PICK (click)</div>
+      <div class="value">
+        <span class="swatch" style:background={picked?.hex ?? 'transparent'}></span>
         <code>{picked?.hex ?? '—'}</code>
       </div>
-      <div style="font-size:11px; opacity:0.5;">{picked ? `(${picked.x}, ${picked.y})` : ''}</div>
     </div>
   </div>
 </div>
+
+<style>
+  .story-viewport {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .readout {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    display: flex;
+    gap: 16px;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.88);
+    color: #111827;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+  }
+
+  .readout-item {
+    min-width: 112px;
+  }
+
+  .label {
+    margin-bottom: 4px;
+    font-size: 11px;
+    opacity: 0.65;
+  }
+
+  .value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .swatch {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    border: 1px solid #334155;
+    border-radius: 6px;
+  }
+</style>
