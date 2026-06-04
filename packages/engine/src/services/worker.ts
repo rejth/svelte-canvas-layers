@@ -3,6 +3,8 @@ import JSONfn from 'json-fn'
 import { type LayerId, WorkerActionEnum, type WorkerEvent, type WorkerRender } from '../layerTypes'
 
 import { pickColor } from './colorPicking'
+import { convertLayerIdToRGB, convertRGBtoLayerId } from './hitCanvasColors'
+import { createForcedColorContext } from './workerHitCanvas'
 
 interface Drawer {
   render: WorkerRender
@@ -18,6 +20,62 @@ let height = 0
 let pixelRatio = 1
 let frame: number | null = null
 let needsRedraw = true
+
+// Worker-resident hit canvas (D-06/D-08). Created only when layer events are
+// enabled, so worker mode pays zero hit-canvas overhead when they are off.
+let useLayerEvents = false
+let hitCanvas: OffscreenCanvas | null = null
+let hitContext: OffscreenCanvasRenderingContext2D | null = null
+let forcedHitContext: OffscreenCanvasRenderingContext2D | null = null
+let activeHitColor = 'rgb(0,0,0)'
+
+/**
+ * Lazily create the resident hit canvas + forced-color context when layer
+ * events are enabled. No-op when events are off or the canvas already exists.
+ */
+function ensureHitCanvas() {
+  if (!useLayerEvents || hitContext) return
+
+  hitCanvas = new OffscreenCanvas(width * pixelRatio, height * pixelRatio)
+  hitContext = hitCanvas.getContext('2d', settings)
+  if (!hitContext) {
+    hitCanvas = null
+    return
+  }
+  forcedHitContext = createForcedColorContext(hitContext, () => activeHitColor)
+}
+
+/**
+ * Replay every drawer into the hit canvas with a per-layer forced color id so a
+ * later 1x1 read-back resolves a coordinate to its `LayerId` (D-02/D-08).
+ */
+function renderHitCanvas() {
+  if (!useLayerEvents || !hitContext || !forcedHitContext) return
+
+  hitContext.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0)
+  hitContext.clearRect(0, 0, width, height)
+
+  drawers.forEach(({ render: draw, data }, layerId) => {
+    const [r, g, b] = convertLayerIdToRGB(layerId)
+    activeHitColor = `rgb(${r},${g},${b})`
+    draw({ ctx: forcedHitContext!, width, height, pixelRatio, data })
+  })
+}
+
+/**
+ * Resolve a backing-store coordinate to a `LayerId` by reading a single hit
+ * pixel. Returns 0 when the hit context is missing, the coordinates are not
+ * finite, or `getImageData` throws (D-01/security).
+ */
+function readHitLayerId(x: number, y: number): LayerId {
+  if (!hitContext || !Number.isFinite(x) || !Number.isFinite(y)) return 0
+  try {
+    const [r, g, b] = hitContext.getImageData(x, y, 1, 1).data
+    return convertRGBtoLayerId([r, g, b])
+  } catch {
+    return 0
+  }
+}
 
 /**
  * Offscreen canvas settings for rendering optimization.
@@ -46,6 +104,8 @@ function render() {
     draw({ ctx: context!, width, height, pixelRatio, data })
   })
 
+  renderHitCanvas()
+
   needsRedraw = false
 }
 
@@ -59,6 +119,8 @@ self.onmessage = (e: MessageEvent<WorkerEvent>) => {
       width = e.data.width ?? 0
       height = e.data.height ?? 0
       pixelRatio = e.data.pixelRatio ?? 1
+      useLayerEvents = e.data.useLayerEvents ?? false
+      ensureHitCanvas()
 
       if (e.data.drawers) {
         const initial = JSONfn.parse(e.data.drawers) as Array<[LayerId, Drawer]>
@@ -74,10 +136,19 @@ self.onmessage = (e: MessageEvent<WorkerEvent>) => {
       width = e.data.width ?? width
       height = e.data.height ?? height
       pixelRatio = e.data.pixelRatio ?? pixelRatio
+      if (e.data.useLayerEvents != null) useLayerEvents = e.data.useLayerEvents
 
       if (offscreenCanvas) {
         offscreenCanvas.width = width * pixelRatio
         offscreenCanvas.height = height * pixelRatio
+      }
+
+      // Lazily create the hit canvas if events were just enabled, otherwise
+      // keep it sized in lockstep with the display canvas.
+      ensureHitCanvas()
+      if (hitCanvas) {
+        hitCanvas.width = width * pixelRatio
+        hitCanvas.height = height * pixelRatio
       }
 
       needsRedraw = true
@@ -117,6 +188,14 @@ self.onmessage = (e: MessageEvent<WorkerEvent>) => {
           })
         } catch {}
       }
+      break
+
+    case WorkerActionEnum.HIT_TEST:
+      self.postMessage({
+        action: WorkerActionEnum.HIT_TEST_RESULT,
+        requestId: e.data.requestId,
+        layerId: readHitLayerId(e.data.x ?? NaN, e.data.y ?? NaN),
+      })
       break
   }
 }
