@@ -5,12 +5,14 @@ import { KEY } from '../constants'
 import type {
   AppContext,
   CanvasContextType,
+  ColorPickEventDetail,
   OriginalEvent,
   PixelRatio,
   ResizeEvent,
 } from '../interfaces'
 import { clickOutside } from '../lib'
 import { createHitCanvas, getMaxPixelRatio, LayerManager, Renderer } from '../services'
+import { createPickingWiring } from './canvasScaffolding'
 
 /**
  * When unset, the canvas will use its clientWidth property.
@@ -40,6 +42,14 @@ export let settings: CanvasRenderingContext2DSettings | undefined = undefined
  * When useLayerEvents is false, all operations will be performed on the main canvas in the main thread.
  */
 export let useLayerEvents = false
+/**
+ * Opt-in live color picking (off by default — D-02 zero overhead).
+ * When true, the Canvas merges `willReadFrequently: true` into the display context at
+ * creation time (D-10), wires the shared rAF-coalesced pointer action, and dispatches
+ * `colorpeek` (pointer move) / `colorpick` (click) with `{ hex, x, y }` (PICK-04).
+ * When false, no picking listeners are attached and no `getImageData` runs.
+ */
+export let enablePicking = false
 export let handleEventsOnLayerMove = false
 export let clickOutsideExcludedIds: string[] = []
 export let className = ''
@@ -60,11 +70,18 @@ let devicePixelRatio: number | undefined
 const renderer = new Renderer()
 const layerManager = new LayerManager(renderer)
 const dispatch = createEventDispatcher<ResizeEvent>()
+const dispatchPick = createEventDispatcher<{
+  colorpeek: ColorPickEventDetail
+  colorpick: ColorPickEventDetail
+}>()
 
 setContext<AppContext>(KEY, { layerManager })
 
 onMount(() => {
-  const context = createHitCanvas(canvas, settings)
+  const context = createHitCanvas(
+    canvas,
+    enablePicking ? { ...(settings ?? {}), willReadFrequently: true } : settings,
+  )
   let initialScale: PixelRatio
 
   if (devicePixelRatio && pixelRatio === 'auto') {
@@ -118,6 +135,21 @@ const handleEvent = (e: OriginalEvent) => {
 const handleClickOutside = (e: CustomEvent) => {
   layerManager.leaveActiveLayer(e)
 }
+
+const onPeek = (dx: number, dy: number, cssX: number, cssY: number) => {
+  const hex = layerManager.getCachedColor(dx, dy)
+  if (hex != null) dispatchPick('colorpeek', { hex, x: cssX, y: cssY })
+}
+
+const onPick = (dx: number, dy: number, cssX: number, cssY: number) => {
+  const hex = layerManager.getCachedColor(dx, dy)
+  if (hex != null) dispatchPick('colorpick', { hex, x: cssX, y: cssY })
+}
+
+const picking = (node: HTMLCanvasElement) =>
+  enablePicking
+    ? createPickingWiring({ onPeek, onPick, getPixelRatio: () => _pixelRatio })(node)
+    : { destroy() {} }
 
 $: _width = width ?? canvasWidth ?? 0
 $: _height = height ?? canvasHeight ?? 0
@@ -176,6 +208,7 @@ $: layerEventHandler = useLayerEvents ? handleEvent : null
 <canvas
   bind:this={canvas}
   use:resize
+  use:picking
   use:clickOutside={{ exclude: clickOutsideExcludedIds }}
   bind:clientWidth={canvasWidth}
   bind:clientHeight={canvasHeight}
