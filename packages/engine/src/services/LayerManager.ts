@@ -174,6 +174,15 @@ export class LayerManager {
 
       if (!this.imageData) return null
 
+      // Bounds guard (CR-02): off-canvas or exact-edge coords would index
+      // `undefined` channels in the cached buffer and emit a garbage HEX as a
+      // "valid" colorpeek/colorpick. Clamp-reject out-of-range reads to null.
+      const px = Math.floor(x)
+      const py = Math.floor(y)
+      if (px < 0 || py < 0 || px >= this.imageData.width || py >= this.imageData.height) {
+        return null
+      }
+
       return pickColor(context.canvas, context, x, y, this.imageData.data)
     } catch {
       return null
