@@ -1,4 +1,6 @@
 export { createHitCanvas } from './createHitCanvas'
+export { pickColor, rgbToHex } from './colorPicking'
+export type { HEX } from './colorPicking'
 export * from './helpers'
 export { LayerManager } from './LayerManager'
 export { Renderer } from './Renderer'
