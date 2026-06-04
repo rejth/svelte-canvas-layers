@@ -1,6 +1,7 @@
 import type { createEventDispatcher } from 'svelte'
 
 import type { LayerManager, Renderer } from './services'
+import type { WorkerRenderManager } from './services/WorkerRenderManager'
 
 export type AppContext = {
   layerManager: LayerManager
@@ -51,6 +52,62 @@ export type RenderProps = {
 
 export interface Render {
   (data: RenderProps): void
+}
+
+/**
+ * Worker render contract (D-04).
+ * Unlike the main-thread `Render`, the worker render fn receives the native
+ * `OffscreenCanvasRenderingContext2D` directly — NOT the engine `Renderer` —
+ * because the render source is serialized via json-fn and reconstructed inside
+ * the worker, where the engine `Renderer` instance is not in scope.
+ */
+export type WorkerRenderProps<T = unknown> = {
+  ctx: OffscreenCanvasRenderingContext2D
+  width: number
+  height: number
+  pixelRatio: number
+  data: T
+}
+
+export interface WorkerRender<T = unknown> {
+  (props: WorkerRenderProps<T>): void
+}
+
+/**
+ * Worker app-context (D-05), provided under WORKER_KEY (distinct from KEY so a
+ * WorkerLayer under a main-thread <Canvas> finds no worker context).
+ */
+export type WorkerAppContext = {
+  workerManager: WorkerRenderManager
+}
+
+/**
+ * Worker message-action enum (D-05/D-07). Mirrors color-dropper's WorkerActionEnum
+ * minus the Phase-5 color-picking members, and replaces the single UPDATE with the
+ * granular ADD_DRAWER/REMOVE_DRAWER/UPDATE_DATA actions.
+ */
+export enum WorkerActionEnum {
+  INIT = 'init',
+  RESIZE = 'resize',
+  ADD_DRAWER = 'addDrawer',
+  REMOVE_DRAWER = 'removeDrawer',
+  UPDATE_DATA = 'updateData',
+}
+
+/**
+ * Worker postMessage payload shape. Mirrors color-dropper's WorkerEvent minus the
+ * color-picking fields (imageSource / cursorPosition / color — Phase 5 scope).
+ */
+export type WorkerEvent = {
+  action: WorkerActionEnum
+  canvas?: OffscreenCanvas
+  drawers?: string
+  render?: string
+  data?: unknown
+  layerId?: LayerId
+  width?: number
+  height?: number
+  pixelRatio?: number
 }
 
 export interface RegisteredLayerMetadata {
