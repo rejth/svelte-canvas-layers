@@ -35,9 +35,16 @@ export type {
   StrokeDrawOptions,
   TextDrawOptions,
   TransformationMatrix,
+  WorkerAppContext,
+  WorkerRender,
+  WorkerRenderProps,
 } from './interfaces'
+// WorkerActionEnum is a runtime enum (value), so it is exported as a value — NOT
+// inside the `export type` block above.
+export { WorkerActionEnum } from './interfaces'
 export { createHitCanvas } from './services/createHitCanvas'
 export { getMaxPixelRatio } from './services/helpers'
 export { LayerManager } from './services/LayerManager'
 export { Renderer } from './services/Renderer'
-export { Canvas, Layer } from './ui'
+export { WorkerRenderManager } from './services/WorkerRenderManager'
+export { Canvas, Layer, WorkerCanvas, WorkerLayer } from './ui'
