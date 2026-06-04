@@ -91,11 +91,15 @@ self.onmessage = (e: MessageEvent<WorkerEvent>) => {
       break
 
     case WorkerActionEnum.ADD_DRAWER:
-      drawers.set(e.data.layerId!, {
-        render: JSONfn.parse(e.data.render) as WorkerRender,
-        data: e.data.data,
-      })
-      needsRedraw = true
+      // ADD_DRAWER must carry both a layerId and a serialized render source; a
+      // payload missing either is malformed and is ignored rather than crashing.
+      if (e.data.layerId != null && e.data.render != null) {
+        drawers.set(e.data.layerId, {
+          render: JSONfn.parse(e.data.render) as WorkerRender,
+          data: e.data.data,
+        })
+        needsRedraw = true
+      }
       break
 
     case WorkerActionEnum.REMOVE_DRAWER:

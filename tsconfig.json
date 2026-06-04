@@ -43,7 +43,9 @@
     "src/**/*.ts",
     "src/**/*.js",
     "src/**/*.svelte",
-    "packages/engine/src/types.d.ts"
+    "packages/engine/src/types.d.ts",
+    "packages/engine/src/json-fn.d.ts",
+    "packages/engine/src/vite-worker.d.ts"
   ],
   "references": [
     {
