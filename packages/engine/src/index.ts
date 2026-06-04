@@ -12,6 +12,7 @@ export type {
   CanvasOptions,
   CircleDrawOptions,
   ClearRectOptions,
+  ColorPickEventDetail,
   Dimension,
   HitCanvasRenderingContext2D,
   ImageDrawOptions,
@@ -43,6 +44,9 @@ export type {
 // inside the `export type` block above.
 export { WorkerActionEnum } from './interfaces'
 export { createHitCanvas } from './services/createHitCanvas'
+// HEX is defined in services/colorPicking (single source of truth); re-exported here
+// for the public surface alongside the ColorPickEventDetail that references it.
+export type { HEX } from './services/colorPicking'
 export { getMaxPixelRatio } from './services/helpers'
 export { LayerManager } from './services/LayerManager'
 export { Renderer } from './services/Renderer'

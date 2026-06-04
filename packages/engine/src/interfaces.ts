@@ -1,6 +1,7 @@
 import type { createEventDispatcher } from 'svelte'
 
 import type { LayerManager, Renderer } from './services'
+import type { HEX } from './services/colorPicking'
 import type { WorkerRenderManager } from './services/WorkerRenderManager'
 
 export type AppContext = {
@@ -92,6 +93,8 @@ export enum WorkerActionEnum {
   ADD_DRAWER = 'addDrawer',
   REMOVE_DRAWER = 'removeDrawer',
   UPDATE_DATA = 'updateData',
+  GET_COLOR = 'getColor',
+  PICK_COLOR = 'pickColor',
 }
 
 /**
@@ -108,7 +111,18 @@ export type WorkerEvent = {
   width?: number
   height?: number
   pixelRatio?: number
+  x?: number
+  y?: number
+  hex?: HEX
 }
+
+/**
+ * Public payload for the color-pick event a consumer receives.
+ * `x`/`y` are CSS-pixel client coordinates (demo-friendly for Phase 6 cursor
+ * positioning — LOCKED per OQ2); the device-pixel conversion used internally for
+ * the actual pixel read is NOT exposed here.
+ */
+export type ColorPickEventDetail = { hex: HEX; x: number; y: number }
 
 export interface RegisteredLayerMetadata {
   render: Render
