@@ -104,7 +104,11 @@ export class WorkerRenderManager {
     render,
     data,
     dispatcher,
-  }: { render: WorkerRender; data: unknown; dispatcher?: LayerEventDispatcher }) {
+  }: {
+    render: WorkerRender
+    data: unknown
+    dispatcher?: LayerEventDispatcher
+  }) {
     const layerId = this.currentLayerId++
 
     if (dispatcher) {
@@ -290,6 +294,7 @@ export class WorkerRenderManager {
     if (pending.coalescable && requestId !== this.latestCoalescableRequestId) return
 
     if (pending.shouldFindActiveLayer) {
+      if (layerId !== 0 && !this.dispatchers.has(layerId)) return
       this.#setActiveLayer(layerId, pending.originalEvent, pending.detailPoint)
     }
 
