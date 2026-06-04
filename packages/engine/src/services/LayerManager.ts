@@ -11,6 +11,8 @@ import type {
 } from '../interfaces'
 
 import { calculatePosition } from './geometry'
+import { pickColor } from './colorPicking'
+import type { HEX } from './colorPicking'
 import type { Renderer } from './Renderer'
 
 export class LayerManager {
@@ -24,6 +26,9 @@ export class LayerManager {
   drawers: Map<LayerId, { render: Render }>
   dispatchers: Map<LayerId, LayerEventDispatcher>
   needsRedraw: boolean
+
+  imageData: ImageData | null
+  needsCacheImage: boolean
 
   animationFrame?: number
   layerChangeCallback?: (layerId: LayerId) => void
@@ -40,6 +45,9 @@ export class LayerManager {
     this.drawers = new Map()
     this.dispatchers = new Map()
     this.needsRedraw = true
+
+    this.imageData = null
+    this.needsCacheImage = false
 
     this.redraw = this.redraw.bind(this)
   }
@@ -140,6 +148,36 @@ export class LayerManager {
    */
   redraw() {
     this.needsRedraw = true
+    this.needsCacheImage = true
+  }
+
+  /**
+   * Lazily read the pixel color at device-pixel `(x, y)` off the display canvas (PICK-03, D-11).
+   *
+   * The full-canvas ImageData cache is rebuilt only on the first peek after a redraw
+   * (`needsCacheImage`), then reused for the rest of the frame; idle frames do no
+   * pixel read. Wrapped in try/catch so a tainted-canvas `SecurityError`
+   * (T-05-02-ID) returns `null` and never kills the render loop.
+   */
+  getCachedColor(x: number, y: number): HEX | null {
+    const ctx = this.renderer.getContext()
+    if (!ctx) return null
+
+    const context = ctx as unknown as CanvasRenderingContext2D
+    const { width, height, pixelRatio } = this.renderer.getCanvasOptions()
+
+    try {
+      if (this.needsCacheImage && width > 0 && height > 0) {
+        this.imageData = context.getImageData(0, 0, width * pixelRatio, height * pixelRatio)
+        this.needsCacheImage = false
+      }
+
+      if (!this.imageData) return null
+
+      return pickColor(context.canvas, context, x, y, this.imageData.data)
+    } catch {
+      return null
+    }
   }
 
   /**
