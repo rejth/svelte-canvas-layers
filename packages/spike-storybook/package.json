@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "THROWAWAY spike — validates @storybook/svelte-vite hosting the @canvas/engine worker demo (?worker + transferControlToOffscreen). Safe to delete.",
+  "description": "Storybook demo host for @canvas/engine — worker-mode rendering and live color-picking stories built on the public barrel. Origin: spike 001/002; kept as the Phase 6 validation-demo base.",
   "scripts": {
     "storybook": "storybook dev -p 6007 --no-open",
     "build-storybook": "storybook build"
