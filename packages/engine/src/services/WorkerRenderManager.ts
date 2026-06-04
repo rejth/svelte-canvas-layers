@@ -1,19 +1,11 @@
 import JSONfn from 'json-fn'
 
+import { type LayerId, WorkerActionEnum, type WorkerRender } from '../interfaces'
+
 import Worker from './worker?worker'
 
-import { type LayerId, type WorkerRender, WorkerActionEnum } from '../interfaces'
-
 /**
- * Main-thread manager for worker-mode rendering (WRK-01/WRK-02).
- *
- * Ported from color-dropper's `RenderWorker.ts` + the engine `LayerManager` id-counter
- * pattern, with the two sanctioned Phase-4 improvements:
- *  - D-04: render fns are serialized once per layer at registration; the color-source
- *    field from the analog is dropped (Phase-5 boundary).
- *  - D-05: per-layer `data` updates post a granular `UPDATE_DATA` instead of
- *    re-stringifying the whole drawer map. There is intentionally no writable-store
- *    drawer subscription and no whole-map re-serialize blob from the analog.
+ * Main-thread manager for worker-mode rendering.
  */
 export class WorkerRenderManager {
   width = 0
@@ -29,8 +21,7 @@ export class WorkerRenderManager {
   }
 
   /**
-   * Creates the offscreen canvas, transfers it to the worker (ownership moves to the
-   * worker) and posts INIT. The transfer list `[offscreen]` is REQUIRED (Pitfall 3).
+   * Creates the offscreen canvas, transfers it to the worker (ownership moves to the worker) and posts INIT.
    */
   init(canvas: HTMLCanvasElement) {
     const offscreen = canvas.transferControlToOffscreen()
@@ -48,8 +39,7 @@ export class WorkerRenderManager {
   }
 
   /**
-   * Registers a layer drawer. The render SOURCE is serialized once with json-fn
-   * (WRK-02/D-05); dynamic state must be routed through `data` (structured clone).
+   * Registers a layer drawer.
    */
   register({ render, data }: { render: WorkerRender; data: unknown }) {
     const layerId = this.currentLayerId++
@@ -67,20 +57,29 @@ export class WorkerRenderManager {
     }
   }
 
+  /**
+   * Removes a layer drawer.
+   */
   removeDrawer(layerId: LayerId) {
-    this.worker.postMessage({ action: WorkerActionEnum.REMOVE_DRAWER, layerId })
+    this.worker.postMessage({
+      action: WorkerActionEnum.REMOVE_DRAWER,
+      layerId,
+    })
   }
 
   /**
-   * Posts a granular per-layer data update (D-05) — only the changed layer's `data`
-   * crosses the boundary; no render fn is re-serialized.
+   * Posts a granular per-layer data update — only the changed layer's `data` crosses the boundary; no render fn is re-serialized.
    */
   updateData(layerId: LayerId, data: unknown) {
-    this.worker.postMessage({ action: WorkerActionEnum.UPDATE_DATA, layerId, data })
+    this.worker.postMessage({
+      action: WorkerActionEnum.UPDATE_DATA,
+      layerId,
+      data,
+    })
   }
 
   /**
-   * Propagates size / pixel-ratio changes (WRK-04). No drawer payload is sent.
+   * Propagates size / pixel-ratio changes. No drawer payload is sent.
    */
   resize() {
     this.worker.postMessage({
