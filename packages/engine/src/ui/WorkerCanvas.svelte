@@ -56,6 +56,7 @@ let canvasHeight: number
 let devicePixelRatio: number | undefined
 
 const workerManager = new WorkerRenderManager()
+let initialized = false
 
 const dispatchPick = createEventDispatcher<{
   colorpeek: ColorPickEventDetail
@@ -201,6 +202,10 @@ const handleLayerCancel = (e: OriginalEvent) => {
   workerManager.leaveActiveLayer(e, getDetailPoint(e))
 }
 
+const handleCanvasLeave = (e: MouseEvent) => {
+  workerManager.leaveActiveLayer(e, getDetailPoint(e))
+}
+
 const resize = createResizeAction((w, h) => {
   canvasWidth = w
   canvasHeight = h
@@ -208,6 +213,7 @@ const resize = createResizeAction((w, h) => {
 
 onMount(() => {
   workerManager.init(canvas, { useLayerEvents })
+  initialized = true
 
   if (enablePicking) {
     workerManager.onColor = (action, hex) => {
@@ -237,13 +243,14 @@ $: workerManager.pixelRatio = _pixelRatio
 $: _width, _height, _pixelRatio, workerManager.resize()
 
 // Bridge post-init prop changes; the initial flag is set deterministically in init().
-$: workerManager.setUseLayerEvents(useLayerEvents)
+$: if (initialized) workerManager.setUseLayerEvents(useLayerEvents)
 
 // Bind layer-event handlers only when opted in (D-06).
 $: moveHandler = useLayerEvents ? handleLayerMove : null
 $: touchStartHandler = useLayerEvents ? handleLayerTouchStart : null
 $: touchMoveHandler = useLayerEvents ? handleLayerTouchMove : null
 $: cancelHandler = useLayerEvents ? handleLayerCancel : null
+$: leaveHandler = useLayerEvents ? handleCanvasLeave : null
 $: layerEventHandler = useLayerEvents ? handleLayerEvent : null
 </script>
 
@@ -268,6 +275,8 @@ $: layerEventHandler = useLayerEvents ? handleLayerEvent : null
   on:touchend={layerEventHandler}
   on:touchcancel={cancelHandler}
   on:pointercancel={cancelHandler}
+  on:mouseleave={leaveHandler}
+  on:pointerleave={leaveHandler}
   on:click={layerEventHandler}
   on:contextmenu={layerEventHandler}
   on:dblclick={layerEventHandler}

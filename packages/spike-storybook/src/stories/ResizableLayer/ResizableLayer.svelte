@@ -72,9 +72,9 @@ let activeTarget = '—'
 let lastPeekHex = '—'
 let lastPickHex = '—'
 
-// Move the active box to the end of the array on press so it is the topmost
-// drag target. (Worker hit/draw order follows WorkerLayer registration order; the
-// keyed `{#each}` reorders DOM only, but this keeps the story's intent explicit.)
+// Move the active box to the last fixed worker layer slot so it is the topmost
+// draw and hit target. The unkeyed WorkerLayer loop below keeps registration
+// order stable while updating each slot's data.
 const workerSortToFront = (id: string) => {
   workerBoxes = workerBoxes
     .filter((box) => box.id !== id)
@@ -156,7 +156,7 @@ const onColorPick = (event: CustomEvent<ColorPickEventDetail>) => {
       on:colorpeek={onColorPeek}
       on:colorpick={onColorPick}
     >
-      {#each workerBoxes as box (box.id)}
+      {#each workerBoxes as box}
         <WorkerLayer
           render={workerBoxRender}
           data={box}
