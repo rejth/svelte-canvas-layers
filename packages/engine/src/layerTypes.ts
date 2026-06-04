@@ -71,6 +71,8 @@ export enum WorkerActionEnum {
   UPDATE_DATA = 'updateData',
   GET_COLOR = 'getColor',
   PICK_COLOR = 'pickColor',
+  HIT_TEST = 'hitTest',
+  HIT_TEST_RESULT = 'hitTestResult',
 }
 
 /**
@@ -90,6 +92,8 @@ export type WorkerEvent = {
   x?: number
   y?: number
   hex?: HEX
+  requestId?: number
+  useLayerEvents?: boolean
 }
 
 /**
