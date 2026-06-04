@@ -1,4 +1,6 @@
-import type { HitCanvasRenderingContext2D, LayerId, RGB } from '../interfaces'
+import type { HitCanvasRenderingContext2D, LayerId } from '../layerTypes'
+
+import type { RGB } from './colorPicking'
 
 /**
  * Offscreen canvas settings for rendering optimization.

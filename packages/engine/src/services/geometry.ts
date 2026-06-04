@@ -1,4 +1,4 @@
-import type { OriginalEvent, PixelRatio, Point, RectCorners } from '../interfaces'
+import type { OriginalEvent, PixelRatio, Point, RectCorners } from '../layerTypes'
 
 const defaultPoint: Point = { x: 0, y: 0 }
 
