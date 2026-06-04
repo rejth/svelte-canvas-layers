@@ -54,6 +54,13 @@ const interval = setInterval(() => {
 onDestroy(() => clearInterval(interval))
 </script>
 
-<WorkerCanvas width={420} height={220} style="border: 1px solid #333; border-radius: 8px;">
+<WorkerCanvas
+  width={420}
+  height={220}
+  enablePicking
+  style="border: 1px solid #333; border-radius: 8px;"
+  on:colorpeek={(e) => console.log('peek', e.detail)}
+  on:colorpick={(e) => console.log('pick', e.detail)}
+>
   <WorkerLayer {render} {data} />
 </WorkerCanvas>
