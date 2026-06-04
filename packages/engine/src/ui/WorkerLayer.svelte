@@ -1,8 +1,8 @@
 <script lang="ts">
-import { getContext, onDestroy } from 'svelte'
+import { createEventDispatcher, getContext, onDestroy } from 'svelte'
 
 import { WORKER_KEY } from '../constants'
-import type { WorkerAppContext, WorkerRender } from '../interfaces'
+import type { LayerEvents, WorkerAppContext, WorkerRender } from '../interfaces'
 
 /**
  * Worker-mode layer. A renderless child of <WorkerCanvas> that registers a
@@ -28,8 +28,9 @@ const ctx = getContext<WorkerAppContext>(WORKER_KEY)
 if (!ctx) throw new Error('WorkerLayer must be a child of WorkerCanvas')
 
 const { workerManager } = ctx
+const dispatcher = createEventDispatcher<LayerEvents>()
 
-const { layerId, unregister } = workerManager.register({ render, data })
+const { layerId, unregister } = workerManager.register({ render, data, dispatcher })
 
 $: workerManager.updateData(layerId, data)
 
