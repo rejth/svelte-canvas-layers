@@ -97,6 +97,14 @@ export class LayerManager {
     }
   }
 
+  update(layerId: LayerId, { render }: RegisteredLayerMetadata) {
+    const drawer = this.drawers.get(layerId)
+    if (!drawer) return
+
+    drawer.render = render
+    this.redraw()
+  }
+
   #unregister(layerId: LayerId) {
     this.#removeDrawer(layerId)
     this.#removeDispatcher(layerId)

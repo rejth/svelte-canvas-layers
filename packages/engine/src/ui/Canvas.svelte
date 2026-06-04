@@ -11,13 +11,9 @@ import type {
   ResizeEvent,
 } from '../interfaces'
 import { clickOutside } from '../lib'
-import {
-  createHitCanvas,
-  createPickingWiring,
-  getMaxPixelRatio,
-  LayerManager,
-  Renderer,
-} from '../services'
+import { createHitCanvas, createPickingWiring, LayerManager, Renderer } from '../services'
+
+import { type CanvasPixelRatio, derivePixelRatio } from './canvasScaffolding'
 
 /**
  * When unset, the canvas will use its clientWidth property.
@@ -32,7 +28,7 @@ export let height: number | null = null
  * If pixelRatio is set to "auto", the canvas-size library is used to automatically calculate the maximum supported pixel ratio based on the browser and canvas size.
  * This can be particularly useful when rendering large canvases on iOS Safari (https://pqina.nl/blog/canvas-area-exceeds-the-maximum-limit/)
  */
-export let pixelRatio: 'auto' | null = 'auto'
+export let pixelRatio: CanvasPixelRatio = 'auto'
 /**
  * User settings for canvas rendering context
  * For example, consider using "willReadFrequently: true" property if you are going to use frequent read-back operations via getImageData().
@@ -69,7 +65,6 @@ let canvas: HTMLCanvasElement
 let layerContainer: HTMLDivElement
 let canvasWidth: number
 let canvasHeight: number
-let maxPixelRatio: number | undefined
 let devicePixelRatio: number | undefined
 
 const renderer = new Renderer()
@@ -91,11 +86,12 @@ onMount(() => {
   const context = createHitCanvas(canvas, contextSettings)
   let initialScale: PixelRatio
 
-  if (devicePixelRatio && pixelRatio === 'auto') {
-    initialScale = getMaxPixelRatio(_width, _height, devicePixelRatio)
-  } else {
-    initialScale = devicePixelRatio ?? 2
-  }
+  initialScale = derivePixelRatio({
+    width: _width,
+    height: _height,
+    devicePixelRatio,
+    pixelRatio,
+  })
 
   canvas.width = Math.floor(_width * initialScale)
   canvas.height = Math.floor(_height * initialScale)
@@ -123,7 +119,13 @@ const resize = (node: HTMLElement) => {
 
 const handleLayerMouseMove = (e: MouseEvent) => {
   if (handleEventsOnLayerMove) {
+    if (e.buttons > 0) {
+      layerManager.dispatchEvent(e)
+      return
+    }
+
     layerManager.findActiveLayer(e)
+    layerManager.dispatchEvent(e)
   }
 }
 
@@ -133,7 +135,7 @@ const handleLayerTouchStart = (e: TouchEvent) => {
 }
 
 const handleEvent = (e: OriginalEvent) => {
-  if (!handleEventsOnLayerMove) {
+  if (!handleEventsOnLayerMove || e.type === 'mousedown' || e.type === 'pointerdown') {
     layerManager.findActiveLayer(e)
   }
   layerManager.dispatchEvent(e)
@@ -164,16 +166,6 @@ $: _width = width ?? canvasWidth ?? 0
 $: _height = height ?? canvasHeight ?? 0
 
 /**
- * If pixelRatio is set to "auto", we will calculate the maximum supported pixel ratio based on the browser and canvas size.
- * Calculate a new maxPixelRatio each time _width, _height or devicePixelRatio change.
- */
-$: if (devicePixelRatio && pixelRatio === 'auto') {
-  maxPixelRatio = getMaxPixelRatio(_width, _height, devicePixelRatio)
-} else {
-  maxPixelRatio = undefined
-}
-
-/**
    * _pixelRatio parameter allows to prevent canvas items from appearing blurry on higher-resolution displays.
    * This is useful when rendering large canvases on iOS Safari (https://pqina.nl/blog/canvas-area-exceeds-the-maximum-limit/)
    * To do this, we scale canvas for high resolution displays:
@@ -184,7 +176,12 @@ $: if (devicePixelRatio && pixelRatio === 'auto') {
         canvas.style.width = `${width}px`;
         canvas.style.height = `${height}px`;
    */
-$: _pixelRatio = maxPixelRatio ?? devicePixelRatio ?? 2
+$: _pixelRatio = derivePixelRatio({
+  width: _width,
+  height: _height,
+  devicePixelRatio,
+  pixelRatio,
+})
 
 /**
  * Update app state each time _width, _height or _pixelRatio values of the canvas change
@@ -193,10 +190,13 @@ $: renderer.width = _width
 $: renderer.height = _height
 $: renderer.pixelRatio = _pixelRatio
 
-/**
- * Adjust canvas's transformation matrix to scale drawings according to the width, height values or device's pixel ratio
- */
-$: canvas?.width, canvas?.height, _width, _height, _pixelRatio, layerManager.redraw()
+$: if (canvas && renderer.ctx) {
+  canvas.width = Math.floor(_width * _pixelRatio)
+  canvas.height = Math.floor(_height * _pixelRatio)
+  renderer.initialPixelRatio = _pixelRatio
+  renderer.ctx.setTransform(_pixelRatio, 0, 0, _pixelRatio, 0, 0)
+  layerManager.redraw()
+}
 
 /**
  * Dispatch "resize" event to the parent component each time _width, _height or _pixelRatio values of the canvas change
@@ -222,8 +222,6 @@ $: layerEventHandler = useLayerEvents ? handleEvent : null
   bind:clientWidth={canvasWidth}
   bind:clientHeight={canvasHeight}
   class={className}
-  width={_width * _pixelRatio}
-  height={_height * _pixelRatio}
   style:width={width ? `${width}px` : '100%'}
   style:height={height ? `${height}px` : '100%'}
   {style}

@@ -1,3 +1,5 @@
+/// <reference path="../json-fn.d.ts" />
+
 import JSONfn from 'json-fn'
 
 import { type LayerId, WorkerActionEnum, type WorkerEvent, type WorkerRender } from '../layerTypes'
