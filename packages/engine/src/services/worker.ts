@@ -2,6 +2,8 @@ import JSONfn from 'json-fn'
 
 import { type LayerId, WorkerActionEnum, type WorkerEvent, type WorkerRender } from '../interfaces'
 
+import { pickColor } from './colorPicking'
+
 interface Drawer {
   render: WorkerRender
   data: unknown
@@ -102,6 +104,27 @@ self.onmessage = (e: MessageEvent<WorkerEvent>) => {
       needsRedraw = true
       break
     }
+
+    // GET_COLOR (peek) / PICK_COLOR (pick): read the pixel under (x, y) IN the worker
+    // via an uncached 1x1 getImageData and post the HEX back (PICK-02 / D-12). A read
+    // is NOT a repaint — these cases never set needsRedraw. The read is wrapped in
+    // try/catch so a SecurityError on a tainted OffscreenCanvas posts nothing and does
+    // NOT stop the render loop (Security Domain — render() never reads pixels).
+    case WorkerActionEnum.GET_COLOR:
+    case WorkerActionEnum.PICK_COLOR:
+      if (offscreenCanvas && context) {
+        try {
+          self.postMessage({
+            action,
+            hex: pickColor(offscreenCanvas, context, e.data.x!, e.data.y!),
+            x: e.data.x,
+            y: e.data.y,
+          })
+        } catch {
+          // SecurityError on a tainted canvas — post nothing, keep rendering.
+        }
+      }
+      break
   }
 }
 

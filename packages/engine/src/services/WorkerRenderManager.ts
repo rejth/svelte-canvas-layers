@@ -1,7 +1,8 @@
 import JSONfn from 'json-fn'
 
-import { type LayerId, WorkerActionEnum, type WorkerRender } from '../interfaces'
+import { type LayerId, WorkerActionEnum, type WorkerEvent, type WorkerRender } from '../interfaces'
 
+import type { HEX } from './colorPicking'
 import Worker from './worker?worker'
 
 /**
@@ -15,9 +16,28 @@ export class WorkerRenderManager {
   worker: Worker
   currentLayerId: LayerId
 
+  /**
+   * Settable hook the WorkerCanvas wires to dispatch colorpeek/colorpick (D-03/A7).
+   * Receives the originating action so the consumer can route GET_COLOR -> peek and
+   * PICK_COLOR -> pick. A callback (not a Svelte store) keeps the service framework-free.
+   */
+  onColor?: (action: WorkerActionEnum, hex: HEX, x: number, y: number) => void
+
   constructor() {
     this.worker = new Worker()
     this.currentLayerId = 1
+
+    // Route the async GET_COLOR/PICK_COLOR HEX responses back to the onColor hook.
+    // Render-only messages carry no hex, so the guard ignores them.
+    this.worker.onmessage = (e: MessageEvent<WorkerEvent>) => {
+      const { action, hex, x, y } = e.data
+      if (
+        (action === WorkerActionEnum.GET_COLOR || action === WorkerActionEnum.PICK_COLOR) &&
+        hex != null
+      ) {
+        this.onColor?.(action, hex, x ?? 0, y ?? 0)
+      }
+    }
   }
 
   /**
@@ -87,6 +107,30 @@ export class WorkerRenderManager {
       width: this.width,
       height: this.height,
       pixelRatio: this.pixelRatio,
+    })
+  }
+
+  /**
+   * Requests a peek read of the pixel at device-pixel (x, y). The HEX arrives
+   * asynchronously via `onColor` with action GET_COLOR (PICK-02 / D-12).
+   */
+  getColor(x: number, y: number) {
+    this.worker.postMessage({
+      action: WorkerActionEnum.GET_COLOR,
+      x,
+      y,
+    })
+  }
+
+  /**
+   * Requests a pick read of the pixel at device-pixel (x, y). The HEX arrives
+   * asynchronously via `onColor` with action PICK_COLOR (PICK-02 / D-12).
+   */
+  pick(x: number, y: number) {
+    this.worker.postMessage({
+      action: WorkerActionEnum.PICK_COLOR,
+      x,
+      y,
     })
   }
 
