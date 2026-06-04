@@ -16,7 +16,7 @@ import type {
   StrokeDrawOptions,
   TextDrawOptions,
   TransformationMatrix,
-} from '../interfaces'
+} from '../layerTypes'
 
 import { getRectCorners } from './geometry'
 

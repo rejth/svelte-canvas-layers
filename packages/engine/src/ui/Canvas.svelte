@@ -11,8 +11,13 @@ import type {
   ResizeEvent,
 } from '../interfaces'
 import { clickOutside } from '../lib'
-import { createHitCanvas, getMaxPixelRatio, LayerManager, Renderer } from '../services'
-import { createPickingWiring } from './canvasScaffolding'
+import {
+  createHitCanvas,
+  createPickingWiring,
+  getMaxPixelRatio,
+  LayerManager,
+  Renderer,
+} from '../services'
 
 /**
  * When unset, the canvas will use its clientWidth property.
@@ -69,6 +74,7 @@ let devicePixelRatio: number | undefined
 
 const renderer = new Renderer()
 const layerManager = new LayerManager(renderer)
+
 const dispatch = createEventDispatcher<ResizeEvent>()
 const dispatchPick = createEventDispatcher<{
   colorpeek: ColorPickEventDetail
@@ -78,10 +84,11 @@ const dispatchPick = createEventDispatcher<{
 setContext<AppContext>(KEY, { layerManager })
 
 onMount(() => {
-  const context = createHitCanvas(
-    canvas,
-    enablePicking ? { ...(settings ?? {}), willReadFrequently: true } : settings,
-  )
+  const contextSettings = enablePicking
+    ? { ...(settings ?? {}), willReadFrequently: true }
+    : settings
+
+  const context = createHitCanvas(canvas, contextSettings)
   let initialScale: PixelRatio
 
   if (devicePixelRatio && pixelRatio === 'auto') {
@@ -146,10 +153,12 @@ const onPick = (dx: number, dy: number, cssX: number, cssY: number) => {
   if (hex != null) dispatchPick('colorpick', { hex, x: cssX, y: cssY })
 }
 
-const picking = (node: HTMLCanvasElement) =>
-  enablePicking
-    ? createPickingWiring({ onPeek, onPick, getPixelRatio: () => _pixelRatio })(node)
-    : { destroy() {} }
+const picking = (node: HTMLCanvasElement) => {
+  if (enablePicking) {
+    return createPickingWiring({ onPeek, onPick, getPixelRatio: () => _pixelRatio })(node)
+  }
+  return { destroy() {} }
+}
 
 $: _width = width ?? canvasWidth ?? 0
 $: _height = height ?? canvasHeight ?? 0

@@ -6,13 +6,12 @@ import type {
   LayerEventDispatcher,
   LayerId,
   OriginalEvent,
-  RegisteredLayerMetadata,
-  Render,
-} from '../interfaces'
+} from '../layerTypes'
+import type { RegisteredLayerMetadata, Render } from '../renderContracts'
 
-import { calculatePosition } from './geometry'
-import { pickColor } from './colorPicking'
 import type { HEX } from './colorPicking'
+import { pickColor } from './colorPicking'
+import { calculatePosition } from './geometry'
 import type { Renderer } from './Renderer'
 
 export class LayerManager {
@@ -152,12 +151,10 @@ export class LayerManager {
   }
 
   /**
-   * Lazily read the pixel color at device-pixel `(x, y)` off the display canvas (PICK-03, D-11).
+   * Lazily read the pixel color at device-pixel `(x, y)` off the display canvas.
    *
    * The full-canvas ImageData cache is rebuilt only on the first peek after a redraw
-   * (`needsCacheImage`), then reused for the rest of the frame; idle frames do no
-   * pixel read. Wrapped in try/catch so a tainted-canvas `SecurityError`
-   * (T-05-02-ID) returns `null` and never kills the render loop.
+   * (`needsCacheImage`), then reused for the rest of the frame.
    */
   getCachedColor(x: number, y: number): HEX | null {
     const ctx = this.renderer.getContext()
@@ -174,9 +171,6 @@ export class LayerManager {
 
       if (!this.imageData) return null
 
-      // Bounds guard (CR-02): off-canvas or exact-edge coords would index
-      // `undefined` channels in the cached buffer and emit a garbage HEX as a
-      // "valid" colorpeek/colorpick. Clamp-reject out-of-range reads to null.
       const px = Math.floor(x)
       const py = Math.floor(y)
       if (px < 0 || py < 0 || px >= this.imageData.width || py >= this.imageData.height) {
