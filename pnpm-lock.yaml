@@ -20,6 +20,9 @@ importers:
       uuid:
         specifier: ^11.0.2
         version: 11.0.5
+      yieldkit:
+        specifier: ^0.1.0
+        version: 0.1.0
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.4.8
@@ -1291,6 +1294,7 @@ packages:
 
   glob@10.4.5:
     resolution: {integrity: sha512-7Bv8RF0k6xjo7d4A/PxYLbUCfb6c+Vpd2/mB2yRDlew7Jb5hEXiCD9ibfO7wpk8i4sevK6DFny9h7EYbM3/sHg==}
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
     hasBin: true
 
   glob@7.2.3:
@@ -2192,6 +2196,9 @@ packages:
     resolution: {integrity: sha512-+hSoy/QHluxmC9kCIJyL/uyFmLmc+e5CFR5Wa+bpIhIj85LVb9ZH2nVnqrHoSvKogwODv0ClqZkmiSSaIH5LTA==}
     engines: {node: '>= 14'}
     hasBin: true
+
+  yieldkit@0.1.0:
+    resolution: {integrity: sha512-yXNKjhi1RO0OACUcg7o2gU6MM179Uf525edY66bPXtsXkTKLZ0WyS6dT9ndB3nGwJa19IlydGtY++g6Oz32QlA==}
 
   zod-validation-error@3.4.0:
     resolution: {integrity: sha512-ZOPR9SVY6Pb2qqO5XHt+MkkTRxGXb4EVtnjc9JpXUOtUB1T9Ru7mZOT361AN3MsetVe7R0a1KZshJDZdgp9miQ==}
@@ -4134,6 +4141,8 @@ snapshots:
   ws@8.21.0: {}
 
   yaml@2.7.0: {}
+
+  yieldkit@0.1.0: {}
 
   zod-validation-error@3.4.0(zod@3.24.1):
     dependencies:

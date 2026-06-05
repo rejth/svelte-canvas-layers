@@ -16,9 +16,9 @@ import Toolbar from 'client/ui/Toolbar/Toolbar.svelte'
 import When from 'client/ui/When/When.svelte'
 import Zoom from 'client/ui/Zoom/Zoom.svelte'
 import type { Point } from 'core/interfaces'
-import { dndWatcher } from 'core/lib'
 import { type Camera } from 'core/services'
 import { Canvas } from 'core/ui'
+import { dndWatcher } from 'yieldkit'
 
 import 'client/shared/styles/_global.css'
 
