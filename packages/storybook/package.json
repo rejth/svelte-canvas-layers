@@ -1,0 +1,23 @@
+{
+  "name": "@canvas/storybook",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Storybook demo host for @canvas/engine",
+  "scripts": {
+    "storybook": "storybook dev -p 6007 --no-open",
+    "build-storybook": "storybook build"
+  },
+  "dependencies": {
+    "@canvas/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "@storybook/addon-essentials": "^8.6.14",
+    "@storybook/svelte": "^8.6.14",
+    "@storybook/svelte-vite": "^8.6.14",
+    "@sveltejs/vite-plugin-svelte": "^3.0.1",
+    "storybook": "^8.6.14",
+    "svelte": "^4.2.8",
+    "vite": "^5.4.10"
+  }
+}

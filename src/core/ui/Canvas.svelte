@@ -5,17 +5,6 @@ import type { CanvasContextType } from 'core/interfaces'
 import { Camera } from 'core/services'
 
 /**
- * App-side wrapper around the engine's Camera-free Canvas (D-04).
- *
- * The engine package owns the canonical rendering Canvas but deliberately
- * excludes Camera (pan/zoom is an app concern — ENG-04). This wrapper renders
- * the engine Canvas, reads its exposed primitives (layerManager + context),
- * constructs the app's Camera, and re-exposes `getCamera()` so existing
- * consumers (App.svelte:40 `camera = canvas.getCamera()`) keep working with no
- * edits. All Camera glue lives only here, never in the engine.
- */
-
-/**
  * When unset, the canvas will use its clientWidth property.
  */
 export let width: number | null = null

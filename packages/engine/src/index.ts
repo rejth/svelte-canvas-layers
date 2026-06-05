@@ -1,20 +1,18 @@
-// Public API barrel for @canvas/engine.
-/// <reference path="./types.d.ts" />
+import type {} from './types'
 
-export { KEY } from './constants'
+export type { HEX, RGB } from './common/colorPicking'
+export { KEY } from './common/constants'
+export { getMaxPixelRatio } from './common/helpers'
 export type {
-  AppContext,
   BBox,
   BezierCurveDrawOptions,
   Bounds,
-  CanvasContextType,
   CanvasEvents,
   CanvasOptions,
   CircleDrawOptions,
   ClearRectOptions,
   ColorPickEventDetail,
   Dimension,
-  HitCanvasRenderingContext2D,
   ImageDrawOptions,
   LayerEventDetails,
   LayerEventDispatcher,
@@ -27,24 +25,27 @@ export type {
   RectDimension,
   RectDrawOptions,
   RectPosition,
-  RegisteredLayerMetadata,
-  Render,
-  RenderProps,
   ResizeEvent,
-  RGB,
   RoundedRectDrawOptions,
   StrokeDrawOptions,
   TextDrawOptions,
   TransformationMatrix,
-  WorkerAppContext,
-  WorkerRender,
-  WorkerRenderProps,
-} from './interfaces'
-export { WorkerActionEnum } from './interfaces'
-export type { HEX } from './services/colorPicking'
-export { createHitCanvas } from './services/createHitCanvas'
-export { getMaxPixelRatio } from './services/helpers'
-export { LayerManager } from './services/LayerManager'
-export { Renderer } from './services/Renderer'
-export { WorkerRenderManager } from './services/WorkerRenderManager'
-export { Canvas, Layer, WorkerCanvas, WorkerLayer } from './ui'
+} from './common/types'
+export { default as Canvas } from './main-thread/Canvas.svelte'
+export { createHitCanvas } from './main-thread/createHitCanvas'
+export { default as Layer } from './main-thread/Layer.svelte'
+export { LayerManager } from './main-thread/LayerManager'
+export { Renderer } from './main-thread/Renderer'
+export type {
+  AppContext,
+  CanvasContextType,
+  HitCanvasRenderingContext2D,
+  RegisteredLayerMetadata,
+  Render,
+  RenderProps,
+} from './main-thread/types'
+export type { WorkerAppContext, WorkerRender, WorkerRenderProps } from './worker/types'
+export { WorkerActionEnum } from './worker/types'
+export { default as WorkerCanvas } from './worker/WorkerCanvas.svelte'
+export { default as WorkerLayer } from './worker/WorkerLayer.svelte'
+export { WorkerRenderManager } from './worker/WorkerRenderManager'
