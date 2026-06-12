@@ -132,5 +132,3 @@ Preview locally:
 pnpm preview:app        # app on http://localhost:4173
 pnpm preview:storybook  # storybook on http://localhost:6007
 ```
-
-
