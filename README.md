@@ -126,3 +126,34 @@ Outputs:
 - App: `dist/app`
 - Storybook: `dist/storybook`
 
+Preview locally:
+
+```bash
+pnpm preview:app        # app on http://localhost:4173
+pnpm preview:storybook  # storybook on http://localhost:6007
+```
+
+### Vercel
+
+Use **two Vercel projects** from the same repo. Keep the repo root as the Root Directory so `pnpm install` resolves workspace packages.
+
+| Project | Config file | Build command | Output directory |
+|---------|-------------|---------------|------------------|
+| App | `vercel.json` | `pnpm build:app` | `dist/app` |
+| Storybook | `vercel.storybook.json` | `pnpm build:storybook` | `dist/storybook` |
+
+**App project** — connect the repo and deploy from `main`. Vercel reads `vercel.json` automatically.
+
+**Storybook project** — create a second Vercel project for the same repo, then copy the settings from `vercel.storybook.json` into **Project → Settings → Build & Development Settings** (Vercel only auto-reads one `vercel.json` per deployment):
+
+- Install Command: `pnpm install`
+- Build Command: `pnpm build:storybook`
+- Output Directory: `dist/storybook`
+- Framework Preset: Other
+
+Or deploy Storybook from the CLI:
+
+```bash
+vercel deploy --prod --local-config vercel.storybook.json
+```
+
