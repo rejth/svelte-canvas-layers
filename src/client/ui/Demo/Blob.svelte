@@ -16,6 +16,11 @@ const pathString =
     ctx.scale(scale * 0.9, scale);
     ctx.fill(path);
 
+    ctx.strokeStyle = '#050505';
+    ctx.lineWidth = Math.max(5, width * 0.007) / scale;
+    ctx.lineJoin = 'round';
+    ctx.stroke(path);
+
     if (active()) {
       ctx.stroke(path);
     }

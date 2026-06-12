@@ -42,7 +42,11 @@
     "src/**/*.d.ts",
     "src/**/*.ts",
     "src/**/*.js",
-    "src/**/*.svelte"
+    "src/**/*.svelte",
+    "packages/engine/src/vite-worker.d.ts",
+    "packages/engine/src/types.d.ts",
+    "packages/engine/src/**/*.ts",
+    "packages/engine/src/**/*.svelte"
   ],
   "references": [
     {

@@ -35,3 +35,6 @@ lerna-debug.log*
 /.agents
 /docs/agents
 
+# Local agent/planning artifacts
+/CLAUDE.md
+/.planning/

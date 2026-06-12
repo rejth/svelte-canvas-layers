@@ -1,6 +1,4 @@
+export { createHitCanvas, getMaxPixelRatio, LayerManager, Renderer } from '@canvas/engine'
+
 export { Camera } from './Camera'
-export { createHitCanvas } from './createHitCanvas'
 export { geometryManager } from './GeometryManager'
-export * from './helpers'
-export { LayerManager } from './LayerManager'
-export { Renderer } from './Renderer'
