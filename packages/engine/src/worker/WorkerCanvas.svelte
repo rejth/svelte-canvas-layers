@@ -88,7 +88,7 @@ const picking = (node: HTMLCanvasElement) => {
 /**
  * Rect-relative backing-store (device-pixel) hit coordinates for the worker. Kept
  * internal — device pixels are never exposed to consumers. Returns null when
- * no touch point can be derived so no invalid coordinates are posted (T-07-02-TAMPER).
+ * no touch point can be derived so no invalid coordinates are posted.
  */
 const getHitPoint = (e: OriginalEvent): Point | null => {
   const rect = canvas.getBoundingClientRect()
