@@ -13,7 +13,7 @@
     "build:deploy": "pnpm build:app && pnpm build:storybook",
     "preview": "pnpm preview:app",
     "preview:app": "vite preview --outDir dist/app",
-    "preview:storybook": "vite preview --outDir dist/storybook --port 6007",
+    "preview:storybook": "vite preview --outDir packages/storybook/dist --port 6007",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-check --tsconfig ./tsconfig.json --watch",
     "lint": "pnpm oxlint src",

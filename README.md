@@ -124,7 +124,7 @@ pnpm build:deploy
 Outputs:
 
 - App: `dist/app`
-- Storybook: `dist/storybook`
+- Storybook: `packages/storybook/dist`
 
 Preview locally:
 
@@ -135,25 +135,23 @@ pnpm preview:storybook  # storybook on http://localhost:6007
 
 ### Vercel
 
-Use **two Vercel projects** from the same repo. Keep the repo root as the Root Directory so `pnpm install` resolves workspace packages.
+Use **two Vercel projects** from the same repo.
 
-| Project | Config file | Build command | Output directory |
-|---------|-------------|---------------|------------------|
-| App | `vercel.json` | `pnpm build:app` | `dist/app` |
-| Storybook | `vercel.storybook.json` | `pnpm build:storybook` | `dist/storybook` |
+| Project | Root Directory | Config file | Build command | Output directory |
+|---------|----------------|-------------|---------------|------------------|
+| App | `.` (repo root) | `vercel.json` | `pnpm build:app` | `dist/app` |
+| Storybook | `packages/storybook` | `packages/storybook/vercel.json` | `pnpm build` | `dist` |
 
-**App project** — connect the repo and deploy from `main`. Vercel reads `vercel.json` automatically.
+**App project** — Root Directory empty (repo root). Vercel reads `vercel.json` automatically.
 
-**Storybook project** — create a second Vercel project for the same repo, then copy the settings from `vercel.storybook.json` into **Project → Settings → Build & Development Settings** (Vercel only auto-reads one `vercel.json` per deployment):
+**Storybook project** — set in **Project → Settings**:
 
-- Install Command: `pnpm install`
-- Build Command: `pnpm build:storybook`
-- Output Directory: `dist/storybook`
-- Framework Preset: Other
+- **Root Directory:** `packages/storybook`
+- **Include files outside the root directory in the Build Step:** Enabled
+- **Framework Preset:** Other
+- **Install Command:** `cd ../.. && pnpm install` (or leave to `packages/storybook/vercel.json`)
+- **Build Command:** `pnpm build` — not `pnpm build:app`
+- **Output Directory:** `dist` — not `dist/app`
 
-Or deploy Storybook from the CLI:
-
-```bash
-vercel deploy --prod --local-config vercel.storybook.json
-```
+After changing settings, redeploy. The Storybook package has its own `vercel.json` so it no longer inherits the app build from the repo root.
 
