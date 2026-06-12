@@ -1,4 +1,4 @@
-import JSONfn from 'json-fn'
+import * as Comlink from 'comlink'
 
 import type { HEX } from '../common/colorPicking'
 import type {
@@ -10,10 +10,10 @@ import type {
   Point,
 } from '../common/types'
 
-import { WorkerActionEnum, type WorkerEvent, type WorkerRender } from './types'
+import type { WorkerApi } from './types'
 
 /**
- * A hit-test request awaiting its async `HIT_TEST_RESULT`. The original DOM event
+ * A hit-test request awaiting its async worker result. The original DOM event
  * is held here on the main thread only — it is never serialized to the
  * worker, which receives just `{ requestId, x, y }`.
  */
@@ -35,6 +35,7 @@ export class WorkerRenderManager {
 
   worker: Worker
   currentLayerId: LayerId
+  workerApi: Comlink.Remote<WorkerApi>
 
   onColor?: (hex: HEX, x: number, y: number) => void
 
@@ -49,27 +50,16 @@ export class WorkerRenderManager {
   layerSequence: LayerId[] = []
   layerContainer: HTMLDivElement | null = null
   layerObserver: MutationObserver | null = null
+  destroyed = false
 
-  constructor() {
-    this.worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' })
+  constructor(createWorker: () => Worker) {
+    this.worker = createWorker()
+    this.workerApi = Comlink.wrap<WorkerApi>(this.worker)
     this.currentLayerId = 1
-
-    this.worker.onmessage = (e: MessageEvent<WorkerEvent>) => {
-      const { action, hex, x, y, requestId, layerId } = e.data
-
-      if (action === WorkerActionEnum.HIT_TEST_RESULT) {
-        this.#handleHitTestResult(requestId, layerId ?? 0)
-        return
-      }
-
-      if (action === WorkerActionEnum.PICK_COLOR && hex != null) {
-        this.onColor?.(hex, x ?? 0, y ?? 0)
-      }
-    }
   }
 
   /**
-   * Creates the offscreen canvas, transfers it to the worker (ownership moves to the worker) and posts INIT.
+   * Creates the offscreen canvas, transfers it to the worker (ownership moves to the worker) and initializes worker state.
    *
    * The initial `useLayerEvents` flag is carried in the INIT message so the worker's
    * resident hit canvas state is deterministic before any early hit-test traffic.
@@ -78,16 +68,19 @@ export class WorkerRenderManager {
     this.useLayerEvents = options.useLayerEvents ?? false
     const offscreen = canvas.transferControlToOffscreen()
 
-    this.worker.postMessage(
-      {
-        action: WorkerActionEnum.INIT,
-        canvas: offscreen,
-        width: this.width,
-        height: this.height,
-        pixelRatio: this.pixelRatio,
-        useLayerEvents: this.useLayerEvents,
-      },
-      [offscreen],
+    this.#runWorkerCall('init', () =>
+      this.workerApi.init(
+        Comlink.transfer(
+          {
+            canvas: offscreen,
+            width: this.width,
+            height: this.height,
+            pixelRatio: this.pixelRatio,
+            useLayerEvents: this.useLayerEvents,
+          },
+          [offscreen],
+        ),
+      ),
     )
   }
 
@@ -96,11 +89,11 @@ export class WorkerRenderManager {
    * hit-test results can be re-dispatched as layer events on the owning WorkerLayer.
    */
   register({
-    render,
+    renderer,
     data,
     dispatcher,
   }: {
-    render: WorkerRender
+    renderer: string
     data: unknown
     dispatcher?: LayerEventDispatcher
   }) {
@@ -110,12 +103,13 @@ export class WorkerRenderManager {
       this.dispatchers.set(layerId, dispatcher)
     }
 
-    this.worker.postMessage({
-      action: WorkerActionEnum.ADD_DRAWER,
-      layerId,
-      render: JSONfn.stringify(render),
-      data,
-    })
+    this.#runWorkerCall('addDrawer', () =>
+      this.workerApi.addDrawer({
+        layerId,
+        renderer,
+        data,
+      }),
+    )
 
     return {
       layerId,
@@ -139,21 +133,14 @@ export class WorkerRenderManager {
     if (this.activeLayerId === layerId) this.activeLayerId = 0
     if (this.capturedLayerId === layerId) this.capturedLayerId = 0
 
-    this.worker.postMessage({
-      action: WorkerActionEnum.REMOVE_DRAWER,
-      layerId,
-    })
+    this.#runWorkerCall('removeDrawer', () => this.workerApi.removeDrawer(layerId))
   }
 
   /**
    * Posts a granular per-layer data update — only the changed layer's `data` crosses the boundary; no render fn is re-serialized.
    */
   updateData(layerId: LayerId, data: unknown) {
-    this.worker.postMessage({
-      action: WorkerActionEnum.UPDATE_DATA,
-      layerId,
-      data,
-    })
+    this.#runWorkerCall('updateData', () => this.workerApi.updateData({ layerId, data }))
   }
 
   #setLayerSequenceFromDom() {
@@ -162,22 +149,22 @@ export class WorkerRenderManager {
     const layers = [...this.layerContainer.children] as HTMLElement[]
     this.layerSequence = layers.map((layer) => +layer.dataset.layerId!).filter(Boolean)
 
-    this.worker.postMessage({
-      action: WorkerActionEnum.SET_LAYER_SEQUENCE,
-      layerSequence: this.layerSequence,
-    })
+    this.#runWorkerCall('setLayerSequence', () =>
+      this.workerApi.setLayerSequence({ layerSequence: this.layerSequence }),
+    )
   }
 
   /**
    * Propagates size / pixel-ratio changes. No drawer payload is sent.
    */
   resize() {
-    this.worker.postMessage({
-      action: WorkerActionEnum.RESIZE,
-      width: this.width,
-      height: this.height,
-      pixelRatio: this.pixelRatio,
-    })
+    this.#runWorkerCall('resize', () =>
+      this.workerApi.resize({
+        width: this.width,
+        height: this.height,
+        pixelRatio: this.pixelRatio,
+      }),
+    )
   }
 
   /**
@@ -185,29 +172,31 @@ export class WorkerRenderManager {
    * arrives asynchronously via `onColor`.
    */
   pick(x: number, y: number) {
-    this.worker.postMessage({
-      action: WorkerActionEnum.PICK_COLOR,
-      x,
-      y,
-    })
+    this.#runWorkerCall('pickColor', () =>
+      this.workerApi.pickColor(x, y).then((result) => {
+        if (!result) return
+        this.onColor?.(result.hex, result.x, result.y)
+      }),
+    )
   }
 
   /**
    * Toggles worker layer events after init. Stores the flag and forwards it to the
-   * worker via a RESIZE message so Plan 01's resident hit canvas can be enabled or
+   * worker through the resize RPC so the resident hit canvas can be enabled or
    * disabled after the initial INIT flag.
    */
   setUseLayerEvents(useLayerEvents: boolean) {
     if (this.useLayerEvents === useLayerEvents) return
     this.useLayerEvents = useLayerEvents
 
-    this.worker.postMessage({
-      action: WorkerActionEnum.RESIZE,
-      width: this.width,
-      height: this.height,
-      pixelRatio: this.pixelRatio,
-      useLayerEvents,
-    })
+    this.#runWorkerCall('setUseLayerEvents', () =>
+      this.workerApi.resize({
+        width: this.width,
+        height: this.height,
+        pixelRatio: this.pixelRatio,
+        useLayerEvents,
+      }),
+    )
   }
 
   /**
@@ -242,12 +231,15 @@ export class WorkerRenderManager {
 
     if (coalescable) this.latestCoalescableRequestId = requestId
 
-    this.worker.postMessage({
-      action: WorkerActionEnum.HIT_TEST,
-      requestId,
-      x: hitPoint.x,
-      y: hitPoint.y,
-    })
+    this.#runWorkerCall('hitTest', () =>
+      this.workerApi
+        .hitTest({
+          requestId,
+          x: hitPoint.x,
+          y: hitPoint.y,
+        })
+        .then((result) => this.#handleHitTestResult(result.requestId, result.layerId)),
+    )
   }
 
   /**
@@ -375,8 +367,31 @@ export class WorkerRenderManager {
     )
   }
 
+  #runWorkerCall(operation: string, invoke: () => Promise<unknown>) {
+    if (this.destroyed) return
+
+    try {
+      void invoke().catch((error) => {
+        if (this.destroyed) return
+        console.error(`[WorkerRenderManager] ${operation} failed`, error)
+      })
+    } catch (error) {
+      if (this.destroyed) return
+      console.error(`[WorkerRenderManager] ${operation} failed`, error)
+    }
+  }
+
   destroy() {
+    if (this.destroyed) return
+    this.destroyed = true
     this.layerObserver?.disconnect()
+    this.pendingHitEvents.clear()
+    this.dispatchers.clear()
+    this.onColor = undefined
+
+    try {
+      this.workerApi[Comlink.releaseProxy]()
+    } catch {}
     this.worker.terminate()
   }
 }

@@ -19,32 +19,62 @@ export interface WorkerRender<T = unknown> {
   (props: WorkerRenderProps<T>): void
 }
 
-export enum WorkerActionEnum {
-  INIT = 'init',
-  RESIZE = 'resize',
-  ADD_DRAWER = 'addDrawer',
-  REMOVE_DRAWER = 'removeDrawer',
-  UPDATE_DATA = 'updateData',
-  SET_LAYER_SEQUENCE = 'setLayerSequence',
-  PICK_COLOR = 'pickColor',
-  HIT_TEST = 'hitTest',
-  HIT_TEST_RESULT = 'hitTestResult',
+export type WorkerRenderRegistry = Record<string, WorkerRender>
+
+export type WorkerInitPayload = {
+  canvas: OffscreenCanvas
+  width: number
+  height: number
+  pixelRatio: number
+  useLayerEvents: boolean
 }
 
-export type WorkerEvent = {
-  action: WorkerActionEnum
-  canvas?: OffscreenCanvas
-  drawers?: string
-  render?: string
-  data?: unknown
-  layerId?: LayerId
-  layerSequence?: LayerId[]
+export type WorkerResizePayload = {
   width?: number
   height?: number
   pixelRatio?: number
-  x?: number
-  y?: number
-  hex?: HEX
-  requestId?: number
   useLayerEvents?: boolean
+}
+
+export type WorkerDrawerPayload = {
+  layerId: LayerId
+  renderer: string
+  data: unknown
+}
+
+export type WorkerLayerSequencePayload = {
+  layerSequence: LayerId[]
+}
+
+export type WorkerDataPayload = {
+  layerId: LayerId
+  data: unknown
+}
+
+export type WorkerColorPickResult = {
+  hex: HEX
+  x: number
+  y: number
+} | null
+
+export type WorkerHitTestPayload = {
+  requestId: number
+  x: number
+  y: number
+}
+
+export type WorkerHitTestResult = {
+  requestId: number
+  layerId: LayerId
+}
+
+export interface WorkerApi {
+  init(payload: WorkerInitPayload): void
+  resize(payload: WorkerResizePayload): void
+  addDrawer(payload: WorkerDrawerPayload): void
+  removeDrawer(layerId: LayerId): void
+  setLayerSequence(payload: WorkerLayerSequencePayload): void
+  updateData(payload: WorkerDataPayload): void
+  pickColor(x: number, y: number): WorkerColorPickResult
+  hitTest(payload: WorkerHitTestPayload): WorkerHitTestResult
 }

@@ -42,6 +42,11 @@ export let useLayerEvents = false
  * dispatches to the current active layer without a new hit-test.
  */
 export let handleEventsOnLayerMove = false
+/**
+ * Factory for the consumer-owned worker entrypoint that calls
+ * `exposeCanvasWorker(renderers)`.
+ */
+export let createWorker: () => Worker
 export let className = ''
 export let style = ''
 
@@ -51,7 +56,13 @@ let canvasWidth: number
 let canvasHeight: number
 let devicePixelRatio: number | undefined
 
-const workerManager = new WorkerRenderManager()
+const workerManager = new WorkerRenderManager(() => {
+  if (!createWorker) {
+    throw new Error('WorkerCanvas requires a createWorker prop')
+  }
+  return createWorker()
+})
+
 let initialized = false
 
 const dispatchPick = createEventDispatcher<{

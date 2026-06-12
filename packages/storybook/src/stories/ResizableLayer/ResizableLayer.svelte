@@ -1,7 +1,8 @@
 <script lang="ts">
-import type { Bounds, LayerEventDetails, Render, WorkerRender } from '@canvas/engine'
+import type { Bounds, LayerEventDetails, Render } from '@canvas/engine'
 import { Canvas, Layer, WorkerCanvas, WorkerLayer } from '@canvas/engine'
 
+import { createStoryWorker } from '../../shared/createStoryWorker'
 import type { Mode } from '../../shared/modeArg'
 
 import ResizeBox from './ResizeBox.svelte'
@@ -38,17 +39,6 @@ const contentRender =
 // --- Worker mode: draggable whole boxes via public @canvas/engine API ---
 
 type WorkerBox = { id: string; color: string; x0: number; y0: number; x1: number; y1: number }
-
-// Top-level, fully self-contained worker render fn: references only its own
-// arguments + native canvas APIs. All dynamic bounds/color flow through `data`,
-// never a closure (the source is serialized + reconstructed inside the worker).
-const workerBoxRender: WorkerRender = ({ ctx, data }) => {
-  const box = data as WorkerBox
-  ctx.globalAlpha = 0.9
-  ctx.fillStyle = box.color
-  ctx.fillRect(box.x0, box.y0, box.x1 - box.x0, box.y1 - box.y0)
-  ctx.globalAlpha = 1
-}
 
 let workerBoxes: WorkerBox[] = [
   { id: 'tomato', color: 'tomato', x0: 90, y0: 70, x1: 330, y1: 310 },
@@ -131,6 +121,7 @@ const onColorPick = (event: CustomEvent<{ hex: string }>) => {
 <div class="story-viewport">
   {#if mode === 'worker'}
     <WorkerCanvas
+      createWorker={createStoryWorker}
       useLayerEvents
       handleEventsOnLayerMove
       enablePicking
@@ -139,7 +130,7 @@ const onColorPick = (event: CustomEvent<{ hex: string }>) => {
     >
       {#each workerBoxes as box (box.id)}
         <WorkerLayer
-          render={workerBoxRender}
+          renderer="box"
           data={box}
           on:pointerdown={onLayerDown(box)}
           on:pointermove={onLayerMove(box)}

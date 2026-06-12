@@ -15,15 +15,20 @@ const touch = (e: TouchEvent) => {
   const { clientX, clientY } = e.changedTouches[0]
   $position = { x: clientX - left, y: clientY - top }
 }
+
+export let width = 760
+export let height = 560
+export let className = ''
+export let style = ''
 </script>
 
-<div>
+<div class={className}>
   <Canvas
     useLayerEvents
     handleEventsOnLayerMove
-    width={760}
-    height={560}
-    style="cursor: {$activeLayer ? 'pointer' : 'default'}"
+    {width}
+    {height}
+    style="background-color:#f8fafc;background-image:linear-gradient(rgba(15,23,42,0.06) 1px,transparent 1px),linear-gradient(90deg,rgba(15,23,42,0.06) 1px,transparent 1px);background-size:32px 32px;cursor: {$activeLayer ? 'pointer' : 'default'};{style}"
     on:mousemove={(e) => ($position = { x: e.offsetX, y: e.offsetY })}
     on:touchstart={touch}
     on:touchmove={touch}
@@ -32,10 +37,10 @@ const touch = (e: TouchEvent) => {
     <Blob />
     <Circle />
     <Text text="Whiteboard X" yOffset={-0.03} scale={0.06} />
-    <Text text="Embrace your creativity" scale={0.0297} yOffset={0.04} opacity={0.7} />
     <When isVisible={Boolean($activeLayer?.id)}>
       <Tooltip />
     </When>
+    <slot />
   </Canvas>
 </div>
 
@@ -43,6 +48,7 @@ const touch = (e: TouchEvent) => {
   div {
     overflow: hidden;
     position: relative;
-    aspect-ratio: 5/3;
+    width: 100%;
+    height: 100%;
   }
 </style>

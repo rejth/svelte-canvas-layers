@@ -16,7 +16,7 @@ export let yOffset: number = 0
     ctx.font = `${size}px 'Fira Mono', monospace`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#dcdcdc';
+    ctx.fillStyle = '#050505';
     ctx.globalAlpha = opacity;
     ctx.fillText(text, width / 2, height / 2 + offset);
 
