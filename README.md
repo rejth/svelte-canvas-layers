@@ -89,7 +89,7 @@ exposeCanvasWorker(renderers)
 
 ## Storybook
 
-Storybook contains focused examples for the engine package, including main-thread rendering, worker rendering, color picking, layer events, pixel ratio handling, and resizable layers.
+[Storybook](https://svelte-canvas-layers-storybook.vercel.app/) contains focused examples for the engine package, including main-thread rendering, worker rendering, color picking, layer events, pixel ratio handling, and resizable layers.
 
 ```bash
 pnpm dev:storybook
@@ -133,25 +133,4 @@ pnpm preview:app        # app on http://localhost:4173
 pnpm preview:storybook  # storybook on http://localhost:6007
 ```
 
-### Vercel
-
-Use **two Vercel projects** from the same repo.
-
-| Project | Root Directory | Config file | Build command | Output directory |
-|---------|----------------|-------------|---------------|------------------|
-| App | `.` (repo root) | `vercel.json` | `pnpm build:app` | `dist/app` |
-| Storybook | `packages/storybook` | `packages/storybook/vercel.json` | `pnpm build` | `dist` |
-
-**App project** — Root Directory empty (repo root). Vercel reads `vercel.json` automatically.
-
-**Storybook project** — set in **Project → Settings**:
-
-- **Root Directory:** `packages/storybook`
-- **Include files outside the root directory in the Build Step:** Enabled
-- **Framework Preset:** Other
-- **Install Command:** `cd ../.. && pnpm install` (or leave to `packages/storybook/vercel.json`)
-- **Build Command:** `pnpm build` — not `pnpm build:app`
-- **Output Directory:** `dist` — not `dist/app`
-
-After changing settings, redeploy. The Storybook package has its own `vercel.json` so it no longer inherits the app build from the repo root.
 
