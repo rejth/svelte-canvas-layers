@@ -1,0 +1,5 @@
+{
+  "buildCommand": "pnpm build:app",
+  "outputDirectory": "dist/app",
+  "installCommand": "pnpm install"
+}
