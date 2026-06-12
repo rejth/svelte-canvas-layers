@@ -35,6 +35,15 @@ I'm passionate about the low-level rendering technologies used by graphic editor
 - 🎯 **Layer picking** and selection based on pixel data picked from offscreen canvas.
 - ⌨️ **Keyboard shortcuts** for enhanced productivity.
 
+## 🚀 **Deploy builds**
+
+The app and Storybook build as separate static targets:
+
+- App: `pnpm build:app` outputs `dist/app`.
+- Storybook: `pnpm build:storybook` outputs `dist/storybook`.
+- Both: `pnpm build:deploy` builds both targets.
+
 ### 🚀 **Next steps**
+
 - Text-on-curve rendering with interactive Bézier curve manipulation.
 - Support for custom fonts with OpenType.js integration.

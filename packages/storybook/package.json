@@ -6,7 +6,8 @@
   "description": "Storybook demo host for @canvas/engine",
   "scripts": {
     "storybook": "storybook dev -p 6007 --no-open",
-    "build-storybook": "storybook build"
+    "build": "storybook build --output-dir ../../dist/storybook",
+    "build-storybook": "storybook build --output-dir ../../dist/storybook"
   },
   "dependencies": {
     "@canvas/engine": "workspace:*"
