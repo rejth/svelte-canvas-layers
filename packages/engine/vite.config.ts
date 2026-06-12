@@ -8,12 +8,15 @@ export default defineConfig({
   plugins: [svelte()],
   build: {
     lib: {
-      entry: path.resolve('./src/index.ts'),
+      entry: {
+        index: path.resolve('./src/index.ts'),
+        'worker-runtime': path.resolve('./src/worker-runtime.ts'),
+      },
       formats: ['es'],
-      fileName: 'index',
+      fileName: (_format, entryName) => `${entryName}.js`,
     },
     rollupOptions: {
-      external: ['svelte', 'svelte/internal', 'json-fn', 'canvas-size'],
+      external: ['svelte', 'svelte/internal', 'comlink', 'canvas-size'],
     },
   },
 })

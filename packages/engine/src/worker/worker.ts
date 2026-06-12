@@ -1,14 +1,14 @@
-import JSONfn from 'json-fn'
+import * as Comlink from 'comlink'
 
 import { pickColor } from '../common/colorPicking'
 import { convertLayerIdToRGB, convertRGBtoLayerId } from '../common/hitCanvasColors'
 import type { LayerId } from '../common/types'
 
-import { WorkerActionEnum, type WorkerEvent, type WorkerRender } from './types'
+import type { WorkerApi, WorkerRenderRegistry } from './types'
 import { createForcedColorContext } from './workerHitCanvas'
 
 interface Drawer {
-  render: WorkerRender
+  renderer: string
   data: unknown
 }
 
@@ -51,7 +51,7 @@ function ensureHitCanvas() {
  * Replay every drawer into the hit canvas with a per-layer forced color id so a
  * later 1x1 read-back resolves a coordinate to its `LayerId`.
  */
-function renderHitCanvas() {
+function renderHitCanvas(renderers: WorkerRenderRegistry) {
   if (!useLayerEvents || !hitContext || !forcedHitContext) return
 
   hitContext.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0)
@@ -60,10 +60,11 @@ function renderHitCanvas() {
   for (const layerId of getLayerSequence()) {
     const layer = drawers.get(layerId)
     if (!layer) continue
-    const { render: draw, data } = layer
+    const draw = renderers[layer.renderer]
+    if (!draw) continue
     const [r, g, b] = convertLayerIdToRGB(layerId)
     activeHitColor = `rgb(${r},${g},${b})`
-    draw({ ctx: forcedHitContext!, width, height, pixelRatio, data })
+    draw({ ctx: forcedHitContext!, width, height, pixelRatio, data: layer.data })
   }
 }
 
@@ -91,16 +92,16 @@ function getLayerSequence(): LayerId[] {
   return layerSequence.length ? layerSequence : [...drawers.keys()]
 }
 
-function startRenderLoop() {
-  render()
-  frame = requestAnimationFrame(() => startRenderLoop())
+function startRenderLoop(renderers: WorkerRenderRegistry) {
+  render(renderers)
+  frame = requestAnimationFrame(() => startRenderLoop(renderers))
 }
 
 /**
  * The main render function which is responsible for drawing, clearing and canvas's
  * transformation matrix adjustment. Renders only when width, height or pixelRatio change.
  */
-function render() {
+function render(renderers: WorkerRenderRegistry) {
   if (!context || !needsRedraw) return
 
   // Re-apply the transform every redraw so a resize-driven pixelRatio change takes effect.
@@ -110,43 +111,35 @@ function render() {
   for (const layerId of getLayerSequence()) {
     const layer = drawers.get(layerId)
     if (!layer) continue
-    const { render: draw, data } = layer
-    draw({ ctx: context!, width, height, pixelRatio, data })
+    const draw = renderers[layer.renderer]
+    if (!draw) continue
+    draw({ ctx: context!, width, height, pixelRatio, data: layer.data })
   }
 
-  renderHitCanvas()
+  renderHitCanvas(renderers)
 
   needsRedraw = false
 }
 
-self.onmessage = (e: MessageEvent<WorkerEvent>) => {
-  const { action } = e.data
-
-  switch (action) {
-    case WorkerActionEnum.INIT:
-      offscreenCanvas = e.data.canvas ?? null
-      context = offscreenCanvas?.getContext('2d', settings) ?? null
-      width = e.data.width ?? 0
-      height = e.data.height ?? 0
-      pixelRatio = e.data.pixelRatio ?? 1
-      useLayerEvents = e.data.useLayerEvents ?? false
+export function exposeCanvasWorker(renderers: WorkerRenderRegistry) {
+  const workerApi: WorkerApi = {
+    init(payload) {
+      offscreenCanvas = payload.canvas
+      context = offscreenCanvas.getContext('2d', settings)
+      width = payload.width
+      height = payload.height
+      pixelRatio = payload.pixelRatio
+      useLayerEvents = payload.useLayerEvents
       ensureHitCanvas()
 
-      if (e.data.drawers) {
-        const initial = JSONfn.parse(e.data.drawers) as Array<[LayerId, Drawer]>
-        for (const [layerId, layer] of initial) {
-          drawers.set(layerId, layer)
-        }
-      }
+      startRenderLoop(renderers)
+    },
 
-      startRenderLoop()
-      break
-
-    case WorkerActionEnum.RESIZE:
-      width = e.data.width ?? width
-      height = e.data.height ?? height
-      pixelRatio = e.data.pixelRatio ?? pixelRatio
-      if (e.data.useLayerEvents != null) useLayerEvents = e.data.useLayerEvents
+    resize(payload) {
+      width = payload.width ?? width
+      height = payload.height ?? height
+      pixelRatio = payload.pixelRatio ?? pixelRatio
+      if (payload.useLayerEvents != null) useLayerEvents = payload.useLayerEvents
 
       if (offscreenCanvas) {
         offscreenCanvas.width = width * pixelRatio
@@ -162,58 +155,57 @@ self.onmessage = (e: MessageEvent<WorkerEvent>) => {
       }
 
       needsRedraw = true
-      break
+    },
 
-    case WorkerActionEnum.ADD_DRAWER:
-      if (e.data.layerId != null && e.data.render != null) {
-        drawers.set(e.data.layerId, {
-          render: JSONfn.parse(e.data.render) as WorkerRender,
-          data: e.data.data,
-        })
-        needsRedraw = true
+    addDrawer(payload) {
+      if (!renderers[payload.renderer]) {
+        throw new Error(`Unknown worker renderer: "${payload.renderer}"`)
       }
-      break
 
-    case WorkerActionEnum.REMOVE_DRAWER:
-      drawers.delete(e.data.layerId!)
-      layerSequence = layerSequence.filter((layerId) => layerId !== e.data.layerId)
-      needsRedraw = true
-      break
-
-    case WorkerActionEnum.SET_LAYER_SEQUENCE:
-      layerSequence = e.data.layerSequence ?? layerSequence
-      needsRedraw = true
-      break
-
-    case WorkerActionEnum.UPDATE_DATA: {
-      const layer = drawers.get(e.data.layerId!)
-      if (layer) layer.data = e.data.data
-      needsRedraw = true
-      break
-    }
-
-    case WorkerActionEnum.PICK_COLOR:
-      if (offscreenCanvas && context) {
-        try {
-          self.postMessage({
-            action,
-            hex: pickColor(context, e.data.x!, e.data.y!),
-            x: e.data.x,
-            y: e.data.y,
-          })
-        } catch {}
-      }
-      break
-
-    case WorkerActionEnum.HIT_TEST:
-      if (needsRedraw) render()
-      self.postMessage({
-        action: WorkerActionEnum.HIT_TEST_RESULT,
-        requestId: e.data.requestId,
-        layerId: readHitLayerId(e.data.x ?? NaN, e.data.y ?? NaN),
+      drawers.set(payload.layerId, {
+        renderer: payload.renderer,
+        data: payload.data,
       })
-      break
+      needsRedraw = true
+    },
+
+    removeDrawer(layerId) {
+      drawers.delete(layerId)
+      layerSequence = layerSequence.filter((currentLayerId) => currentLayerId !== layerId)
+      needsRedraw = true
+    },
+
+    setLayerSequence(payload) {
+      layerSequence = payload.layerSequence
+      needsRedraw = true
+    },
+
+    updateData(payload) {
+      const layer = drawers.get(payload.layerId)
+      if (layer) layer.data = payload.data
+      needsRedraw = true
+    },
+
+    pickColor(x, y) {
+      if (!offscreenCanvas || !context) return null
+
+      try {
+        return { hex: pickColor(context, x, y), x, y }
+      } catch {
+        return null
+      }
+    },
+
+    hitTest(payload) {
+      if (needsRedraw) render(renderers)
+      return {
+        requestId: payload.requestId,
+        layerId: readHitLayerId(payload.x, payload.y),
+      }
+    },
   }
+
+  Comlink.expose(workerApi)
 }
 
 self.addEventListener('close', () => {

@@ -2,6 +2,7 @@
 import type { ColorPickEventDetail, Render, WorkerRender } from '@canvas/engine'
 import { Canvas, Layer, WorkerCanvas, WorkerLayer } from '@canvas/engine'
 
+import { createStoryWorker } from '../shared/createStoryWorker'
 import type { Mode } from '../shared/modeArg'
 
 type Band = { color: string }
@@ -45,11 +46,12 @@ const onPick = (e: CustomEvent<ColorPickEventDetail>) => (picked = e.detail)
 <div class="story-viewport">
   {#if mode === 'worker'}
     <WorkerCanvas
+      createWorker={createStoryWorker}
       enablePicking
       style="display:block;cursor:crosshair;"
       on:colorpick={onPick}
     >
-      <WorkerLayer {render} {data} />
+      <WorkerLayer renderer="colorBands" {data} />
     </WorkerCanvas>
   {:else}
     <Canvas

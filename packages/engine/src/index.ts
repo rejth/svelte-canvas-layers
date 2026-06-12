@@ -44,8 +44,19 @@ export type {
   Render,
   RenderProps,
 } from './main-thread/types'
-export type { WorkerAppContext, WorkerRender, WorkerRenderProps } from './worker/types'
-export { WorkerActionEnum } from './worker/types'
+export type {
+  WorkerApi,
+  WorkerAppContext,
+  WorkerColorPickResult,
+  WorkerDrawerPayload,
+  WorkerHitTestPayload,
+  WorkerHitTestResult,
+  WorkerInitPayload,
+  WorkerRender,
+  WorkerRenderProps,
+  WorkerRenderRegistry,
+  WorkerResizePayload,
+} from './worker/types'
 export { default as WorkerCanvas } from './worker/WorkerCanvas.svelte'
 export { default as WorkerLayer } from './worker/WorkerLayer.svelte'
 export { WorkerRenderManager } from './worker/WorkerRenderManager'

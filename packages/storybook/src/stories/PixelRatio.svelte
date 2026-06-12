@@ -1,6 +1,7 @@
 <script lang="ts">
 import type { WorkerRender } from '@canvas/engine'
 
+import { createStoryWorker } from '../shared/createStoryWorker'
 import ModeCanvas from '../shared/ModeCanvas.svelte'
 import type { Mode } from '../shared/modeArg'
 
@@ -77,8 +78,10 @@ const render: WorkerRender = ({ ctx, width, height, pixelRatio }) => {
   <ModeCanvas
     {mode}
     {render}
+    createWorker={createStoryWorker}
     height={heightSetting.value}
     pixelRatio={pixelRatioSetting.value}
+    renderer="pixelRatio"
   />
 </div>
 

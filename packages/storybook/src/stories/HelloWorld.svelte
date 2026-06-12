@@ -1,6 +1,7 @@
 <script lang="ts">
 import type { WorkerRender } from '@canvas/engine'
 
+import { createStoryWorker } from '../shared/createStoryWorker'
 import ModeCanvas from '../shared/ModeCanvas.svelte'
 import type { Mode } from '../shared/modeArg'
 
@@ -17,4 +18,4 @@ const render: WorkerRender = ({ ctx, width, height }) => {
 }
 </script>
 
-<ModeCanvas {mode} {render} />
+<ModeCanvas {mode} {render} createWorker={createStoryWorker} renderer="helloWorld" />

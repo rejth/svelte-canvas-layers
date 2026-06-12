@@ -10,6 +10,8 @@ export let height: number | null = null
 export let pixelRatio: PixelRatio | 'auto' | null = 'auto'
 export let enablePicking = false
 export let render: WorkerRender
+export let renderer: string
+export let createWorker: () => Worker
 export let data: unknown = undefined
 
 let canvas: { getLayerManager?: () => { redraw: () => void } } | undefined
@@ -43,8 +45,8 @@ const canvasStyle = 'display:block;background:#fff;'
 
 <div class="story-viewport">
   {#if mode === 'worker'}
-    <WorkerCanvas {width} {height} {pixelRatio} {enablePicking} style={canvasStyle}>
-      <WorkerLayer {render} {data} />
+    <WorkerCanvas {createWorker} {width} {height} {pixelRatio} {enablePicking} style={canvasStyle}>
+      <WorkerLayer {renderer} {data} />
     </WorkerCanvas>
   {:else}
     <Canvas

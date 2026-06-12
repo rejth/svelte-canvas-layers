@@ -93,9 +93,9 @@ importers:
       canvas-size:
         specifier: ^2.0.0
         version: 2.0.0
-      json-fn:
-        specifier: ^1.1.1
-        version: 1.1.1
+      comlink:
+        specifier: ^4.4.2
+        version: 4.4.2
     devDependencies:
       '@sveltejs/vite-plugin-svelte':
         specifier: ^3.0.1
@@ -119,7 +119,7 @@ importers:
         specifier: ^5.4.10
         version: 5.4.14(@types/node@22.10.10)
 
-  packages/spike-storybook:
+  packages/storybook:
     dependencies:
       '@canvas/engine':
         specifier: workspace:*
@@ -1006,6 +1006,9 @@ packages:
   color-name@1.1.4:
     resolution: {integrity: sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==}
 
+  comlink@4.4.2:
+    resolution: {integrity: sha512-OxGdvBmJuNKSCMO4NTl1L47VRp6xn2wG4F/2hYzB6tiCb709otOxtEYCSvK80PtjODfXXZu8ds+Nw5kVCjqd2g==}
+
   commander@4.1.1:
     resolution: {integrity: sha512-NOKm8xhkzAjzFx8B2v5OAHT+u5pRQc2UCa2Vq9jYL/31o2wi9mxBA7LIFs3sV5VSC49z6pEhfbMULvShKj26WA==}
     engines: {node: '>= 6'}
@@ -1442,9 +1445,6 @@ packages:
   json-buffer@3.0.1:
     resolution: {integrity: sha512-4bV5BfR2mqfQTJm+V5tPPdf+ZpuhiIvTuAB5g8kcrXOZpTT/QwwVRWBywX1ozr6lEuPdbHxwaJlm9G6mI2sfSQ==}
 
-  json-fn@1.1.1:
-    resolution: {integrity: sha512-diGeurhgiazd1lfByjn83uQkF6fVFdiCiQgJyhN3/aCl7EKye0aZe3r9eeQPKcsCh81Mntrvt46z65cn7ZwZHA==}
-
   json-schema-traverse@0.4.1:
     resolution: {integrity: sha512-xbbCH5dCYU5T8LcEhhuh7HJ88HXuW3qsI3Y0zOZFKfZEHcpWiHU/Jxzk629Brsab/mMiHQti9wMP+845RPe3Vg==}
 
@@ -1542,6 +1542,7 @@ packages:
 
   lucide-svelte@0.456.0:
     resolution: {integrity: sha512-SSdmxJOmL1h42ZypuGr54dYsXAT5o6WkQPKVDFnnrD0liOaXzfNNJuA7JbpkO9FFozBchyVpB1A1mKRmXOD8ug==}
+    deprecated: Package deprecated. Please use @lucide/svelte instead.
     peerDependencies:
       svelte: ^3 || ^4 || ^5.0.0-next.42
 
@@ -2965,6 +2966,8 @@ snapshots:
 
   color-name@1.1.4: {}
 
+  comlink@4.4.2: {}
+
   commander@4.1.1: {}
 
   concat-map@0.0.1: {}
@@ -3148,7 +3151,7 @@ snapshots:
       eslint-scope: 7.2.2
       eslint-utils: 3.0.0(eslint@8.4.1)
       eslint-visitor-keys: 3.4.3
-      espree: 9.2.0
+      espree: 9.6.1
       esquery: 1.7.0
       esutils: 2.0.3
       fast-deep-equal: 3.1.3
@@ -3435,8 +3438,6 @@ snapshots:
   jsdoc-type-pratt-parser@4.8.0: {}
 
   json-buffer@3.0.1: {}
-
-  json-fn@1.1.1: {}
 
   json-schema-traverse@0.4.1: {}
 

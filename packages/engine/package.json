@@ -14,6 +14,12 @@
       "import": "./dist/index.js",
       "default": "./dist/index.js"
     },
+    "./worker-runtime": {
+      "types": "./src/worker-runtime.ts",
+      "svelte": "./src/worker-runtime.ts",
+      "import": "./dist/worker-runtime.js",
+      "default": "./dist/worker-runtime.js"
+    },
     "./package.json": "./package.json"
   },
   "scripts": {
@@ -22,7 +28,7 @@
   },
   "dependencies": {
     "canvas-size": "^2.0.0",
-    "json-fn": "^1.1.1"
+    "comlink": "^4.4.2"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^3.0.1",
