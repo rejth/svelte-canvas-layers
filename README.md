@@ -7,6 +7,7 @@ Svelte Canvas Layers wraps the native HTML `<canvas>` element with a small layer
 > Svelte Canvas Layers currently targets Svelte 4 only.
 
 The repository includes a small whiteboard-style demo app built on top of the canvas layer API. It shows camera controls, editable objects, selection, arrows, and layer picking.
+[Storybook](https://svelte-canvas-layers-storybook.vercel.app/) contains focused examples for the engine package, including main-thread rendering, worker rendering, color picking, layer events, pixel ratio handling, and resizable layers.
 
 <img width="1720" height="927" alt="image" src="https://github.com/user-attachments/assets/e48715dd-0526-4298-ba37-444e53e10a7a" />
 <img width="1719" height="927" alt="image" src="https://github.com/user-attachments/assets/23db0bb8-461a-40f7-8caa-be161b7306d0" />
