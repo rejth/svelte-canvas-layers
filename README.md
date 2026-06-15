@@ -8,6 +8,9 @@ Svelte Canvas Layers wraps the native HTML `<canvas>` element with a small layer
 
 The repository includes a small whiteboard-style demo app built on top of the canvas layer API. It shows camera controls, editable objects, selection, arrows, and layer picking.
 
+<img width="1720" height="927" alt="image" src="https://github.com/user-attachments/assets/e48715dd-0526-4298-ba37-444e53e10a7a" />
+<img width="1719" height="927" alt="image" src="https://github.com/user-attachments/assets/23db0bb8-461a-40f7-8caa-be161b7306d0" />
+
 ## Why This Exists
 
 It is a playground for the kind of architecture behind whiteboards, drawing tools, visual editors, diagrams, and canvas-based UI: a scene made of interactive layers, a camera that transforms user input into world coordinates, and UI workflows built on top of those primitives.
